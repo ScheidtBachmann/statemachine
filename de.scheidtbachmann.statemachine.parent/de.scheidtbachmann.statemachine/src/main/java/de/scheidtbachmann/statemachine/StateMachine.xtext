@@ -1,0 +1,9 @@
+grammar de.scheidtbachmann.statemachine.StateMachine with org.eclipse.xtext.common.Terminals
+
+generate stateMachine "http://www.scheidtbachmann.de/statemachine/StateMachine"
+
+Model:
+	greetings+=Greeting*;
+	
+Greeting:
+	'Hello' name=ID '!';
