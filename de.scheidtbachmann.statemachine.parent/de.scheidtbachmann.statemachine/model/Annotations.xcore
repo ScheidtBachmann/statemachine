@@ -1,0 +1,85 @@
+@Ecore(nsPrefix="ann", nsURI="http://kieler.cs.cau.de/annotations")
+@GenModel(
+	copyrightText="KIELER - Kiel Integrated Environment for Layout Eclipse RichClient\n\nhttp://www.informatik.uni-kiel.de/rtsys/kieler/\n\nCopyright 2010 by\n+ Kiel University\n  + Department of Computer Science\n    + Real-Time and Embedded Systems Group\n\nThis code is provided under the terms of the Eclipse Public License (EPL).\nSee the file epl-v10.html for the license text.",
+	bundleManifest="false",
+	complianceLevel="8.0",
+	modelPluginID='',
+	modelDirectory="/de.scheidtbachmann.statemachine/src/main/emf-gen"
+)
+package de.cau.cs.kieler.annotations
+
+import org.eclipse.emf.ecore.EObject
+
+interface Nameable {
+	op String[1] getName()
+}
+
+@GenModel(image="false")
+class NamedObject extends Nameable {
+	String name
+}
+
+@GenModel(documentation="The Annotatable abstract class allows subclasses to be annotated by arbitrary information.\nAn Annotatable has a list of attached Annotation objects and defines convenience functions\nto search annotations with a specific name.")
+abstract class Annotatable {
+	contains Annotation[] annotations
+}
+
+@GenModel(documentation="The Annotatable abstract class allows subclasses to be annotated by arbitrary information.\nAn Annotatable has a list of attached Annotation objects and defines convenience functions\nto search annotations with a specific name.")
+abstract class Pragmatable {
+	contains Pragma[] pragmas
+}
+
+@GenModel(documentation="An Annotation is an Object that can be attached to an Annotatable. It\nextends NamedObject and therefore it has a String name which is used\nas a key to identify the Annotation within the list of Annotations in\nthe Annotatable.\n<p>\nA pure Annotatable Object can be used to specify some kind of\nboolean property that an Annotatable can carry or not.\nHowever, usually additional information is attached by subclassing\nthe Annotation and add some additional value to the subclass.")
+abstract class Annotation extends NamedObject {
+}
+
+@GenModel(documentation="A StringAnnotation carries a String Value.")
+class StringAnnotation extends Annotation {
+	String[] values
+}
+
+@GenModel(documentation="A ReferenceAnnotation carries a reference to an arbitrary EObject.\nBy this any EObject can be referenced from an Annotation. The distinction\nto the ContainmentAnnotation is that the reference is only a pointer\nto the EObject most probably in another resource.")
+class ReferenceAnnotation extends Annotation {
+	refers EObject[1] object
+}
+
+@GenModel(documentation="A BooleanAnnotation carries a boolean value.")
+class BooleanAnnotation extends Annotation {
+	boolean[1] value
+}
+
+@GenModel(documentation="An IntAnnotation carries an integer value.")
+class IntAnnotation extends Annotation {
+	int[1] value
+}
+
+@GenModel(documentation="A FloatAnnotation carries a float value.")
+class FloatAnnotation extends Annotation {
+	float[1] value
+}
+
+@GenModel(documentation="A ContainmentAnnotation carries an arbitrary EObject.\nBy this any EObject can be attached as Annotation to an Annotatable.\nThe EObject will be persistently stored together with the\nAnnotatable as its child in the Annotation. Hence it also gets serialized\ninto a file when the model gets saved. Therefore here an EObject is used\nand not any Object, because an EObject can be serialized with EMF.\n")
+class ContainmentAnnotation extends Annotation {
+	contains EObject[1] object
+}
+
+class ImportAnnotation extends Annotation {
+	String importURI
+}
+
+class TypedStringAnnotation extends StringAnnotation {
+	String ^type
+}
+
+class CommentAnnotation extends StringAnnotation , Annotatable {
+}
+
+class Pragma extends NamedObject {
+}
+
+class StringPragma extends Pragma {
+	String[] values
+}
+
+class TagAnnotation extends Annotation {
+}

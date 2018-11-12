@@ -1,0 +1,255 @@
+@Ecore(nsURI="http://kieler.cs.cau.de/kexpressions/0.1.2")
+@GenModel(
+	bundleManifest="false",
+	complianceLevel="8.0",
+	prefix="KExpressions",
+	modelName="KExpressions",
+	modelPluginID='',
+	modelDirectory="/de.scheidtbachmann.statemachine/src/main/emf-gen"
+)
+package de.cau.cs.kieler.kexpressions
+
+import de.cau.cs.kieler.annotations.Annotatable
+import de.cau.cs.kieler.annotations.NamedObject
+import org.eclipse.emf.ecore.EMap
+import org.eclipse.emf.ecore.EObject
+
+@GenModel(documentation="Built-in operators that can be used as Signal combine operators.")
+enum CombineOperator {
+	@GenModel(documentation="Specifies that no combine operator is given. ")
+	NONE
+	@GenModel(documentation="Arithmetic addition.")
+	ADD as "+" = 1
+	@GenModel(documentation="Arithmetic multiplication.\n")
+	MULT as "*" = 2
+	@GenModel(documentation="The maximum function. Takes the greater of the given two.")
+	MAX as "max" = 5
+	@GenModel(documentation="The minimum function. Takes the lesser of the given two.")
+	MIN as "min" = 6
+	@GenModel(documentation="Logical or function for boolean valued signals.")
+	OR as "|" = 4
+	@GenModel(documentation="Logical and for boolean valued signals.")
+	AND as "&" = 3
+	@GenModel(documentation="Specifies that no built-in combine operator should be used \nbut the operator given in the hostCombineOperator field given as a String and \nreferencing some function of the host language (maybe C or Java, etc. ) .")
+	HOST as "host"
+}
+
+@GenModel(documentation="An Expression is the supertype of all kinds of Expressions over Signals, Variables or Values. \nIt is used as a simple common entry point. In this metamodel there are no more specializations avaliable\naccording to return value of the Expressions (e.g. BooleanExpression or ValuedExpression). These\nmight be provided by more specialized textual grammars for this metamodel.")
+interface Expression extends Schedulable {
+}
+
+@GenModel(documentation="OperatorTypes are used for OperatorExpressions. \nThe types may reference any corresponding\noperator or function that may make use of\nan arbitrary number of subExpressions. Hence it\ncontains unary and binary operators.")
+enum OperatorType {
+	@GenModel(documentation="Logical Negation operator (unary)")
+	NOT as "!"
+	@GenModel(documentation="Equals operator")
+	EQ as "==" = 1
+	@GenModel(documentation="Less than operator. (Not commutative!)")
+	LT as "<" = 2
+	@GenModel(documentation="Less or Equal operator. (Not commutative!)")
+	LEQ as "<=" = 3
+	@GenModel(documentation="Logical AND operator.\n")
+	LOGICAL_AND as "&&" = 4
+	@GenModel(documentation="Logical OR operator.")
+	LOGICAL_OR as "||" = 5
+	@GenModel(documentation="Arithmetic addition operator.")
+	ADD as "+" = 6
+	@GenModel(documentation="Arithmetic subtraction operator. (Not commutative!)")
+	SUB as "-" = 7
+	@GenModel(documentation="Arithmetic multiplication operator.")
+	MULT as "*" = 8
+	@GenModel(documentation="Aithmetic division operator. (Not commutative!)")
+	DIV as "/" = 9
+	@GenModel(documentation="Greater or Equal operator. (Not commutative!)")
+	GEQ as ">=" = 10
+	@GenModel(documentation="Pre operator, returns the previous state of a Signal referenced by a SignalReference.")
+	PRE as "pre" = 11
+	@GenModel(documentation="Greater than operator. (Not commutative!)")
+	GT as ">" = 12
+	@GenModel(documentation="Arithmetic modulo operation. (Not commutative!)")
+	MOD as "%" = 13
+	@GenModel(documentation="Not Equal operator.\n")
+	NE as "!=" = 14
+	@GenModel(documentation="Value operator. Returns the value of a Signal referenced by a SignalReference.")
+	VAL as "val" = 15
+	BITWISE_AND as "&" = 16
+	BITWISE_OR as "|" = 17
+	POSTFIX_ADD as "++" = 18
+	POSTFIX_SUB as "--" = 19
+	SHIFT_LEFT as "<<" = 20
+	SHIFT_RIGHT as ">>" = 21
+	SHIFT_RIGHT_UNSIGNED as ">>>" = 22
+	BITWISE_XOR as "^" = 23
+	BITWISE_NOT as "~" = 25
+	CONDITIONAL as "? :" = 24
+	FBY = 25
+}
+
+@GenModel(documentation="Base Class for Variables and Signals. A ValuedObject has a name and may carry a value. \nTherefore the class has a type attribute which specifies the type of the value. \nThe type might either be given from a predefined list of internal (primitive) types or by the hostType String that \nreferences some type in the target language, e.g. a Type in C or Java. An initial value can be given in String format.\n")
+class ValuedObject extends NamedObject , Annotatable , Referenceable {
+	CombineOperator[1] combineOperator
+	contains Expression initialValue
+	contains Expression[] cardinalities
+}
+
+@GenModel(documentation="Possible built-in types for values (e.g. for Varibales or Signals).\n<p>\nDefault value is the PURE type which means that the\nValuedObject does not contain any value at all (only\nmakes sense for Signals).\n<p>\nHOST means that no actual type is given but the\ntype in the hostType attribute should be used \ninstead.")
+enum ValueType {
+	@GenModel(documentation="Default value is the PURE type which means that the\nValuedObject does not contain any value at all (only\nmakes sense for Signals).")
+	PURE as "pure"
+	BOOL as "bool" = 1
+	UNSIGNED as "unsigned" = 2
+	INT as "int" = 3
+	FLOAT as "float" = 4
+	@GenModel(documentation="HOST means that no actual type is given but the\ntype in the hostType attribute should be used \ninstead.")
+	HOST as "host" = 7
+	DOUBLE as "double" = 5
+	STRING as "string" = 6
+	REFERENCE as "reference" = 8
+	SCHEDULE = 9
+	UNKNOWN = 10
+	CLOCK = 11
+	JSON = 12
+}
+
+@GenModel(documentation="A ValuedObjectReference has a reference to a ValuedObject and is a ComplexExpression.\nTherefore such reference may have subExpressions. Those can be used to \naddress a specific value. E.g. the ValuedObject could carry an array\nvalue and a subExpression could be an IntValue that points to a special entry in \nthat array. \n<p>\nThe distinction between a Variable and a VariableReference is mainly due to containment\nrelations. A Variable is usually defined exactly once and therefore contained by some \nscope element. A reference to that Variable may be required multiple times where\nsuch reference need to be contained at the places where the reference is used.\nHence we need this distinction.")
+class ValuedObjectReference extends Expression {
+	refers ValuedObject[1] valuedObject
+	contains Expression[] indices
+	contains ValuedObjectReference subReference
+}
+
+@GenModel(documentation="Interface representing values, e.g. Integers, Floats or Booleans. Subclasses should contain a field with the value.\nValues may be used as Expressions, e.g. used as subExpressions in OperatorExpressions.\n")
+interface Value extends Expression {
+}
+
+@GenModel(documentation="An Integer value object.")
+class IntValue extends Value {
+	Integer[1] value
+}
+
+@GenModel(documentation="An Real value object represented by a float.")
+class FloatValue extends Value {
+	Float[1] value
+}
+
+@GenModel(documentation="An Boolean value object.")
+class BoolValue extends Value {
+	Boolean[1] value
+}
+
+@GenModel(documentation="An Integer value object.")
+class StringValue extends Value {
+	String[1] value
+}
+
+class VectorValue extends Value {
+	contains Expression[+] values
+}
+
+class IgnoreValue extends Value {
+}
+
+class JsonObjectValue extends Value {
+	contains JsonObjectMember[] members
+	op EMap<String, Value>[1] getMembersMap()
+}
+
+class JsonObjectMember {
+	String key
+	contains Value value
+}
+
+class JsonArrayValue extends Value {
+	contains Value[] elements
+}
+
+class NullValue extends Value {
+}
+
+@GenModel(documentation="An OperatorExpression is the most obvious ComplexExpression containing\nan operator and a list of subExpressions. The meaning is that the operator \nshould be applied to all elements of the ordered subExpression list.\nNote that some pre-defined operators are not commutative, hence the\norder of the subExpressions list is of importance.")
+class OperatorExpression extends Expression {
+	OperatorType operator
+	contains Expression[] subExpressions
+}
+
+@GenModel(documentation="A TextExpression is an Expression containing arbitrary text. It is used to\nescape to a host language such as C or Java. This way arbitrary host code\ncan be used as parameters for operators, other functions or values.")
+class TextExpression extends Expression , Annotatable {
+	String text
+}
+
+abstract class Declaration extends Annotatable {
+	contains ValuedObject[] valuedObjects
+}
+
+class VariableDeclaration extends Declaration {
+	ValueType[1] ^type
+	boolean[1] input
+	boolean[1] output
+	boolean[1] ^static
+	boolean[1] signal
+	boolean[1] const
+	boolean[1] extern
+	boolean[1] ^volatile
+	boolean[1] global
+	String hostType
+}
+
+class ReferenceDeclaration extends Declaration {
+	refers EObject reference
+	contains Parameter[] parameters
+	contains ExternString[] extern
+}
+
+class ScheduleDeclaration extends Declaration {
+	String name
+	PriorityProtocol global
+	unique PriorityProtocol[] priorities
+}
+
+enum PriorityProtocol {
+	CONFLICT
+	CONFLUENT = 1
+}
+
+class ScheduleObjectReference extends ValuedObjectReference {
+	int priority
+}
+
+class Parameter {
+	boolean callByReference
+	boolean pureOutput
+	contains Expression expression
+	refers ValuedObject explicitBinding
+	contains Expression[] explicitBindingIndices
+}
+
+interface Call extends Expression {
+	contains Parameter[] parameters
+}
+
+class ReferenceCall extends ValuedObjectReference , Call {
+}
+
+class FunctionCall extends Call {
+	String functionName
+}
+
+class PrintCall extends Call {
+}
+
+class RandomCall extends Call {
+}
+
+class RandomizeCall extends Call {
+}
+
+interface Referenceable {
+}
+
+interface Schedulable {
+	contains ScheduleObjectReference[] schedule
+}
+
+class ExternString extends Annotatable {
+	String code
+}

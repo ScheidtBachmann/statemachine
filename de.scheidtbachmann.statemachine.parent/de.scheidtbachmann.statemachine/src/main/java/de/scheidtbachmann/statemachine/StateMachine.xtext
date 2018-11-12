@@ -1,9 +1,13 @@
-grammar de.scheidtbachmann.statemachine.StateMachine with org.eclipse.xtext.common.Terminals
+grammar de.scheidtbachmann.statemachine.StateMachine with de.cau.cs.kieler.sccharts.text.SCTX
 
-generate stateMachine "http://www.scheidtbachmann.de/statemachine/StateMachine"
+import "http://www.eclipse.org/emf/2002/Ecore" as ecore
+import "http://kieler.cs.cau.de/annotations" as annotations
+import "http://kieler.cs.cau.de/kexpressions/0.1.2" as kexpressions 
+import "http://kieler.cs.cau.de/keffects/0.1.0" as keffects
+import "http://kieler.cs.cau.de/kext/0.1.0" as kext
+import "http://kieler.cs.cau.de/sccharts/0.3.0" as sccharts
 
-Model:
-	greetings+=Greeting*;
-	
-Greeting:
-	'Hello' name=ID '!';
+Statemachine returns sccharts::SCCharts:
+	SCCharts
+;
+
