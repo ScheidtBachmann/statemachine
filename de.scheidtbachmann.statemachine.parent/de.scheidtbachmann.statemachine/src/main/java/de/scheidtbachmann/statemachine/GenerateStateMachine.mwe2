@@ -62,9 +62,6 @@ Workflow {
 			
 			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/src/main/java/de/cau/cs/kieler/annotations/Annotations.xtext"
 			
-			scopeProvider = {
-				generateStub = false
-			}
 			serializer = {
 				generateStub = false
 			}
@@ -129,9 +126,6 @@ Workflow {
 			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/src/main/java/de/cau/cs/kieler/kexpressions/KExpressions.xtext"
 			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/src/main/java/de/cau/cs/kieler/kexpressions/keffects/KEffects.xtext"
 			
-			scopeProvider = {
-				generateStub = false
-			}
 			serializer = {
 				generateStub = false
 			}

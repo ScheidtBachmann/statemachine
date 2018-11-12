@@ -3,6 +3,8 @@
  */
 package de.cau.cs.kieler.annotations
 
+import com.google.inject.Injector
+import org.eclipse.emf.ecore.EPackage
 
 /**
  * Initialization support for running Xtext languages without Equinox extension registry.
@@ -11,5 +13,10 @@ class AnnotationsStandaloneSetup extends AnnotationsStandaloneSetupGenerated {
 
 	def static void doSetup() {
 		new AnnotationsStandaloneSetup().createInjectorAndDoEMFRegistration()
+	}
+
+	override void register(Injector injector) {
+		EPackage.Registry.INSTANCE.put(AnnotationsPackage.eNS_URI, AnnotationsPackage.eINSTANCE)
+		super.register(injector)
 	}
 }

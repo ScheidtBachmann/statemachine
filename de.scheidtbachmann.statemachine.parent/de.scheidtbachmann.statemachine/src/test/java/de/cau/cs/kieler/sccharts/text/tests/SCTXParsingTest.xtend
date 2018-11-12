@@ -4,29 +4,137 @@
 package de.cau.cs.kieler.sccharts.text.tests
 
 import com.google.inject.Inject
+import de.cau.cs.kieler.sccharts.ControlflowRegion
+import de.cau.cs.kieler.sccharts.Region
 import de.cau.cs.kieler.sccharts.SCCharts
+import de.cau.cs.kieler.sccharts.State
+import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.XtextRunner
 import org.eclipse.xtext.testing.util.ParseHelper
 import org.junit.Assert
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
+
+import static org.junit.Assert.*
 
 @RunWith(XtextRunner)
 @InjectWith(SCTXInjectorProvider)
 class SCTXParsingTest {
-	@Inject
-	ParseHelper<SCCharts> parseHelper
 	
-	@Ignore
+	@Inject
+	extension ParseHelper<SCCharts>
+	
 	@Test
-	def void loadModel() {
-		val result = parseHelper.parse('''
-			Hello Xtext!
-		''')
-		Assert.assertNotNull(result)
-		val errors = result.eResource.errors
+	def void parsing01() {
+		'''
+			scchart Chart {
+				initial state iState
+				final state fState
+			}
+		'''.parse().assertFreeOfErrors()
+		
+	}
+	
+	@Test
+	def void parsing02() {
+		'''
+			scchart Chart {
+				initial state _iState
+				final state _fState
+			}
+		'''.parse().assertFreeOfErrors()
+		
+	}
+	
+	@Test
+	def void parsing03ids() {
+		'''
+			scchart Chart {
+				initial state __
+				state ^state
+				final state ___
+			}
+		'''.parse().assertFreeOfErrors()
+		
+	}
+	
+	@Test
+	def void parsing04nesting() {
+		'''
+			scchart Chart {
+				initial state iParent {
+					initial state iState
+					final state iFinal
+				}
+			}
+		'''.parse().assertFreeOfErrors()
+		
+	}
+	
+	@Test
+	def void linking01() {
+		val parsed = '''
+			scchart Chart {
+				initial state iState
+				go to fState
+				final state fState
+			}
+		'''.parse()
+		
+		parsed.assertFreeOfErrors() => [
+			val states = childStates
+			val transition = states.head.outgoingTransitions.head
+			val target = states.tail.head
+			assertTrue(transition !== null && transition.targetState === target)
+		]
+	}
+	
+	@Test
+	def void linking02() {
+		val parsed = '''
+			scchart Chart {
+				initial state iParent {
+					initial state iState
+					go to fState
+					final state fState
+				}
+				go to fState
+				final state fState
+			}
+		'''.parse()
+		
+		parsed.assertFreeOfErrors() => [
+			val states = childStates
+			val transition = states.head.outgoingTransitions.head
+			val target = states.tail.head
+			assertTrue(transition !== null && transition.targetState === target)
+			
+			val childStates = states.head.childStates
+			val innerTransition = childStates.head.outgoingTransitions.head
+			val innerTarget = childStates.tail.head
+			assertTrue(innerTransition !== null && innerTransition.targetState === innerTarget)
+		]
+	}
+	
+	def <T extends EObject> T assertFreeOfErrors(T parsed) {
+		Assert.assertNotNull(parsed)
+		
+		val errors = parsed.eResource.errors
 		Assert.assertTrue('''Unexpected errors: «errors.join(", ")»''', errors.isEmpty)
+		
+		return parsed
+	}
+	
+	def childStates(SCCharts it) {
+		rootStates.head.regions.head.asControlflowRegion?.states
+	}
+	
+	def childStates(State it) {
+		regions.head.asControlflowRegion?.states
+	}
+	
+	def asControlflowRegion(Region it) {
+		if (it instanceof ControlflowRegion) it else null
 	}
 }
