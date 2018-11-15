@@ -31,10 +31,6 @@ Workflow {
 			
 			referencedResource = "platform:/resource/org.eclipse.emf.ecore/model/Ecore.genmodel"
 			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/model/Annotations.xcore"
-			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/model/Kexpressions.xcore"
-			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/model/Keffects.xcore"
-			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/model/Kext.xcore"
-			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/model/SCCharts.xcore"
 			
 			scopeProvider = {
 				generateStub = false
@@ -56,9 +52,6 @@ Workflow {
 			referencedResource = "platform:/resource/org.eclipse.emf.ecore/model/Ecore.genmodel"
 			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/model/Annotations.xcore"
 			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/model/Kexpressions.xcore"
-			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/model/Keffects.xcore"
-			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/model/Kext.xcore"
-			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/model/SCCharts.xcore"
 			
 			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/src/main/java/de/cau/cs/kieler/annotations/Annotations.xtext"
 			
@@ -86,8 +79,6 @@ Workflow {
 			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/model/Annotations.xcore"
 			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/model/Kexpressions.xcore"
 			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/model/Keffects.xcore"
-			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/model/Kext.xcore"
-			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/model/SCCharts.xcore"
 			
 			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/src/main/java/de/cau/cs/kieler/annotations/Annotations.xtext"
 			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/src/main/java/de/cau/cs/kieler/kexpressions/KExpressions.xtext"
@@ -120,7 +111,6 @@ Workflow {
 			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/model/Kexpressions.xcore"
 			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/model/Keffects.xcore"
 			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/model/Kext.xcore"
-			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/model/SCCharts.xcore"
 			
 			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/src/main/java/de/cau/cs/kieler/annotations/Annotations.xtext"
 			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/src/main/java/de/cau/cs/kieler/kexpressions/KExpressions.xtext"

@@ -12,7 +12,7 @@ import org.eclipse.emf.ecore.EPackage
  */
 class SCTXStandaloneSetup extends SCTXStandaloneSetupGenerated {
 
-	def static void doSetup() {
+	def static doSetup() {
 		new SCTXStandaloneSetup().createInjectorAndDoEMFRegistration()
 	}
 

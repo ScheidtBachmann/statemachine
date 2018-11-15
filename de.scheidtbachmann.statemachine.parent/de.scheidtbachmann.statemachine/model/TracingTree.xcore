@@ -1,0 +1,74 @@
+@Ecore(nsURI="http://kieler.cs.cau.de/tracingtree/0.1.0")
+@GenModel(
+	copyrightText="KIELER - Kiel Integrated Environment for Layout Eclipse RichClient\n\nhttp://www.informatik.uni-kiel.de/rtsys/kieler/\n\nCopyright 2013 by\n+ Kiel University\n  + Department of Computer Science\n    + Real-Time and Embedded Systems Group\n\nThis code is provided under the terms of the Eclipse Public License (EPL).\nSee the file epl-v10.html for the license text.",
+	bundleManifest="false",
+	complianceLevel="8.0",
+	prefix="TracingTree",
+	fileExtensions="kitt",
+	modelName="TracingTree",
+	modelPluginID='',
+	modelDirectory="/de.scheidtbachmann.statemachine/src/main/emf-gen"
+	//editDirectory="/de.cau.cs.kieler.kicool.ui/src",
+	//editorDirectory="/de.cau.cs.kieler.kitt.editor/src",
+	//modelPluginID="de.cau.cs.kieler.kicool.kitt",
+	//editPluginClass="de.cau.cs.kieler.kitt.provider.TracingTreeEditPlugin",
+	//editorPluginClass="de.cau.cs.kieler.kitt.presentation.TracingTreeEditorPlugin",
+	//testSuiteClass="de.cau.cs.kieler.kicool.kitt.tracingtree.tests.TracingTreeAllTests",
+	//editPluginID="de.cau.cs.kieler.kicool.ui",
+	//editorPluginID="de.cau.cs.kieler.kitt.editor"
+)
+package de.cau.cs.kieler.kicool.kitt.tracingtree
+
+import org.eclipse.emf.ecore.EObject
+
+@GenModel(documentation="Abstract representation of a model used in a transformation.\n<p>\nUsed as nodes in tree structure.")
+class ModelWrapper {
+	@GenModel(documentation="Unique ID for type of represented model in transformation")
+	String[1] modelTypeID
+	@GenModel(documentation="All elements contained byrepresented model.")
+	contains EObjectWrapper[+] modelObjects opposite model
+	@GenModel(documentation="List of model-transformations were this model is source model.")
+	contains ModelTransformation[] targetTransformations opposite source
+	@GenModel(documentation="Model-transformations were this model is target model.")
+	container ModelTransformation sourceTransformation opposite target
+	@GenModel(documentation="This flag is set if model\'s elemets have no {@link Element#referencedObject referencedObject} entry.\n<p>\nFalg status must be consistent with all elements.")
+	boolean[1] ^transient
+	@GenModel(documentation="Reference to element which represents root element of the represented model.")
+	refers EObjectWrapper[1] rootObject
+}
+
+@GenModel(documentation="Abstract representation of a object in a model.")
+class EObjectWrapper {
+	@GenModel(documentation="ModelWrapper for model containing this EObject.")
+	container ModelWrapper[1] model opposite modelObjects
+	@GenModel(documentation="Display name of the referenced object.\n<p>\nThis string should enable a identification of the object even if no intance is referenced.")
+	String[1] displayName
+	@GenModel(documentation="List of object-transformations were this object is source element.")
+	refers EObjectTransformation[] targetTransformations opposite source
+	@GenModel(documentation="List of object-transformations were this object is target element.")
+	refers EObjectTransformation[] sourceTransformations opposite target
+	@GenModel(documentation="Reference to a instance of wrapped EObject\n<p>\nThis reference is mandatory iff transient flag of model owning this element is NOT set.")
+	refers EObject eObject
+}
+
+@GenModel(documentation="Transformation relation between two models.\n<p>\nUsed as edges in tree structure.")
+class ModelTransformation {
+	@GenModel(documentation="Unique identifier of this transformation.")
+	String[1] transformationID = ""
+	@GenModel(documentation="Source model of this transfromation.")
+	container ModelWrapper[1] source opposite targetTransformations
+	@GenModel(documentation="Target model of this transfromation.")
+	contains ModelWrapper[1] target opposite sourceTransformation
+	@GenModel(documentation="All object-transformations which are part of this model-transformation")
+	contains EObjectTransformation[+] objectTransformations opposite modelTransformation
+}
+
+@GenModel(documentation="Transformation relation between two elements.")
+class EObjectTransformation {
+	@GenModel(documentation="Model-transformation were this element-tranformation is part of.")
+	container ModelTransformation[1] modelTransformation opposite objectTransformations
+	@GenModel(documentation="Source object of this transfromation.")
+	refers EObjectWrapper[1] source opposite targetTransformations
+	@GenModel(documentation="Target object of this transfromation.")
+	refers EObjectWrapper[1] target opposite sourceTransformations
+}
