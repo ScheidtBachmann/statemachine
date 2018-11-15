@@ -162,6 +162,41 @@ Workflow {
 			}
 		}
 		language = StandardLanguage {
+			name = "de.cau.cs.kieler.kicool.KiCool"
+			fileExtensions = "kico"
+			
+			referencedResource = "platform:/resource/org.eclipse.emf.ecore/model/Ecore.genmodel"
+			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/model/Annotations.xcore"
+			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/model/Kexpressions.xcore"
+			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/model/Keffects.xcore"
+			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/model/Kext.xcore"
+			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/model/KiCool.xcore"
+			
+			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/src/main/java/de/cau/cs/kieler/annotations/Annotations.xtext"
+			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/src/main/java/de/cau/cs/kieler/kexpressions/KExpressions.xtext"
+			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/src/main/java/de/cau/cs/kieler/kexpressions/keffects/KEffects.xtext"
+			referencedResource = "platform:/resource/de.scheidtbachmann.statemachine/src/main/java/de/cau/cs/kieler/kexpressions/kext/KExt.xtext"
+			
+			scopeProvider = {
+				generateStub = false
+			}
+			serializer = {
+				generateStub = false
+			}
+			validator = {
+				generateStub = false
+			}
+			generator = {
+				generateStub = false
+			}
+			parserGenerator = {
+				options = {
+					backtrack = true
+					classSplitting = true
+				}
+			}
+		}
+		language = StandardLanguage {
 			name = "de.scheidtbachmann.statemachine.StateMachine"
 			fileExtensions = "sm"
 			

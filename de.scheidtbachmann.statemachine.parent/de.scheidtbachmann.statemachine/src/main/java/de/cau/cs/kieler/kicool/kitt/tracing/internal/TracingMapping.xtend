@@ -362,7 +362,7 @@ class TracingMapping {
      * @return title string.
      */
     def getTitle() {
-        return if (title == null) {
+        return if (title === null) {
             ""
         } else {
             title
@@ -381,7 +381,7 @@ class TracingMapping {
      * @return true if this mapping is an in-place mapping.
      */
     def isInPlace() {
-        return delegate != null;
+        return delegate !== null;
     }
 
 }
