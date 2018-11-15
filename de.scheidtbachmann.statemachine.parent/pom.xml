@@ -17,6 +17,7 @@
 		<xcoreLibVersion>[1.1.100]</xcoreLibVersion>
 		<xtextVersion>2.14.0</xtextVersion>
 		<elkVersion>0.4.1</elkVersion>
+		<picoCliVersion>3.7.0</picoCliVersion>
 		
 		<org.eclipse.emf.common-version>[2.12.0]</org.eclipse.emf.common-version>
 		<org.eclipse.emf.ecore-version>[2.12.0]</org.eclipse.emf.ecore-version>

@@ -101,5 +101,10 @@
 			<artifactId>de.scheidtbachmann.statemachine</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>info.picocli</groupId>
+			<artifactId>picocli</artifactId>
+			<version>${picoCliVersion}</version>
+		</dependency>
 	</dependencies>
 </project>
