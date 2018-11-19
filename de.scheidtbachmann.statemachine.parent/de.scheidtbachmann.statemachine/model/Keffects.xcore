@@ -1,6 +1,7 @@
 @Ecore(nsURI="http://kieler.cs.cau.de/keffects/0.1.0")
 @GenModel(
 	bundleManifest="false",
+	updateClasspath="false",
 	complianceLevel="8.0",
 	prefix="KEffects",
 	modelName="KEffects",

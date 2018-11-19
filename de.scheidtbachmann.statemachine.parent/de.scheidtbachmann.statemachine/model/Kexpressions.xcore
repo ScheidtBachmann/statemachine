@@ -1,6 +1,7 @@
 @Ecore(nsURI="http://kieler.cs.cau.de/kexpressions/0.1.2")
 @GenModel(
 	bundleManifest="false",
+	updateClasspath="false",
 	complianceLevel="8.0",
 	prefix="KExpressions",
 	modelName="KExpressions",
