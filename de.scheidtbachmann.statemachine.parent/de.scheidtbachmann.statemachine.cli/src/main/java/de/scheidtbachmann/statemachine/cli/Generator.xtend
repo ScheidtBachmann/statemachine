@@ -2,6 +2,8 @@ package de.scheidtbachmann.statemachine.cli
 
 import com.google.inject.Inject
 import com.google.inject.Provider
+import de.cau.cs.kieler.kicool.compilation.CodeContainer
+import de.cau.cs.kieler.kicool.compilation.Compile
 import de.scheidtbachmann.statemachine.StateMachineStandaloneSetup
 import java.util.Collections
 import org.eclipse.emf.common.util.URI
@@ -18,7 +20,7 @@ import picocli.CommandLine.Parameters
 import picocli.CommandLine.Spec
 
 @Command(
-	name = 'hauke',
+	name = 'scc',
 	mixinStandardHelpOptions=true,
 	version = "hauke's statechart compiler 0.1"
 )
@@ -143,7 +145,32 @@ class Generator implements Runnable {
 		if (!stdIn && sourceFileName.nullOrEmpty)
 			commandSpec.subcommands.get(CMD_GENERATE).usage(System.out)
 			
-		else if (sourceFileName.loadResource(stdIn).checkResourceLoaded())
-			println('''Input file «sourceFileName» will be compiled soon.''')
+		else if (sourceFileName.loadResource(stdIn).checkResourceLoaded()) {
+			if (resource.contents.head === null) {
+				println('No content found in the provided resource.')
+				
+			} else {
+				if (!sourceFileName.nullOrEmpty)
+					print('''Compiling «sourceFileName»...''')
+				else
+					print('Compiling...')
+				
+				//val ctx = Compile.createCompilationContext('de.cau.cs.kieler.sccharts.netlist.java', resource.contents.head)
+				val ctx = Compile.createCompilationContext('de.cau.cs.kieler.sccharts.priority.java', resource.contents.head)
+				val result = ctx.compile().model
+				println('done.')
+				switch result {
+					CodeContainer:
+						println(result.files.map[
+							'''
+								«fileName»:
+								  «code»
+							'''
+						].join)
+					default:
+						println('No code generated.')
+				}
+			}
+		}
 	}
 }
