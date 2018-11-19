@@ -74,6 +74,21 @@
 						</filesets>
 					</configuration>
 				</plugin>
+				<!-- bundle the sources and install them in the local repo in 'mvn install' -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>3.0.1</version>
+					<executions>
+						<execution>
+							<id>attach-sources</id>
+							<phase>verify</phase>
+							<goals>
+								<goal>jar-no-fork</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
@@ -101,7 +116,8 @@
 										<ignore></ignore>
 									</action>
 								</pluginExecution>
-								<pluginExecution>
+								<!-- the following is deactivated as with the addition m2e connections the JDT classpath settings are managed automatically -->
+								<!-- pluginExecution>
 									<pluginExecutionFilter>
 										<groupId>
 											org.codehaus.mojo
@@ -122,7 +138,7 @@
 									<action>
 										<ignore></ignore>
 									</action>
-								</pluginExecution>
+								</pluginExecution -->
 							</pluginExecutions>
 						</lifecycleMappingMetadata>
 					</configuration>
