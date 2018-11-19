@@ -10,36 +10,16 @@
 	<artifactId>de.scheidtbachmann.statemachine.cli</artifactId>
 	<packaging>jar</packaging>
 	
+	<properties>
+		<selfContainedExecutableName>scc</selfContainedExecutableName>
+	</properties>
+	
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.eclipse.xtend</groupId>
 				<artifactId>xtend-maven-plugin</artifactId>
 			</plugin>
-			<!--  plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<version>3.1.0</version>
-				<configuration>
-					<descriptorRefs>
-						<descriptorRef>jar-with-dependencies</descriptorRef>
-					</descriptorRefs>
-					<appendAssemblyId>false</appendAssemblyId>
-					<archive>
-						<manifest>
-							<mainClass>de.scheidtbachmann.statemachine.cli.Generator</mainClass>
-						</manifest>
-					</archive>
-				</configuration>
-				<executions>
-					<execution>
-						<id>make-assembly</id>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
@@ -95,6 +75,70 @@
 			</plugin>
 		</plugins>
 	</build>
+	
+	<profiles>
+		<profile>
+			<id>createSelfContainedExecutableUnix</id>
+			<activation>
+				<os>
+					<family>!Windows</family>
+				</os>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<version>1.4.0</version>
+						<executions>
+							<execution>
+								<id>createSelfContainedExecutable</id>
+								<phase>package</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<executable>bash</executable>
+							<commandlineArgs>-c 'echo exec java -Xmx512m -jar \$0 \"\$@\" > ${selfContainedExecutableName}; echo  >> ${selfContainedExecutableName}; cat `ls target/*-app.jar` >> ${selfContainedExecutableName}; chmod u+x ${selfContainedExecutableName}'</commandlineArgs>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>createSelfContainedExecutableWindows</id>
+			<activation>
+				<os>
+					<family>Windows</family>
+				</os>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<version>1.4.0</version>
+						<executions>
+							<execution>
+								<id>createSelfContainedExecutable</id>
+								<phase>package</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<executable>cmd</executable>
+							<commandlineArgs><![CDATA[/c echo @java -Xmx512m -jar %0 %1 %2 %3 > ${selfContainedExecutableName}.bat & echo @exit /b >> ${selfContainedExecutableName}.bat & type target\de.scheidtbachmann.statemachine.cli-0.1.0-SNAPSHOT-app.jar >> ${selfContainedExecutableName}.bat]]></commandlineArgs>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+	
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
