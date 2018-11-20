@@ -119,6 +119,10 @@ class KiCoolRegistration {
         modelsIdMap.get(id)
     }
     
+    static def Iterator<String> getAvailableSystemsIDs() {
+        modelsIdMap.keySet.iterator
+    }
+    
     static def System getProcessorSystemModel(String locationString) {
         modelsMap.get(locationString) as System
     }
