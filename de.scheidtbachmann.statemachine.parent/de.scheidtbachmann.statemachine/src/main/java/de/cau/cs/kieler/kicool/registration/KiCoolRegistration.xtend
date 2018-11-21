@@ -22,8 +22,6 @@ import de.cau.cs.kieler.kicool.kitt.tracing.internal.TracingIntegration
 import java.io.ByteArrayInputStream
 import java.io.Closeable
 import java.io.IOException
-import java.lang.reflect.Modifier
-import java.nio.file.FileSystem
 import java.nio.file.FileSystemNotFoundException
 import java.nio.file.FileSystems
 import java.nio.file.Files
@@ -33,6 +31,7 @@ import java.util.HashMap
 import java.util.Iterator
 import java.util.List
 import java.util.Map
+import java.util.ServiceLoader
 import java.util.jar.JarFile
 import org.eclipse.emf.common.EMFPlugin
 import org.eclipse.emf.common.util.URI
@@ -252,43 +251,10 @@ class KiCoolRegistration {
 //        }
             resourceList
         } else {
-            val additionalFS = newArrayList
-            val scchartsProcessors =    loadClassesFrom('de.cau.cs.kieler.sccharts.processors', additionalFS)
-            val scgTransformations =    loadClassesFrom('de.cau.cs.kieler.scg.transformations', additionalFS)
-            val scgProcessors =         loadClassesFrom('de.cau.cs.kieler.scg.processors', additionalFS)
-            val scgScchartsProcessors = loadClassesFrom('de.cau.cs.kieler.sccharts.scg.processors', additionalFS)
-            
-            additionalFS.forEach[
-                close()
-            ]
-            
-            (scchartsProcessors + scgTransformations + scgProcessors + scgScchartsProcessors).toList
+            ServiceLoader.load(IProcessorProvider).iterator.toIterable.map[
+                processors
+            ].flatten.toList
         }
-    }
-    
-    static def loadClassesFrom(String ^package, List<FileSystem> additionalFSLoaded) {
-        Collections.list(
-            KiCoolRegistration.classLoader.getResources(package.replace('.', '/'.charAt(0)))
-        ).iterator.map[
-            try {
-                FileSystems.getFileSystem(toURI);
-            } catch ( FileSystemNotFoundException e ) {
-                additionalFSLoaded += FileSystems.newFileSystem(toURI, emptyMap)
-            } catch ( Throwable t) {
-                // do nothing; chsch: on osx I get an IllegalArgumentException if the path is unequal to '/'
-            }
-            val root = Paths.get(toURI)
-            Files.find(root, 100)[ path, attributes |
-                !attributes.directory && path.fileName.toString.endsWith('.class')
-            ].map[
-                val className = root.relativize(it).toString.replace('/', '.'.charAt(0))
-                Class.forName(
-                    package + '.' + className.substring(0, className.length-6)
-                )
-            ].filter[
-                !Modifier.isInterface(modifiers) && !Modifier.isAbstract(modifiers) && Processor.isAssignableFrom(it)
-            ].iterator as Iterator<?> as Iterator<Class<? extends Processor<?,?>>>
-        ].flatten()
     }
     
     static def getProcessorClass(String id) {
