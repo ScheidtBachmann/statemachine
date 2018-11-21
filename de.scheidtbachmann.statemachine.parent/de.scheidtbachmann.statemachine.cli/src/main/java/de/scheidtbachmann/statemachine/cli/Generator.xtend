@@ -210,7 +210,7 @@ class Generator implements Runnable {
 				doGenerate(strategy, null)
 			
 			else {
-				val resolved = if (outlet.isAbsolute) outlet else basePath.toAbsolutePath.resolve(outlet)
+				val resolved = basePath.toAbsolutePath.resolve(outlet)
 				if (resolved.exists) {
 					if (resolved.isDirectory) {
 						if (resolved.isWritable) 
@@ -243,33 +243,18 @@ class Generator implements Runnable {
 	}
 	
 	def doGenerate(String strategy, Path outlet) {
-		if (!sourceFileName.nullOrEmpty)
-			print('''Compiling «sourceFileName»...''')
+		val strategyId = strategy.loadCustomStrategy()
+		
+		if (strategyId === null)
+			return
+		else if (!sourceFileName.nullOrEmpty)
+			print('''Compiling «sourceFileName» using strategy '«strategyId»'...''')
 		else
-			print('Compiling...')
+			print('''Compiling using strategy '«strategyId»'...''')
 		
-		val sysoutOri = System.out
-		val syserrOri = System.err
-
 		val altSysout = new ByteArrayOutputStream()
-		System.setOut(new PrintStream(altSysout))
-		
 		val altSyserr = new ByteArrayOutputStream()
-		System.setErr(new PrintStream(altSyserr))
-		
-		val result = try {
-			val ctx = Compile.createCompilationContext(strategy, resource.contents.head)
-			ctx.compile().model
-			
-		} catch (Throwable t) {
-			t.printStackTrace()
-			null
-			
-		} finally {
-			System.setErr(syserrOri)
-			System.setOut(sysoutOri)
-			println('done.')
-		}
+		val result = doCompile(strategyId, altSysout, altSyserr)
 		
 		if (result instanceof CodeContainer) {
 			if (outlet === null) {
@@ -299,13 +284,99 @@ class Generator implements Runnable {
 			println('No code generated.')
 		
 		if (altSyserr.size !== 0) {
-			syserrOri.printf('%nFailures occured:%n')
-			syserrOri.write(altSyserr.toByteArray)
+			System.err.printf('%nFailures occured:%n')
+			System.err.write(altSyserr.toByteArray)
 		}
 		
 		if (altSysout.size !== 0) {
-			sysoutOri.printf('%nFurther notes: occured:%n')
-			sysoutOri.write(altSyserr.toByteArray)
+			System.out.printf('%nFurther notes: occured:%n')
+			System.out.write(altSyserr.toByteArray)
+		}
+	}
+	
+	def doCompile(String strategyId, ByteArrayOutputStream altSysout, ByteArrayOutputStream altSyserr) {
+		val sysoutOri = System.out
+		val syserrOri = System.err
+
+		System.setOut(new PrintStream(altSysout))
+		System.setErr(new PrintStream(altSyserr))
+		
+		try {
+			val ctx = Compile.createCompilationContext(strategyId, resource.contents.head)
+			ctx.compile().model
+			
+		} catch (Throwable t) {
+			t.printStackTrace()
+			null
+			
+		} finally {
+			System.setErr(syserrOri)
+			System.setOut(sysoutOri)
+			println('done.')
+		}
+	}
+	
+	/** Checks for an id of a pre-installed compilation strategy and attempts to load the provided strategy description othwise. */
+	def loadCustomStrategy(String strategy) {
+		if (KiCoolRegistration.availableSystemsIDs.exists[ it == strategy]) {
+			return strategy
+		
+		} else if (!strategy.endsWith('.kico')) {
+			println('''The extension of the provided strategy file '«strategy»' is invalid, see help content.''')
+			return null
+			
+		} else {
+			val strategyPath = basePath.resolve(strategy)
+			if (!strategyPath.exists) {
+				println('''The provided strategy file '«strategy»' does not exist.''')
+				return null
+			} else if (!strategyPath.isRegularFile) {
+				println('''The provided strategy file '«strategy»' is not a file.''')
+				return null
+			} else if (!strategyPath.isReadable) {
+				println('''The provided strategy file '«strategy»' is not readable.''')
+				return null
+			}
+			
+			val strategyResource = resource.resourceSet.getResource(URI.createFileURI(basePath.resolve(strategy).toString), true)
+			val issues = strategyResource.errors + strategyResource.warnings
+			val String issuesText = if (issues.iterator.hasNext) {
+				'''
+					«FOR it: issues»
+						Line «line», column «column»: «it.message»
+					«ENDFOR»
+				'''
+			}
+			
+			switch root: strategyResource.contents.head {
+				de.cau.cs.kieler.kicool.System:
+					if (KiCoolRegistration.availableSystemsIDs.exists[ it == root.id]) {
+						println('''Did load «strategy» without errors, but the strategy's «root.id» is already used.''')
+						return null
+					
+					} else if (issuesText === null) {
+						println('''Did load «strategy» without errors.''')
+						KiCoolRegistration.registerTemporarySystem(root)
+						return root.id
+					
+					} else {
+						print('''
+							Did load «strategy» with errors:
+							«issuesText»
+						''')
+						return null
+					}
+				default: {
+					print('''
+						Could not find valid compilation strategy description in «strategy».
+						«IF issuesText !== null»
+							Found the following problems:
+							«issuesText»
+						«ENDIF»
+					''')
+					return null
+				}
+			}
 		}
 	}
 }
