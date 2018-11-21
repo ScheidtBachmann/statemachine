@@ -96,7 +96,8 @@
 					<configuration>
 						<lifecycleMappingMetadata>
 							<pluginExecutions>
-								<pluginExecution>
+								<!-- the following exclusion is deactivated as I need m2e to perform the resource/** to target/classes/** copying -->
+								<!-- pluginExecution>
 									<pluginExecutionFilter>
 										<groupId>
 											org.apache.maven.plugins
@@ -115,9 +116,8 @@
 									<action>
 										<ignore></ignore>
 									</action>
-								</pluginExecution>
-								<!-- the following is deactivated as with the addition m2e connections the JDT classpath settings are managed automatically -->
-								<!-- pluginExecution>
+								</pluginExecution -->
+								<pluginExecution>
 									<pluginExecutionFilter>
 										<groupId>
 											org.codehaus.mojo
@@ -138,7 +138,7 @@
 									<action>
 										<ignore></ignore>
 									</action>
-								</pluginExecution -->
+								</pluginExecution>
 							</pluginExecutions>
 						</lifecycleMappingMetadata>
 					</configuration>

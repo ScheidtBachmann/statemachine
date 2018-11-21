@@ -61,8 +61,6 @@
 						<configuration>
 							<sources>
 								<source>src/main/emf-gen</source>
-								<!-- add resources here, too, as sub folders are not considered by JDT while developing -->
-								<source>src/main/resources</source>
 								<source>src/main/xtext-gen</source>
 							</sources>
 							<resources>
