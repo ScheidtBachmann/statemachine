@@ -2,3 +2,4 @@
 /lib/
 /page/
 !/page/diagram*.*
+!/page/statemachine.css
