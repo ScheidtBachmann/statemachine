@@ -15,6 +15,7 @@ import java.nio.file.SimpleFileVisitor
 import java.nio.file.attribute.BasicFileAttributes
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.junit.Assert
+import org.junit.Assume
 import org.junit.ComparisonFailure
 import org.junit.Test
 import picocli.CommandLine
@@ -50,7 +51,7 @@ class GeneratorTest {
 	
 	@Test
 	def void testNoArgs() {
-		CommandLine.run(new TestableGenerator(Paths.get('')))
+		commandLineRun(Paths.get(''))
 		
 		assertSysOutEquals('''
 			Usage: scc [-hV] [COMMAND]
@@ -204,6 +205,8 @@ class GeneratorTest {
 	
 	@Test
 	def void testGenerateOutputNonWritable01() {
+		Assume.assumeTrue(!isWindows)
+		
 		val fileName = 'foo.sm'
 		val basePath = Files.createTempDirectory('stateChartGenTesting')
 		basePath.resolve(fileName).write(#[ 'scchart foo { initial state foo }' ], CREATE, WRITE)
@@ -221,6 +224,8 @@ class GeneratorTest {
 	
 	@Test
 	def void testGenerateOutputNonWritable02() {
+		Assume.assumeTrue(!isWindows)
+		
 		val fileName = 'foo.sm'
 		val basePath = Files.createTempDirectory('stateChartGenTesting')
 		basePath.resolve(fileName).write(#[ 'scchart foo { initial state foo }' ], CREATE, WRITE)
@@ -330,6 +335,8 @@ class GeneratorTest {
 	
 	@Test
 	def void testGenerateOutputCustomStrategyUnreadable() {
+		Assume.assumeTrue(!isWindows)
+		
 		val basePath = Files.createTempDirectory('stateChartGenTesting')
 		val fileName = 'foo.sm'
 		basePath.resolve(fileName).write(#[ 'scchart foo { initial state foo }' ], CREATE, WRITE)
@@ -391,21 +398,29 @@ class GeneratorTest {
 	
 	
 	// ----------------------------------------------------------------------------------------------
+
+	private def commandLineRun(Path basePath, String... args) {
+		CommandLine.run(new TestableGenerator(basePath), System.out, CommandLine.Help.Ansi.OFF, args)
+	}
 	
 	private def runValidate(Path basePath, String... args) {
-		CommandLine.run(new TestableGenerator(basePath), #[ 'validate'] + args)
+		commandLineRun(basePath, #[ 'validate'] + args)
 	}
 	
 	private def runGenerate(Path basePath, String... args) {
-		CommandLine.run(new TestableGenerator(basePath), #[ 'generate'] + args)
+		commandLineRun(basePath, #[ 'generate'] + args)
 	}
 	
-	def assertSysOutEquals(String expected) {
+	private def isWindows() {
+		System.getProperty('os.name').toLowerCase.contains('win')
+	}
+	
+	private def assertSysOutEquals(String expected) {
 		Assert.assertEquals('Found outputs in stdErr:', '', syserr.toString)
 		Assert.assertEquals(expected, sysout.toString(UTF8))
 	}
 	
-	def assertSysOutStartsWith(String expected) {
+	private def assertSysOutStartsWith(String expected) {
 		Assert.assertEquals('Found outputs in stdErr:', '', syserr.toString)
 		switch actual: sysout.toString(UTF8) {
 			String:
