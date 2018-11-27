@@ -384,6 +384,11 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>com.google.inject</groupId>
+			<artifactId>guice</artifactId>
+			<version>4.2.2</version>
+		</dependency>
+		<dependency>
 			<groupId>org.eclipse.emf</groupId>
 			<artifactId>org.eclipse.emf.common</artifactId>
 			<version>${org.eclipse.emf.ecore-version}</version>
@@ -435,6 +440,17 @@
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.xtext</groupId>
+			<artifactId>org.eclipse.xtext.xbase.lib</artifactId>
+			<version>${xtextVersion}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.google.guava</groupId>
+					<artifactId>guava</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.xtext</groupId>
 			<artifactId>org.eclipse.xtext.testing</artifactId>
 			<version>${xtextVersion}</version>
 			<scope>test</scope>
@@ -460,11 +476,16 @@
 			<version>${xtextVersion}</version>
 			<optional>true</optional>
 		</dependency>
-		
 		<dependency>
 			<groupId>org.eclipse.elk</groupId>
 			<artifactId>org.eclipse.elk.core</artifactId>
 			<version>${elkVersion}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.google.guava</groupId>
+					<artifactId>guava</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 	</dependencies>
 </project>
