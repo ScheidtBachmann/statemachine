@@ -114,6 +114,10 @@
 					<family>Windows</family>
 				</os>
 			</activation>
+			<properties>
+				<executableWinJ8>${selfContainedExecutableName}Java8.bat</executableWinJ8>
+				<executableWin>${selfContainedExecutableName}.bat</executableWin>
+			</properties>
 			<build>
 				<plugins>
 					<plugin>
@@ -122,17 +126,28 @@
 						<version>1.4.0</version>
 						<executions>
 							<execution>
+								<id>createSelfContainedExecutableJava8</id>
+								<phase>package</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>cmd</executable>
+									<commandlineArgs><![CDATA[/c echo @java -Xmx512m -jar %0 %1 %2 %3 > ${executableWinJ8} & echo @exit /b >> ${executableWinJ8} & type target\de.scheidtbachmann.statemachine.cli-0.1.0-SNAPSHOT-app.jar >> ${executableWinJ8}]]></commandlineArgs>
+								</configuration>
+							</execution>
+							<execution>
 								<id>createSelfContainedExecutable</id>
 								<phase>package</phase>
 								<goals>
 									<goal>exec</goal>
 								</goals>
+								<configuration>
+									<executable>cmd</executable>
+									<commandlineArgs><![CDATA[/c echo @java -Xmx512m --add-opens java.base/java.lang=ALL-UNNAMED -jar %0 %1 %2 %3 > ${executableWin} & echo @exit /b >> ${executableWin} & type target\de.scheidtbachmann.statemachine.cli-0.1.0-SNAPSHOT-app.jar >> ${executableWin}]]></commandlineArgs>
+								</configuration>
 							</execution>
 						</executions>
-						<configuration>
-							<executable>cmd</executable>
-							<commandlineArgs><![CDATA[/c echo @java -Xmx512m -jar %0 %1 %2 %3 > ${selfContainedExecutableName}.bat & echo @exit /b >> ${selfContainedExecutableName}.bat & type target\de.scheidtbachmann.statemachine.cli-0.1.0-SNAPSHOT-app.jar >> ${selfContainedExecutableName}.bat]]></commandlineArgs>
-						</configuration>
 					</plugin>
 				</plugins>
 			</build>
