@@ -15,6 +15,7 @@ import java.util.Collections
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.emf.ecore.resource.ResourceSet
+import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.diagnostics.Severity
 import org.eclipse.xtext.validation.CheckMode
 import org.eclipse.xtext.validation.IResourceValidator
@@ -42,12 +43,15 @@ class Generator implements Runnable {
 		)
 	}
 	
+	@Accessors(PROTECTED_SETTER)
+	CommandLine.Help.Ansi ansi
+	
 	@Spec
 	CommandSpec commandSpec
 	
 	override void run() {
 		// implementation of the main command that just shows the global help content
-		commandSpec.commandLine.usage(System.out)
+		commandSpec.commandLine.usage(System.out, ansi)
 	}
 	
 	@Inject
@@ -109,7 +113,7 @@ class Generator implements Runnable {
 		String sourceFileName
 	) {
 		if (!stdIn && sourceFileName.nullOrEmpty)
-			commandSpec.subcommands.get(CMD_VALIDATE).usage(System.out)
+			commandSpec.subcommands.get(CMD_VALIDATE).usage(System.out, ansi)
 			
 		else if (sourceFileName.loadResource(stdIn).checkResourceLoaded())
 			doValidate()
@@ -200,7 +204,7 @@ class Generator implements Runnable {
 		String sourceFileName
 	) {
 		if (!stdIn && sourceFileName.nullOrEmpty)
-			commandSpec.subcommands.get(CMD_GENERATE).usage(System.out)
+			commandSpec.subcommands.get(CMD_GENERATE).usage(System.out, ansi)
 			
 		else if (sourceFileName.loadResource(stdIn).checkResourceLoaded()) {
 			if (resource.contents.head === null)

@@ -36,6 +36,7 @@ class GeneratorTest {
 		
 		new(Path basePath) {
 			this.basePath = basePath
+			this.ansi = CommandLine.Help.Ansi.OFF
 			injector.injectMembers(this)
 		}
 		
