@@ -45,7 +45,7 @@ class Generator implements Runnable {
 	}
 	
 	@Accessors(PROTECTED_SETTER)
-	CommandLine.Help.Ansi ansi
+	CommandLine.Help.Ansi ansi = CommandLine.Help.Ansi.AUTO
 	
 	@Spec
 	CommandSpec commandSpec
