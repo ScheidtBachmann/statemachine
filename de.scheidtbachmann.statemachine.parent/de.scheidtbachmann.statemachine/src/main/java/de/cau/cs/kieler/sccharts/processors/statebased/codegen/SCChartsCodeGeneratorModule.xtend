@@ -10,11 +10,12 @@
  * 
  * This code is provided under the terms of the Eclipse Public License (EPL).
  */
-package de.cau.cs.kieler.sccharts.processors.codegen.statebased
+package de.cau.cs.kieler.sccharts.processors.statebased.codegen
 
 import de.cau.cs.kieler.kicool.compilation.codegen.CodeGeneratorModule
 import de.cau.cs.kieler.sccharts.SCCharts
 import de.cau.cs.kieler.sccharts.State
+import org.eclipse.xtend.lib.annotations.Accessors
 
 /**
  * The SCChartsCodeGeneratorModule allows specific configuration for SCCharts code generators.
@@ -25,6 +26,9 @@ import de.cau.cs.kieler.sccharts.State
  * 
  */
 abstract class SCChartsCodeGeneratorModule extends CodeGeneratorModule<SCCharts, State> {
+    
+    @Accessors var boolean printDebug    
+    @Accessors var boolean leanMode
     
     def SCCharts getSCCharts() {
         return rootObject

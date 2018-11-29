@@ -6,13 +6,13 @@ class SCChartsProcessorProvider implements IProcessorProvider {
 
     override getProcessors() {
         #[
-            de.cau.cs.kieler.sccharts.processors.codegen.statebased.StatebasedCCodeGenerator,
             de.cau.cs.kieler.sccharts.processors.dataflow.Dataflow,
             de.cau.cs.kieler.sccharts.processors.statebased.DeConditionalize,
             de.cau.cs.kieler.sccharts.processors.statebased.DeImmediateDelay,
             de.cau.cs.kieler.sccharts.processors.statebased.DeSurfaceDepth,
             de.cau.cs.kieler.sccharts.processors.statebased.DeTriggerEffect,
             de.cau.cs.kieler.sccharts.processors.statebased.SuperfluousSuperstateRemover,
+            de.cau.cs.kieler.sccharts.processors.statebased.codegen.StatebasedCCodeGenerator,
             de.cau.cs.kieler.sccharts.processors.transformators.Abort,
             de.cau.cs.kieler.sccharts.processors.transformators.AbortWTO,
             de.cau.cs.kieler.sccharts.processors.transformators.AbortWTODeep,

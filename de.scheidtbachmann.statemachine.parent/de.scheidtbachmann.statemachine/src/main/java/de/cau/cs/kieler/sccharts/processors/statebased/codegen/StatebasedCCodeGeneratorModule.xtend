@@ -10,7 +10,7 @@
  * 
  * This code is provided under the terms of the Eclipse Public License (EPL).
  */
-package de.cau.cs.kieler.sccharts.processors.codegen.statebased
+package de.cau.cs.kieler.sccharts.processors.statebased.codegen
 
 import org.eclipse.xtend.lib.annotations.Accessors
 import de.cau.cs.kieler.kicool.compilation.CodeContainer
@@ -20,6 +20,9 @@ import de.cau.cs.kieler.annotations.registry.PragmaRegistry
 import de.cau.cs.kieler.annotations.StringPragma
 import de.cau.cs.kieler.kicool.compilation.codegen.AbstractCodeGenerator
 import de.cau.cs.kieler.annotations.extensions.PragmaExtensions
+import de.cau.cs.kieler.sccharts.State
+import de.cau.cs.kieler.sccharts.extensions.SCChartsStateExtensions
+import de.cau.cs.kieler.sccharts.Region
 
 /**
  * Root C Code Generator Module
@@ -34,6 +37,7 @@ import de.cau.cs.kieler.annotations.extensions.PragmaExtensions
 class StatebasedCCodeGeneratorModule extends SCChartsCodeGeneratorModule {
     
     @Inject extension PragmaExtensions
+    @Inject extension SCChartsStateExtensions
     @Inject extension StatebasedCCodeSerializeHRExtensions
     
     @Inject Injector injector
@@ -62,6 +66,15 @@ class StatebasedCCodeGeneratorModule extends SCChartsCodeGeneratorModule {
     }
     
     override generateInit() {
+        struct.printDebug = printDebug
+        reset.printDebug = printDebug
+        tick.printDebug = printDebug
+        logic.printDebug = printDebug
+        struct.leanMode = leanMode
+        reset.leanMode = leanMode
+        tick.leanMode = leanMode
+        logic.leanMode = leanMode
+        
         struct.generateInit
         reset.generateInit
         logic.generateInit
@@ -70,17 +83,19 @@ class StatebasedCCodeGeneratorModule extends SCChartsCodeGeneratorModule {
     
     override generate() {
         struct.generate
-        reset.generate
         logic.generate
+        reset.generate
         tick.generate
     }
     
     
     override generateDone() {
         struct.generateDone
-        reset.generateDone
         logic.generateDone
+        reset.generateDone
         tick.generateDone
+        
+        populateAnnotationModel
     }
     
     /**
@@ -92,8 +107,13 @@ class StatebasedCCodeGeneratorModule extends SCChartsCodeGeneratorModule {
         val hFile = new StringBuilder
         val cFile = new StringBuilder
 
+        val headerMacro = ("_" + hFilename.replaceAll("\\.", "_") + "_").toUpperCase
+
         hFile.addHeader
+        hFile.append("#ifndef " + headerMacro + "\n")
+        hFile.append("#define " + headerMacro + "\n\n")
         hFile.append(struct.code)
+        hFile.append("\n#endif")
         
         cFile.addHeader
         cFile.hostcodeAdditions
@@ -102,8 +122,8 @@ class StatebasedCCodeGeneratorModule extends SCChartsCodeGeneratorModule {
         cFile.append(logic.code).append("\n")
         cFile.append(tick.code)
 
-        codeContainer.add(cFilename, cFile.toString)         
-        codeContainer.add(hFilename, hFile.toString)
+        codeContainer.addCCode(cFilename, cFile.toString, StatebasedCCodeGeneratorStructModule.STRUCT_NAME)         
+        codeContainer.addCHeader(hFilename, hFile.toString, StatebasedCCodeGeneratorStructModule.STRUCT_NAME)
     }    
     
     /**
@@ -133,5 +153,29 @@ class StatebasedCCodeGeneratorModule extends SCChartsCodeGeneratorModule {
             sb.append("\n")
         }
     }  
+ 
+ 
+    protected def populateAnnotationModel() {
+        val annotationModel = (processorInstance as StatebasedCCodeGenerator).annotationModel
+        val annotationModelStates = (processorInstance as StatebasedCCodeGenerator).annotationModel
+        val annotationModelStatesAndRegions = (processorInstance as StatebasedCCodeGenerator).annotationModel
+        
+        for (object : (logic as StatebasedCCodeGeneratorLogicModule).objectFunctionMap.keySet) {
+            val sb = (logic as StatebasedCCodeGeneratorLogicModule).objectFunctionMap.get(object)
+            val code = sb.toString.trim
+//            annotationModel.addInfo(object, code)
+            
+            if (object instanceof State) {
+                if (!object.isSuperstate) {
+//                    annotationModelStates.addInfo(object, code)
+                    annotationModelStatesAndRegions.addInfo(object, code)
+                }
+            } else if (object instanceof Region) {
+                annotationModelStatesAndRegions.addInfo(object, code)
+            }
+        }        
+    }
+    
+    
     
 }

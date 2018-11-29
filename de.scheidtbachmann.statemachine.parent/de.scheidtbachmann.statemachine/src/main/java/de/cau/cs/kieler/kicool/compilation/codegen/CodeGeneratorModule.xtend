@@ -12,12 +12,11 @@
  */
 package de.cau.cs.kieler.kicool.compilation.codegen
 
-import de.cau.cs.kieler.kicool.compilation.codegen.CodeGeneratorModule
-import de.cau.cs.kieler.kicool.compilation.Processor
-import org.eclipse.xtend.lib.annotations.Accessors
-import java.util.Map
+import de.cau.cs.kieler.annotations.Nameable
 import de.cau.cs.kieler.kicool.compilation.CodeContainer
-import de.cau.cs.kieler.annotations.NamedObject
+import de.cau.cs.kieler.kicool.compilation.Processor
+import java.util.Map
+import org.eclipse.xtend.lib.annotations.Accessors
 
 /**
  * CodeGeneratorModule allows specific configuration for SCG code generators.
@@ -62,7 +61,7 @@ abstract class CodeGeneratorModule<T, E> extends AbstractCodeGeneratorModule {
     }
     
     override getName() {
-        if (moduleObject instanceof NamedObject) {
+        if (moduleObject instanceof Nameable) {
             return moduleObject.name
         } else if (moduleObject !== null) {
             return moduleObject.class.name
