@@ -5,6 +5,7 @@ import com.google.inject.Provider
 import de.cau.cs.kieler.kicool.compilation.CodeContainer
 import de.cau.cs.kieler.kicool.compilation.Compile
 import de.cau.cs.kieler.kicool.registration.KiCoolRegistration
+import de.cau.cs.kieler.sccharts.processors.statebased.codegen.StatebasedCCodeGenerator
 import de.scheidtbachmann.statemachine.StateMachineStandaloneSetup
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -196,8 +197,8 @@ class Generator implements Runnable {
 			names = #[ '-s', '-strategy'],
 			paramLabel = '<strategy>',
 			completionCandidates = StrategyCandidates,
-			defaultValue = 'de.cau.cs.kieler.sccharts.priority.java',
-			description = "The generation strategy to apply. %nCandidates are: ${COMPLETION-CANDIDATES}. %nDefault is: %n   ${DEFAULT-VALUE}."
+			defaultValue = 'de.cau.cs.kieler.sccharts.statebased',
+			description = "The generation strategy to apply. %nCandidates are: ${COMPLETION-CANDIDATES}. %nDefault is: %n  ${DEFAULT-VALUE}."
 		)
 		String strategy,
 		@Parameters(arity = '0..1', paramLabel = '<sourceFile>', description="The input state chart file.")
@@ -307,6 +308,8 @@ class Generator implements Runnable {
 		
 		try {
 			val ctx = Compile.createCompilationContext(strategyId, resource.contents.head)
+			// the following property setting only applies to strategy 'de.cau.cs.kieler.sccharts.statebased'
+			ctx.startEnvironment.setProperty(StatebasedCCodeGenerator.LEAN_MODE, true)
 			ctx.compile().model
 			
 		} catch (Throwable t) {

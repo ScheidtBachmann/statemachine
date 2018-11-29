@@ -160,7 +160,7 @@ class GeneratorTest {
 			                               de.cau.cs.kieler.scg.priority,
 			                               or a path to a custom <.kico> file.
 			                             Default is:
-			                                de.cau.cs.kieler.sccharts.priority.java.
+			                               de.cau.cs.kieler.sccharts.statebased.
 		''')
 	}
 	
@@ -197,8 +197,8 @@ class GeneratorTest {
 		runGenerate(basePath, '-stdout', fileName)
 		
 		assertSysOutStartsWith('''
-			Compiling foo.sm using strategy 'de.cau.cs.kieler.sccharts.priority.java'...done.
-			foo.java:
+			Compiling foo.sm using strategy 'de.cau.cs.kieler.sccharts.statebased'...done.
+			foo.c:
 		''')
 		
 		basePath.deleteDirRecursively
