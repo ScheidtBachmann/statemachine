@@ -6,7 +6,7 @@ const appRoot = path.resolve(__dirname, 'page');
 const bootstrapDistPath = 'node_modules/bootstrap/dist';
 const jqueryDistPath = 'node_modules/jquery/dist';
 const sprottyCssPath = 'node_modules/sprotty/css';
-const elkWorkerPath = 'node_modules/elkjs/lib/elk-worker.min.js';
+// const elkWorkerPath = 'node_modules/elkjs/lib/elk-worker.min.js';
 
 module.exports = function(env) {
     if (!env) {
@@ -54,11 +54,11 @@ module.exports = function(env) {
                 {
                     from: sprottyCssPath,
                     to: 'sprotty'
-                },
+                } /*,
                 {
                     from: elkWorkerPath,
                     to: 'elk'
-                }
+                } */
             ])
         ]
     }

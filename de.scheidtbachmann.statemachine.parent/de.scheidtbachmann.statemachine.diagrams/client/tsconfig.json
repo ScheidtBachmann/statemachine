@@ -5,6 +5,7 @@
     ],
     "compilerOptions": {
         "strict": true,
+        "strictPropertyInitialization": false,  // 'true' causes weird validation errors since today...
         "experimentalDecorators": true,
         "noUnusedLocals": true,
         "emitDecoratorMetadata": true,
@@ -27,7 +28,7 @@
             "node", "reflect-metadata"
         ],
         "jsx": "react",
-        "reactNamespace": "JSX",
+        // "reactNamespace": "JSX", // not required here
         "skipLibCheck": true
     }
 }
