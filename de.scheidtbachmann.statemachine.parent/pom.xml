@@ -30,7 +30,7 @@
 	<modules>
 		<module>de.scheidtbachmann.statemachine</module>
 		<module>de.scheidtbachmann.statemachine.cli</module>
-		<!-- module>de.scheidtbachmann.statemachine.ide</module -->
+		<module>de.scheidtbachmann.statemachine.ide</module>
 	</modules>
 	<build>
 		<pluginManagement>

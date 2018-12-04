@@ -97,6 +97,28 @@
 					</execution>
 				</executions>
 			</plugin>
+			<!-- copy the fat jar into the vscode extension for usage in vscode -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.1</version>
+				<executions>
+					<execution>
+						<id>copy-fatLSjar</id>
+						<phase>package</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<tasks>
+								<copy tofile="${basedir}/../de.scheidtbachmann.statemachine.vscode-extension/language-server/de.scheidtbachmann.statemachine.ide-ls.jar">
+									<fileset dir="${basedir}/target" includes="*-ls.jar"/>
+								</copy>
+							</tasks>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
