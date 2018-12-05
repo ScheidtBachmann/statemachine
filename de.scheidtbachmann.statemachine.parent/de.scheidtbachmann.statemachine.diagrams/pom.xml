@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>de.scheidtbachmann.statemachine</groupId>
+		<artifactId>de.scheidtbachmann.statemachine.parent</artifactId>
+		<version>0.1.0-SNAPSHOT</version>
+	</parent>
+	<artifactId>de.scheidtbachmann.statemachine.diagrams</artifactId>
+	<packaging>jar</packaging>
+	
+	<build>
+		<resources>
+			<resource>
+				<directory>client</directory>
+				<includes>
+					<include>page/**/*</include>
+				</includes>
+				<excludes>
+					<exclude>page/diagramModel.js</exclude>
+				</excludes>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.eclipse.xtend</groupId>
+				<artifactId>xtend-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+	
+	<dependencies>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>de.scheidtbachmann.statemachine</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.8.5</version>
+		</dependency>
+	</dependencies>
+</project>

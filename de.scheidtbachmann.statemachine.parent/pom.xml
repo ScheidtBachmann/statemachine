@@ -29,6 +29,7 @@
 	
 	<modules>
 		<module>de.scheidtbachmann.statemachine</module>
+		<module>de.scheidtbachmann.statemachine.diagrams</module>
 		<module>de.scheidtbachmann.statemachine.cli</module>
 		<module>de.scheidtbachmann.statemachine.ide</module>
 	</modules>
