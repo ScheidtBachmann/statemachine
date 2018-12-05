@@ -24,17 +24,21 @@ class DiagramModelGenerator {
 	public static val DIAGRAM_MODEL_FILE_NAME = 'diagramModel.js'
 	
 	def create(EObject chart, Path outlet) {
+		val pageFolders = newArrayList
 		if (chart instanceof SCCharts) {
 			for (rootState : chart.rootStates) {
 				val diagramRoot = outlet.resolve(rootState.name.replace('/','-'.charAt(0)).replace('\\', '-'.charAt(0)))
 				if (!diagramRoot.exists())
-					diagramRoot.createDirectory()
+					diagramRoot.createDirectories()
 				
 				new OutputStreamWriter(
 					diagramRoot.resolve(DIAGRAM_MODEL_FILE_NAME).newOutputStream(CREATE, WRITE)
 				).writeDiagramModel(rootState).close()
+				
+				pageFolders.add(diagramRoot)
 			}
 		}
+		return pageFolders
 	}
 
 	def writeDiagramModel(Writer it, State rootState) {

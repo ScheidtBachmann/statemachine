@@ -7,6 +7,8 @@ import de.cau.cs.kieler.kicool.compilation.Compile
 import de.cau.cs.kieler.kicool.registration.KiCoolRegistration
 import de.cau.cs.kieler.sccharts.processors.statebased.codegen.StatebasedCCodeGenerator
 import de.scheidtbachmann.statemachine.StateMachineStandaloneSetup
+import de.scheidtbachmann.statemachine.diagrams.DiagramModelGenerator
+import de.scheidtbachmann.statemachine.diagrams.WebpageCopier
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.PrintStream
@@ -153,6 +155,109 @@ class Generator implements Runnable {
 			''')
 		}
 	}
+	
+	
+	static val CMD_DRAW = 'draw'
+	
+	@Command(
+		name = CMD_DRAW,
+		separator = " ",
+		header = 'Draw the state chart specified in given input file.',
+		parameterListHeading = "%nParameters:%n",
+		optionListHeading = "%nOptions:%n",
+		sortOptions = false
+	)
+	def void draw(
+		@Option(names = '-stdin', description = "Forces the artist to read input from stdIn.")
+		boolean stdIn,
+		@Option(
+			names = #[ '-o', '-output'],
+			paramLabel = '<path>',
+			defaultValue = 'diagrams',
+			description = "The destination folder of the drawn diagram pages. %nDefault is: ${DEFAULT-VALUE}."
+		)
+		Path outlet,
+		@Option(names = '-diagModelOnly', description = "Instructes the artist to skip copying the static page components.")
+		boolean diagramModelOnly,
+		@Parameters(arity = "0..1", paramLabel = "<sourceFile>", description = "The input state chart file.")
+		String sourceFileName
+	) {
+		if (!stdIn && sourceFileName.nullOrEmpty)
+			commandSpec.subcommands.get(CMD_DRAW).usage(System.out, ansi)
+			
+		else if (sourceFileName.loadResource(stdIn).checkResourceLoaded()) {
+			if (resource.contents.head === null)
+				println('No content found in the provided resource.')
+			
+			else {
+				val resolved = basePath.toAbsolutePath.resolve(outlet)
+				if (resolved.exists) {
+					if (resolved.isDirectory) {
+						if (resolved.isWritable) 
+							doDraw(resolved, !diagramModelOnly)
+						else {
+							println('The provided output path does exist, but writing is not permitted.')
+							return
+						} 
+					} else {
+						println('The provided output path exists but is not a directory.')
+						return
+					}
+				} else {
+					try {
+						resolved.createDirectory()
+					} catch (IOException e) {
+						println('The provided output path does not exist, creation failed with an exception:')
+						println('Reason: ' + e.class.canonicalName + ': ' + e.message)
+						return
+					}
+					doDraw(resolved, !diagramModelOnly)
+				}
+			}
+		}
+	}
+	
+	def void doDraw(Path outlet, boolean doCopyStaticParts) {
+		if (!sourceFileName.nullOrEmpty)
+			print('''Creating diagram model for «sourceFileName»...''')
+		else
+			print('''Creating diagram model...''')
+		
+		val sysoutOri = System.out
+		val syserrOri = System.err
+		
+		val altSysout = new ByteArrayOutputStream()
+		val altSyserr = new ByteArrayOutputStream()
+		
+		System.setOut(new PrintStream(altSysout))
+		System.setErr(new PrintStream(altSyserr))
+		
+		try {
+			val pageFolders = new DiagramModelGenerator().create(resource.contents.head, outlet)
+			if (doCopyStaticParts)
+				for (f : pageFolders)
+					WebpageCopier.copyStaticPageParts(f)
+			
+		} catch (Throwable t) {
+			t.printStackTrace()
+			
+		} finally {
+			System.setErr(syserrOri)
+			System.setOut(sysoutOri)
+			println('done.')
+		}
+		
+		if (altSyserr.size !== 0) {
+			System.err.printf('%nFailures occured:%n')
+			System.err.write(altSyserr.toByteArray)
+		}
+		
+		if (altSysout.size !== 0) {
+			System.out.printf('%nFurther notes: occured:%n')
+			System.out.write(altSyserr.toByteArray)
+		}
+	}
+	
 	
 	static val CMD_GENERATE = 'generate'
 	

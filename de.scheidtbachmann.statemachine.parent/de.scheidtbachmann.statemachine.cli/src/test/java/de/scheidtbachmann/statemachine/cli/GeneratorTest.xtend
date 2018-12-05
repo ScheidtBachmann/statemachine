@@ -1,6 +1,7 @@
 package de.scheidtbachmann.statemachine.cli
 
 import de.scheidtbachmann.statemachine.StateMachineStandaloneSetup
+import de.scheidtbachmann.statemachine.diagrams.DiagramModelGenerator
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -14,6 +15,7 @@ import java.nio.file.Paths
 import java.nio.file.SimpleFileVisitor
 import java.nio.file.attribute.BasicFileAttributes
 import org.eclipse.xtend.lib.annotations.Accessors
+import org.junit.After
 import org.junit.Assert
 import org.junit.Assume
 import org.junit.ComparisonFailure
@@ -45,6 +47,8 @@ class GeneratorTest {
 	val sysout = new ByteArrayOutputStream
 	val syserr = new ByteArrayOutputStream
 	
+	Path basePath
+	
 	new() {
 		System.setOut(new PrintStream(sysout))
 		System.setErr(new PrintStream(syserr))
@@ -59,6 +63,7 @@ class GeneratorTest {
 			  -h, --help      Show this help message and exit.
 			  -V, --version   Print version information and exit.
 			Commands:
+			  draw      Draw the state chart specified in given input file.
 			  generate  Generate executable code corresponding to the given input file.
 			  validate  Check the given input file for syntactic and semantic errors and
 			              problems.
@@ -100,7 +105,7 @@ class GeneratorTest {
 	
 	@Test
 	def void testValidateFile() {
-		val basePath = Files.createTempDirectory('stateChartGenTesting')
+		basePath = Files.createTempDirectory('stateChartGenTesting')
 		val fileName = 'foo.sm'
 		basePath.resolve(fileName).write(#[ 'scchart foo { state }' ], CREATE, WRITE)
 		
@@ -113,6 +118,145 @@ class GeneratorTest {
 			
 			Validation discovered the following warnings:
 			Line 1, column 15: The state is not reachable.
+		''')
+	}
+	
+	
+	@Test
+	def void testDraw() {
+		runDraw(Paths.get(''))
+		
+		assertSysOutEquals('''
+			Draw the state chart specified in given input file.
+			Usage: scc draw [-diagModelOnly] [-stdin] [-o <path>] [<sourceFile>]
+			
+			Parameters:
+			      [<sourceFile>]   The input state chart file.
+			
+			Options:
+			      -stdin           Forces the artist to read input from stdIn.
+			  -o, -output <path>   The destination folder of the drawn diagram pages.
+			                       Default is: diagrams.
+			      -diagModelOnly   Instructes the artist to skip copying the static page
+			                         components.
+		''')
+	}
+	
+	@Test
+	def void testDrawEmptyInputStdIn() {
+		System.setIn(new ByteArrayInputStream(#[]))
+		
+		runDraw(Paths.get(''), '-stdin', '-diagModelOnly')
+		
+		assertSysOutStartsWith('''
+			No content found in the provided resource.
+		''')
+	}
+	
+	@Test
+	def void testDrawStdIn() {
+		System.setIn(new ByteArrayInputStream('scchart foo { initial state foo }'.bytes))
+		
+		val basePath = Files.createTempDirectory('stateChartGenTesting')
+		runDraw(basePath, '-stdin', '-diagModelOnly')
+		
+		val diagramModelFile = basePath.resolve('diagrams/foo').resolve(DiagramModelGenerator.DIAGRAM_MODEL_FILE_NAME)
+		
+		assertSysOutEquals('''
+			Creating diagram model...done.
+		''')
+		
+		assertFileEquals(diagramModelFile, '''
+			function getDiagramModel() {
+			  return {
+			    "id": "graph",
+			    "type": "graph",
+			    "layoutOptions": {
+			      "hAlign": "left",
+			      "hGap": 5,
+			      "paddingLeft": 7,
+			      "paddingRight": 7,
+			      "paddingTop": 7,
+			      "paddingBottom": 7
+			    },
+			    "children": [
+			      {
+			        "id": "state-0",
+			        "type": "node:state",
+			        "layout": "vbox",
+			        "layoutOptions": {
+			          "paddingLeft": 10,
+			          "paddingRight": 10,
+			          "paddingTop": 8,
+			          "paddingBottom": 8,
+			          "resizeContainer": true
+			        },
+			        "children": [
+			          {
+			            "text": "foo",
+			            "id": "state-0-label-0",
+			            "type": "label:stateLabel"
+			          }
+			        ]
+			      }
+			    ]
+			  };
+			}
+		''')
+		
+		basePath.deleteDirRecursively
+	}
+	
+	@Test
+	def void testDrawFile() {
+		val fileName = 'foo.sm'
+		val basePath = Files.createTempDirectory('stateChartGenTesting')
+		basePath.resolve(fileName).write(#[ 'scchart foo { initial state foo }' ], CREATE, WRITE)
+		
+		runDraw(basePath, fileName, '-diagModelOnly')
+		
+		val diagramModelFile = basePath.resolve('diagrams/foo').resolve(DiagramModelGenerator.DIAGRAM_MODEL_FILE_NAME)
+		
+		assertSysOutEquals('''
+			Creating diagram model for foo.sm...done.
+		''')
+		
+		assertFileEquals(diagramModelFile, '''
+			function getDiagramModel() {
+			  return {
+			    "id": "graph",
+			    "type": "graph",
+			    "layoutOptions": {
+			      "hAlign": "left",
+			      "hGap": 5,
+			      "paddingLeft": 7,
+			      "paddingRight": 7,
+			      "paddingTop": 7,
+			      "paddingBottom": 7
+			    },
+			    "children": [
+			      {
+			        "id": "state-0",
+			        "type": "node:state",
+			        "layout": "vbox",
+			        "layoutOptions": {
+			          "paddingLeft": 10,
+			          "paddingRight": 10,
+			          "paddingTop": 8,
+			          "paddingBottom": 8,
+			          "resizeContainer": true
+			        },
+			        "children": [
+			          {
+			            "text": "foo",
+			            "id": "state-0-label-0",
+			            "type": "label:stateLabel"
+			          }
+			        ]
+			      }
+			    ]
+			  };
+			}
 		''')
 		
 		basePath.deleteDirRecursively
@@ -164,6 +308,30 @@ class GeneratorTest {
 		''')
 	}
 	
+	
+	@Test
+	def void testGenerateInputStdInOutputStdOut() {
+		System.setIn(new ByteArrayInputStream('scchart foo { initial state foo }'.bytes))
+		
+		runGenerate(basePath, '-stdin', '-stdout')
+		
+		assertSysOutStartsWith('''
+			Compiling using strategy 'de.cau.cs.kieler.sccharts.statebased'...done.
+			foo.c:
+		''')
+	}
+	
+	@Test
+	def void testGenerateEmptyInputStdInOutputStdOut() {
+		System.setIn(new ByteArrayInputStream(#[]))
+		
+		runGenerate(basePath, '-stdin', '-stdout')
+		
+		assertSysOutStartsWith('''
+			No content found in the provided resource.
+		''')
+	}
+	
 	@Test
 	def void testGenerateNonExistingInput() {
 		runGenerate(Paths.get(''), 'foo')
@@ -175,7 +343,7 @@ class GeneratorTest {
 	
 	@Test
 	def void testGenerateEmptyInput() {
-		val basePath = Files.createTempDirectory('stateChartGenTesting')
+		basePath = Files.createTempDirectory('stateChartGenTesting')
 		val fileName = 'foo.sm'
 		basePath.resolve(fileName).write(#[ '' ], CREATE, WRITE)
 		
@@ -184,13 +352,11 @@ class GeneratorTest {
 		assertSysOutEquals('''
 			No content found in the provided resource.
 		''')
-
-		basePath.deleteDirRecursively
 	}
 	
 	@Test
 	def void testGenerateOutputStdOut() {
-		val basePath = Files.createTempDirectory('stateChartGenTesting')
+		basePath = Files.createTempDirectory('stateChartGenTesting')
 		val fileName = 'foo.sm'
 		basePath.resolve(fileName).write(#[ 'scchart foo { initial state foo }' ], CREATE, WRITE)
 		
@@ -200,16 +366,14 @@ class GeneratorTest {
 			Compiling foo.sm using strategy 'de.cau.cs.kieler.sccharts.statebased'...done.
 			foo.c:
 		''')
-		
-		basePath.deleteDirRecursively
 	}
 	
 	@Test
 	def void testGenerateOutputNonWritable01() {
 		Assume.assumeTrue(!isWindows)
 		
+		basePath = Files.createTempDirectory('stateChartGenTesting')
 		val fileName = 'foo.sm'
-		val basePath = Files.createTempDirectory('stateChartGenTesting')
 		basePath.resolve(fileName).write(#[ 'scchart foo { initial state foo }' ], CREATE, WRITE)
 		
 		Files.createDirectory(basePath.resolve('gen')).toFile.setWritable(false, false)
@@ -219,16 +383,14 @@ class GeneratorTest {
 		assertSysOutEquals('''
 			The provided output path does exist, but writing is not permitted.
 		''')
-
-		basePath.deleteDirRecursively
 	}
 	
 	@Test
 	def void testGenerateOutputNonWritable02() {
 		Assume.assumeTrue(!isWindows)
 		
+		basePath = Files.createTempDirectory('stateChartGenTesting')
 		val fileName = 'foo.sm'
-		val basePath = Files.createTempDirectory('stateChartGenTesting')
 		basePath.resolve(fileName).write(#[ 'scchart foo { initial state foo }' ], CREATE, WRITE)
 		
 		Files.createDirectory(basePath.resolve('gen')).toFile.setWritable(false, false)
@@ -239,13 +401,11 @@ class GeneratorTest {
 			The provided output path does not exist, creation failed with an exception:
 			Reason: java.nio.file.AccessDeniedException:
 		''')
-		
-		basePath.deleteDirRecursively
 	}
 	
 	@Test
 	def void testGenerateOutputStrategy() {
-		val basePath = Files.createTempDirectory('stateChartGenTesting')
+		basePath = Files.createTempDirectory('stateChartGenTesting')
 		val fileName = 'foo.sm'
 		basePath.resolve(fileName).write(#[ 'scchart foo { initial state foo }' ], CREATE, WRITE)
 		
@@ -255,13 +415,11 @@ class GeneratorTest {
 			Compiling foo.sm using strategy 'de.cau.cs.kieler.sccharts.priority'...done.
 			foo.c:
 		''')
-		
-		basePath.deleteDirRecursively
 	}
 	
 	@Test
 	def void testGenerateOutputCustomStrategy() {
-		val basePath = Files.createTempDirectory('stateChartGenTesting')
+		basePath = Files.createTempDirectory('stateChartGenTesting')
 		val fileName = 'foo.sm'
 		basePath.resolve(fileName).write(#[ 'scchart foo { initial state foo }' ], CREATE, WRITE)
 		
@@ -277,13 +435,11 @@ class GeneratorTest {
 			Compiling foo.sm using strategy 'my.java'...done.
 			foo.java:
 		''')
-		
-		basePath.deleteDirRecursively
 	}
 	
 	@Test
 	def void testGenerateOutputCustomStrategyMissing() {
-		val basePath = Files.createTempDirectory('stateChartGenTesting')
+		basePath = Files.createTempDirectory('stateChartGenTesting')
 		val fileName = 'foo.sm'
 		basePath.resolve(fileName).write(#[ 'scchart foo { initial state foo }' ], CREATE, WRITE)
 		
@@ -294,13 +450,11 @@ class GeneratorTest {
 		assertSysOutEquals('''
 			The provided strategy file 'bar.kico' does not exist.
 		''')
-		
-		basePath.deleteDirRecursively
 	}
 	
 	@Test
 	def void testGenerateOutputCustomStrategyWrongExtenstion() {
-		val basePath = Files.createTempDirectory('stateChartGenTesting')
+		basePath = Files.createTempDirectory('stateChartGenTesting')
 		val fileName = 'foo.sm'
 		basePath.resolve(fileName).write(#[ 'scchart foo { initial state foo }' ], CREATE, WRITE)
 		
@@ -312,13 +466,11 @@ class GeneratorTest {
 		assertSysOutEquals('''
 			The extension of the provided strategy file 'bar.kic' is invalid, see help content.
 		''')
-		
-		basePath.deleteDirRecursively
 	}
 	
 	@Test
 	def void testGenerateOutputCustomStrategyIsDirectory() {
-		val basePath = Files.createTempDirectory('stateChartGenTesting')
+		basePath = Files.createTempDirectory('stateChartGenTesting')
 		val fileName = 'foo.sm'
 		basePath.resolve(fileName).write(#[ 'scchart foo { initial state foo }' ], CREATE, WRITE)
 		
@@ -330,15 +482,13 @@ class GeneratorTest {
 		assertSysOutEquals('''
 			The provided strategy file 'bar.kico' is not a file.
 		''')
-		
-		basePath.deleteDirRecursively
 	}
 	
 	@Test
 	def void testGenerateOutputCustomStrategyUnreadable() {
 		Assume.assumeTrue(!isWindows)
 		
-		val basePath = Files.createTempDirectory('stateChartGenTesting')
+		basePath = Files.createTempDirectory('stateChartGenTesting')
 		val fileName = 'foo.sm'
 		basePath.resolve(fileName).write(#[ 'scchart foo { initial state foo }' ], CREATE, WRITE)
 		
@@ -352,13 +502,11 @@ class GeneratorTest {
 		assertSysOutEquals('''
 			The provided strategy file 'bar.kico' is not readable.
 		''')
-		
-		basePath.deleteDirRecursively
 	}
 	
 	@Test
 	def void testGenerateOutputCustomStrategyEmpty() {
-		val basePath = Files.createTempDirectory('stateChartGenTesting')
+		basePath = Files.createTempDirectory('stateChartGenTesting')
 		val fileName = 'foo.sm'
 		basePath.resolve(fileName).write(#[ 'scchart foo { initial state foo }' ], CREATE, WRITE)
 		
@@ -372,13 +520,11 @@ class GeneratorTest {
 			Found the following problems:
 			Line 1, column 1: mismatched input '<EOF>' expecting 'system'
 		''')
-		
-		basePath.deleteDirRecursively
 	}
 	
 	@Test
 	def void testGenerateOutputCustomStrategyErroneous() {
-		val basePath = Files.createTempDirectory('stateChartGenTesting')
+		basePath = Files.createTempDirectory('stateChartGenTesting')
 		val fileName = 'foo.sm'
 		basePath.resolve(fileName).write(#[ 'scchart foo { initial state foo }' ], CREATE, WRITE)
 		
@@ -393,10 +539,15 @@ class GeneratorTest {
 			Did load bar.kico with errors:
 			Line 1, column 41: mismatched input 'system' expecting 'label'
 		''')
-		
-		basePath.deleteDirRecursively
 	}
 	
+	// ----------------------------------------------------------------------------------------------
+	
+	@After
+	public def void removeBaseDir() {
+		basePath?.deleteDirRecursively
+		basePath = null
+	}
 	
 	// ----------------------------------------------------------------------------------------------
 
@@ -408,12 +559,23 @@ class GeneratorTest {
 		commandLineRun(basePath, #[ 'validate'] + args)
 	}
 	
+	private def runDraw(Path basePath, String... args) {
+		commandLineRun(basePath, #[ 'draw'] + args)
+	}
+	
 	private def runGenerate(Path basePath, String... args) {
 		commandLineRun(basePath, #[ 'generate'] + args)
 	}
 	
 	private def isWindows() {
 		System.getProperty('os.name').toLowerCase.contains('win')
+	}
+	
+	private def assertFileEquals(Path file, String expected) {
+		Assert.assertTrue("Diagram model doesn't exist at the expected location.", file.exists)
+		
+		val diagramModel = new String(file.readAllBytes, StandardCharsets.UTF_8)
+		Assert.assertEquals(expected, diagramModel)
 	}
 	
 	private def assertSysOutEquals(String expected) {
