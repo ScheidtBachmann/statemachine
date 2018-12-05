@@ -26,14 +26,6 @@ export class StateNode extends RectangularNode implements Expandable {
     }
 }
 
-export class ClassNode extends RectangularNode implements Expandable {
-    expanded: boolean = false;
-
-    hasFeature(feature: symbol) {
-        return feature === expandFeature || super.hasFeature(feature);
-    }
-}
-
 export class Icon extends SShapeElement {
     size = {
         width: 32,

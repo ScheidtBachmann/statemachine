@@ -65,6 +65,13 @@ class DiagramModelGenerator {
 	}
 	
 	def View toGraph(State rootState) {
+		val state2stateNode = rootState.regions.filter(ControlflowRegion).head?.states.indexed.toMap([ value ], [ value.toView(key, 'state-') ])
+		val transEdges = state2stateNode.keySet.map[ state |
+			state.outgoingTransitions.indexed.map[
+				value.toView(key, state2stateNode.get(state).id, state2stateNode.get(value.targetState).id)
+			]
+		].flatten.toList;
+		
 		new Graph(
 			new LayoutOptions[
 				HGap = 5
@@ -74,7 +81,7 @@ class DiagramModelGenerator {
 				paddingTop = 7
 				paddingBottom = 7
 			],
-			rootState.regions.filter(ControlflowRegion).head?.states.indexed.map[ value.toView(key, 'state-') ]
+			state2stateNode.values + transEdges
 		)
 	}
 	
@@ -101,8 +108,11 @@ class DiagramModelGenerator {
 		)
 	}
 	
-	def View toView(Transition transition) {
-		
+	def View toView(Transition transition, int index, String source, String target) {
+		new TransitionEdge(
+			source + '-trans-' + index.toString,
+			source, target
+		)
 	}
 }
 
@@ -151,6 +161,18 @@ class StateLabel extends View {
 	private new(String id, String labelText, LayoutOptions layoutOptions, Iterable<View> children) {
 		super('label:stateLabel', id, null, layoutOptions, children)
 		this.text = labelText
+	}
+}
+
+@Data
+class TransitionEdge extends View {
+	val String sourceId
+	val String targetId
+	
+	new(String id, String source, String target) {
+		super('edge:transition', id, null, null, null)
+		this.sourceId = source
+		this.targetId = target
 	}
 }
 

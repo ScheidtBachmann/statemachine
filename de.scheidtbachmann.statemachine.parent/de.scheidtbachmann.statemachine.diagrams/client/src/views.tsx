@@ -17,9 +17,9 @@
 /** @jsx svg */
 import { svg } from 'snabbdom-jsx';
 
-import { RenderingContext, RectangularNodeView, IView, SLabel } from "sprotty/lib";
+import { RenderingContext, RectangularNodeView, IView, SLabel, PolylineEdgeView } from "sprotty/lib";
 import { VNode } from "snabbdom/vnode";
-import { Icon, ClassNode, StateNode } from './model';
+import { Icon, StateNode } from './model';
 
 export class StateNodeView extends RectangularNodeView {
     render(node: StateNode, context: RenderingContext): VNode {
@@ -30,6 +30,9 @@ export class StateNodeView extends RectangularNodeView {
             {context.renderChildren(node)}
         </g>;
     }
+}
+
+export class TransitionEdgeView extends PolylineEdgeView {
 }
 
 export class StateLabelView implements IView {
@@ -43,7 +46,7 @@ export class StateLabelView implements IView {
 }
 
 
-export class ClassNodeView extends RectangularNodeView {
+/* export class ClassNodeView extends RectangularNodeView {
     render(node: ClassNode, context: RenderingContext): VNode {
         return <g class-node={true}>
             <rect class-sprotty-node={true} class-selected={node.selected} class-mouseover={node.hoverFeedback}
@@ -52,7 +55,7 @@ export class ClassNodeView extends RectangularNodeView {
             {context.renderChildren(node)}
         </g>;
     }
-}
+} */
 
 export class IconView implements IView {
 

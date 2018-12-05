@@ -22,10 +22,10 @@ import {
     fadeModule, ExpandButtonView, buttonModule, /*edgeEditModule,*/ SRoutingHandleView, SGraphFactory,
     PreRenderedElement, HtmlRoot, SGraph, configureModelElement, SLabel, SCompartment, SEdge, SButton, SRoutingHandle
 } from "sprotty/lib";
-import { ClassNodeView, IconView, StateNodeView, StateLabelView} from "./views";
+import { IconView, StateNodeView, StateLabelView, TransitionEdgeView} from "./views";
 import { PopupModelProvider } from "./popup";
 import { ModelProvider } from './model-provider';
-import { Icon, ClassNode, StateNode } from "./model";
+import { Icon, StateNode } from "./model";
 import { elkLayoutModule, ElkFactory, ElkLayoutEngine } from "sprotty-elk/lib";
 import ElkConstructor from 'elkjs/lib/elk.bundled';
 
@@ -50,10 +50,10 @@ export default (/* useWebsocket: boolean, */ containerId: string) => {
 
         const context = { bind, unbind, isBound, rebind };
         configureModelElement(context, 'graph', SGraph, SGraphView);
-        configureModelElement(context, 'node:class', ClassNode, ClassNodeView);
         configureModelElement(context, 'label:heading', SLabel, SLabelView);
         configureModelElement(context, 'node:state', StateNode, StateNodeView);
         configureModelElement(context, 'label:stateLabel', SLabel, StateLabelView);
+        configureModelElement(context, 'edge:transition', SEdge, TransitionEdgeView);
         configureModelElement(context, 'label:text', SLabel, SLabelView);
         configureModelElement(context, 'comp:comp', SCompartment, SCompartmentView);
         configureModelElement(context, 'comp:header', SCompartment, SCompartmentView);
