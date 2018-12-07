@@ -1,5 +1,4 @@
-/node_modules/
 /lib/
-/page/
-!/page/diagram*.*
-!/page/statemachine.css
+/node_modules/
+/page/jquery
+/page/bootstrap/js
