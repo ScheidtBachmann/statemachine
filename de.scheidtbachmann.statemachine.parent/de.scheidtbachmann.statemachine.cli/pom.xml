@@ -84,6 +84,10 @@
 					<family>!Windows</family>
 				</os>
 			</activation>
+			<properties>
+				<executableJ8>${selfContainedExecutableName}Java8</executableJ8>
+				<executable>${selfContainedExecutableName}</executable>
+			</properties>
 			<build>
 				<plugins>
 					<plugin>
@@ -92,17 +96,28 @@
 						<version>1.4.0</version>
 						<executions>
 							<execution>
+								<id>createSelfContainedExecutableJava8</id>
+								<phase>package</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>bash</executable>
+									<commandlineArgs>-c 'echo exec java -Xmx512m -jar \$0 \"\$@\" > ${executableJ8}; echo  >> ${executableJ8}; cat `ls target/*-app.jar` >> ${executableJ8}; chmod u+x ${executableJ8}'</commandlineArgs>
+								</configuration>
+							</execution>
+							<execution>
 								<id>createSelfContainedExecutable</id>
 								<phase>package</phase>
 								<goals>
 									<goal>exec</goal>
 								</goals>
+								<configuration>
+									<executable>bash</executable>
+									<commandlineArgs>-c 'echo exec java -Xmx512m --add-opens java.base/java.lang=ALL-UNNAMED -jar \$0 \"\$@\" > ${executable}; echo  >> ${executable}; cat `ls target/*-app.jar` >> ${executable}; chmod u+x ${executable}'</commandlineArgs>
+								</configuration>
 							</execution>
 						</executions>
-						<configuration>
-							<executable>bash</executable>
-							<commandlineArgs>-c 'echo exec java -Xmx512m -jar \$0 \"\$@\" > ${selfContainedExecutableName}; echo  >> ${selfContainedExecutableName}; cat `ls target/*-app.jar` >> ${selfContainedExecutableName}; chmod u+x ${selfContainedExecutableName}'</commandlineArgs>
-						</configuration>
 					</plugin>
 				</plugins>
 			</build>
