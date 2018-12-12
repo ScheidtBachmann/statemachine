@@ -36,7 +36,9 @@ class SCGProcessorProvider implements IProcessorProvider {
             de.cau.cs.kieler.scg.processors.transformators.SimpleGuardScheduler,
             de.cau.cs.kieler.scg.processors.transformators.SimpleGuardTransformation,
             de.cau.cs.kieler.scg.processors.transformators.StructuralDepthJoinProcessor,
-            de.cau.cs.kieler.scg.processors.transformators.SurfaceDepthSeparatorProcessor
+            de.cau.cs.kieler.scg.processors.transformators.SurfaceDepthSeparatorProcessor,
+            de.cau.cs.kieler.scg.transformations.sequentializer.SimpleGuardSequentializer,
+            de.cau.cs.kieler.scg.transformations.guardExpressions.SimpleGuardExpressions
         ]
     }
 }
