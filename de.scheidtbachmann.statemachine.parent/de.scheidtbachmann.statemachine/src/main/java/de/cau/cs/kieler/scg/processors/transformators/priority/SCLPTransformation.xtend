@@ -42,6 +42,8 @@ import de.cau.cs.kieler.kicool.compilation.ProcessorType
 import de.cau.cs.kieler.kexpressions.extensions.KExpressionsDeclarationExtensions
 import de.cau.cs.kieler.scg.common.SCGAnnotations
 import de.cau.cs.kieler.scg.extensions.SCGControlFlowExtensions
+import de.cau.cs.kieler.scg.processors.transformators.codegen.c.CCodeSerializeHRExtensions
+import de.cau.cs.kieler.kexpressions.ValueType
 
 /**
  * Class to perform the transformation of an SCG to C code in the priority based compilation chain.
@@ -51,7 +53,7 @@ import de.cau.cs.kieler.scg.extensions.SCGControlFlowExtensions
 class SCLPTransformation extends Processor<SCGraphs, CodeContainer> {
     
     @Inject extension AnnotationsExtensions
-    @Inject extension SCG2CSerializeHRExtensions
+    @Inject extension CCodeSerializeHRExtensions
     @Inject extension SCGThreadExtensions
     @Inject extension KExpressionsDeclarationExtensions
     @Inject extension SCGControlFlowExtensions
@@ -207,11 +209,10 @@ class SCLPTransformation extends Processor<SCGraphs, CodeContainer> {
     protected def void declareVariables(StringBuilder sb, SCGraph scg) {
         
         for(declaration : scg.variableDeclarations) {
-            if(declaration.type.toString == "string" || declaration.type.toString == "STRING") {
-                sb.append("char*")
-            } else {
-                sb.appendInd(declaration.type.toString)
-            }
+            val declarationType = if (declaration.type != ValueType.HOST || declaration.hostType.nullOrEmpty) 
+                declaration.type.serializeHR
+                else declaration.hostType
+            sb.appendInd(declarationType.toString)
 
             for(variables : declaration.valuedObjects) {
                 if(!(variables.equals(declaration.valuedObjects.head))) {
