@@ -1,0 +1,714 @@
+@Ecore(nsURI="http://kieler.cs.cau.de/KRendering")
+@GenModel(
+	copyrightText="KIELER - Kiel Integrated Environment for Layout Eclipse RichClient\n\nhttp://www.informatik.uni-kiel.de/rtsys/kieler/\n\nCopyright 2012 by\n+ Kiel University\n  + Department of Computer Science\n    + Real-Time and Embedded Systems Group\n\nThis code is provided under the terms of the Eclipse Public License (EPL).\nSee the file epl-v10.html for the license text.",
+	documentation="This package contains the classes of the KRendering language.<br>\nThis languages extends {@link KGraphPackage KGraph} and provides the means for describing the\nfigures the elements of a KGraph instance are depicted by. This involves\nprimitive figures to be composed to complex ones, <i>micro layout</i> directives,\nstyles, as well as actions for expressing interactivity of KGraph/KRendering-based diagrams.",
+	bundleManifest="false",
+	updateClasspath="false",
+	complianceLevel="5.0",
+	modelPluginID='',
+	prefix="KRendering",
+	modelName="KRendering",
+	modelDirectory="/de.scheidtbachmann.statemachine.diagrams/src/main/emf-gen"
+)
+package de.cau.cs.kieler.klighd.krendering
+
+import de.cau.cs.kieler.klighd.kgraph.EMapPropertyHolder
+import de.cau.cs.kieler.klighd.kgraph.KGraphData
+
+@GenModel(documentation="Used to set an absolute Position of a single point by defining x and y coordinates of this point relative to the parent. The position can be set with absolute values or relative to the parent dimensions",
+	image="false")
+class KPosition {
+	@GenModel(documentation="the x-position relative to the parent based on absolute coordinates or relative parent width")
+	contains KXPosition<?>[1] x
+	@GenModel(documentation="the y-position relative to the parent based on absolute coordinates or relative parent height")
+	contains KYPosition<?>[1] y
+	@GenModel(body="return de.cau.cs.kieler.klighd.krendering.KRenderingUtil.equals(this,other);",
+		documentation="Checks the equalilty of the <code>x</code> and <code>y</code> components of <code>this</code> KPostion instance and the provided <code>other</code> one.\nReturns false if <code>other</code> is not a KPosition.<br>\n{@link de.cau.cs.kieler.klighd.krendering.KRenderingUtil#equals(KPosition, Object) KRenderingUtil.equals(KPosition, Object)}.<br>\n<br>\nHint: Equal KPositions, however, do not imply indentical points in the figure as they may have different parents!\n\n@return <code>true</code> if <code>other</code> is a KPosition and its <code>x</code> and <code>y</code> components are equal to those of <code>this</code> instance, <code>false</code> otherwise\n")
+	op boolean equals(Object other)
+	@GenModel(body="return de.cau.cs.kieler.klighd.krendering.KRenderingUtil.setPositions(this, x, y);",
+		documentation="Convenience setter for configuring <code>this</code> KPosition instance.<br>\nRedirects to {@link de.cau.cs.kieler.klighd.krendering.KRenderingUtil#setPositions(KPosition, KXPosition, KYPosition) KRenderingUtil.setPositions(KPosition, KXPosition, KYPosition)}.")
+	op KPosition setPositions(@GenModel(documentation="the horizontal position component")
+	KXPosition<?>x , @GenModel(documentation="the vertical position component")
+	KYPosition<?>y)
+}
+
+@GenModel(documentation="Abstract class to define members of a shapeType.\nIs placed inside a parent Container\ncan reference another Rendering instead of redefining it\nA rendering can contain placementData to define the size of a derived object\n")
+abstract class KRendering extends KGraphData , KStyleHolder {
+	@GenModel(documentation="the rendering containing this rendering")
+	container KContainerRendering parent opposite children
+	@GenModel(documentation="Information where and how this Rendering shall be placed. If no placementdata is given this defaults to an AreaPlacementdata filling the bounds of the parent.")
+	contains KPlacementData placementData
+	@GenModel(documentation="Actions that should be performed when associated trigger is pulled", notify="false",
+		createChild="false", propertySortChoices="true")
+	contains KAction[] actions
+}
+
+@GenModel(documentation="Define an ellipse shape that fits inside the space defined (a) by the node it is attached to or (b) by the placementData that is attached to the rendering")
+class KEllipse extends KContainerRendering {
+}
+
+@GenModel(documentation="define a rectangle by adding the topLeft and bottomRight coordinates")
+class KRectangle extends KContainerRendering {
+}
+
+@GenModel(documentation="The rounded rectangle is used to create a rectangle with rounded corners. Corner width and height need to be passed in order to define the style of the corners.\nThe shape fits inside the space defined (a) by the node it is attached to or (b) by the placementData that is attached to the rendering\n")
+class KRoundedRectangle extends KContainerRendering {
+	@GenModel(documentation="width of a corner in pixels")
+	float[1] cornerWidth
+	@GenModel(documentation="height of a corner in pixels")
+	float[1] cornerHeight
+}
+
+@GenModel(documentation="Creates a polyline between two or more points")
+class KPolyline extends KContainerRendering {
+	@GenModel(documentation="points that are visited by the polyline in order of definition")
+	contains KPosition[] points
+	@GenModel(documentation="Optional rendering defining the look of join point figures that are attached to the diagram for each edge join point computed by the automatic (macro) layout.\nSetting is evaluated for KEdge renderings only, ignored for simple polylines being part of a complex rendering.")
+	contains KRendering junctionPointRendering
+}
+
+@GenModel(documentation="Creates a polygon based on a list of points. The polygon is a closed figure (last point = first point) even when not defined explicitly")
+class KPolygon extends KPolyline {
+}
+
+@GenModel(documentation="Use an image instead of defining the renderings completely by yourself")
+class KImage extends KContainerRendering {
+	@GenModel(documentation="Name of the bundle where the image can be found. Note that the imagePath is relative to this bundle. ")
+	String bundleName
+	@GenModel(documentation="the path to the image on the filesystem relative to the bundleName (and its according position)")
+	String imagePath
+	@GenModel(documentation="the image to be used as JavaObject")
+	transient Object imageObject
+	@GenModel(documentation="This {@link KRendering} will determine the clip applied to the image. It will not be drawn!\nValid {@link KRendering KRenderings} are {@link KRectangle KRectangles}, {@link KEllipse KEllipses},\n{@link KPolygon KPolygons}, and {@link KRenderingRef KRenderingRefs} pointing to a rendering of the former types.\nOther values are ignored.")
+	contains KRendering clipShape
+}
+
+@GenModel(documentation="defines appearance and position of decorators")
+class KDecoratorPlacementData extends KPlacementData {
+	@GenModel(documentation="can be used to define an absolute indent of the decorator on the decorated object\r\n")
+	float[1] absolute
+	@GenModel(documentation="place decorator n units in x-direction next to the decorated object")
+	float xOffset
+	@GenModel(documentation="place decorator n units in y-direction next to the decorated object")
+	float yOffset
+	@GenModel(documentation="define whether the decorator should rotate, when the line is rotated. If set to false, an arrow will always point in the same direction, regardless of the direction the line is pointing in")
+	boolean[1] rotateWithLine
+	@GenModel(documentation="width of the decorator")
+	float[1] width
+	@GenModel(documentation="height of the decorator")
+	float[1] height
+	@GenModel(documentation="relative position based on the size of the decorated object")
+	float relative
+}
+
+@GenModel(documentation="KRendering that can have Children.")
+abstract class KContainerRendering extends KRendering {
+	@GenModel(documentation="the children of this rendering")
+	contains KRendering[] children opposite parent
+	@GenModel(documentation="the placement type to use for placeing the children")
+	contains KPlacement childPlacement
+}
+
+@GenModel(documentation="Draws an arc. Needs the startingAngle of the arc (0° = rightmost vertical line) on an ellipse and the angle the arc should cover (counterclockwise on the same ellipse)")
+class KArc extends KContainerRendering {
+	@GenModel(documentation="startingAngle of the arc (0° = rightmost vertical line) on an ellipse")
+	float startAngle
+	@GenModel(documentation="the angle the arc should cover (counterclockwise)")
+	float arcAngle
+	@GenModel(documentation="Sets the type the arc is supposed to have. See Arc Enum.")
+	Arc arcType
+}
+
+@GenModel(documentation="Adds additional StyleInformation to a rendering.\ncan be set to propagate to children to make redefinining styles unneccessary")
+abstract class KStyle extends EMapPropertyHolder {
+	@GenModel(documentation="defines whether child elements of the rendering should inherit this style")
+	boolean[1] propagateToChildren
+	@GenModel(documentation="id of the function that should be called when layout is finished to change this style")
+	String modifierId
+	boolean selection = "false"
+}
+
+@GenModel(documentation="<br><br>\nInstances of this class may be employed in {@link de.cau.cs.kieler.klighd.kgraph.KGraphElement KGraphElements} for accommodating\n{@link KRendering KRenderings} that are shared by multiple other {@link de.cau.cs.kieler.klighd.kgraph.KGraphElement KGraphElements}\nand referenced by means of {@link KRenderingRef KRenderingRefs}.<br>\n{@link KRenderingRef KRenderingRefs}, however, may reference any arbitrary {@link KRendering} its deposition in a KRenderingLibrary is\nnot required. Thus, KRenderingLibraries are just for structuring view models, they don\'t contribute any semantics.")
+class KRenderingLibrary extends KGraphData {
+	@GenModel(documentation="The renderings defined by this library.")
+	contains KStyleHolder[] renderings
+}
+
+@GenModel(documentation="References an already defined rendering to make redefining unneccessary. \r\nBe careful to generate no cycles (will cause stack overflow). ")
+class KRenderingRef extends KRendering {
+	@GenModel(documentation="the referenced rendering")
+	refers KRendering[1] rendering
+}
+
+@GenModel(documentation="define a child area inside of a rendering to force children being placed inside the defined area")
+class KChildArea extends KRendering {
+}
+
+@GenModel(documentation="display text. Text can be positioned by adding Horizontal or VerticalAlignment and can be clipped if there is not enough space to display all of it without overlapping other elements")
+class KText extends KRendering {
+	@GenModel(documentation="the text to be displayed")
+	String text
+	@GenModel(documentation="Determines the interactive selectability of the text string similar to the text selectability in text, table, or tree viewers.")
+	boolean cursorSelectable = "false"
+	@GenModel(documentation="Determines the interactive editability of the text string similar to that in text, table, or tree viewers. Requires \'cursorSelectable\' to be set to <code>true</code>.")
+	boolean editable = "false"
+}
+
+@GenModel(documentation="(abstract interface) \r\ndefines a placement for elements")
+interface KPlacement {
+}
+
+@GenModel(documentation="Creates a grid with <numColumns> inside the area defined by <topLeft> and <bottomRight>.\r\nthe grids number of rows depends on the numer of child elements to be placed. Each child is set to the first free column inside the grid. If no column is left, the next childElement is placed in the first column of a new row.")
+class KGridPlacement extends KPlacement {
+	@GenModel(documentation="The number of columns the grid should have\r\nif set to -1, all elements are placed in a single row")
+	int[1] numColumns
+	@GenModel(documentation="the top left position of the grid")
+	contains KPosition topLeft
+	@GenModel(documentation="the bottom right position of the grid")
+	contains KPosition bottomRight
+}
+
+@GenModel(documentation="(abstract interface) Defines the placement for an element. Depending of the childPlacement of the parent not all placementData may be evaluated.")
+interface KPlacementData {
+}
+
+@GenModel(documentation="Define the placement of elements in a gridPlacement")
+class KGridPlacementData extends KAreaPlacementData {
+	@GenModel(documentation="force layout to make the column that contains the element this placementdata is assigned to as wide as defined here. If another element in that column has a maxCellWidth that is less than this minWidth, the maxWidth is ignored.")
+	float minCellWidth = "0"
+	@GenModel(documentation="force layout to make the row that contains the element this placementdata is assigned to as high as defined here. If another element in that column has a maxCellHeight that is less than this minHeight, the maxHeight is ignored.")
+	float minCellHeight = "0"
+	@GenModel(documentation="This flag marks the child rendering to cover exactly the required width obtained by means of the minimal size estimation, except for width increases by the macro layout, i.e. by KIML, e.g. in a single column grid.\nIf false, more space may be assigned to the related child rendering, if necessary.<br>\n<br>\nThis flag is the replacement of the concrete \'maxCellWidth\' value and not examined by KLighD, yet.")
+	Boolean flexibleWidth = "true"
+	@GenModel(documentation="This flag marks the child rendering to cover exactly the required height obtained by means of the minimal size estimation, except for height increases by the macro layout, i.e. by KIML, e.g. in a single row grid.\nIf false, more space may be assigned to the related child rendering, if necessary.<br>\n<br>\nThis flag is the replacement of the concrete \'maxCellHeight\' value and not examined by KLighD, yet.")
+	Boolean flexibleHeight = "true"
+}
+
+@GenModel(documentation="specifies the area for an element by setting TopLeft and BottomRight corner absolutely")
+class KAreaPlacementData extends KPlacementData {
+	@GenModel(documentation="top left corner of the area used by the element the placement is attached to")
+	contains KPosition topLeft
+	@GenModel(documentation="bottom right corner of the area used by the element the placement is attached to")
+	contains KPosition bottomRight
+}
+
+class KCustomRendering extends KContainerRendering {
+	String className
+	String bundleName
+	transient Object figureObject
+}
+
+@GenModel(documentation="Specifies an RGB color. ", image="false")
+class KColor {
+	@GenModel(documentation="the red component of the color")
+	int[1] red = "0"
+	@GenModel(documentation="the green component of the color")
+	int[1] green = "0"
+	@GenModel(documentation="the blue component of the color")
+	int[1] blue = "0"
+	@GenModel(body="return de.cau.cs.kieler.klighd.krendering.KRenderingUtil.setColor(this, red, green, blue);",
+		documentation="Convenience setter for configuring<code>this</code> KColor instance.<br>\nRedirects to {@link de.cau.cs.kieler.klighd.krendering.KRenderingUtil#setColor(KColor, int, int, int) KRenderingUtil.setColor(KColor, int, int, int)}.")
+	op KColor setColor(@GenModel(documentation="the red component of the desired color in range of 0 to 255")
+	int red , @GenModel(documentation="the green component of the desired color in range of 0 to 255")
+	int green , @GenModel(documentation="the blue component of the desired color in range of 0 to 255")
+	int blue)
+	@GenModel(body="return de.cau.cs.kieler.klighd.krendering.KRenderingUtil.setColor(this, color);",
+		documentation="Convenience setter for configuring<code>this</code> KColor instance.<br>\nRedirects to {@link de.cau.cs.kieler.klighd.krendering.KRenderingUtil#setColor(KColor, Colors) KRenderingUtil.setColor(KColor, Colors)}.")
+	op KColor setColor(@GenModel(documentation="a color constant from the {@link Colors} enumeration")
+	Colors color)
+	@GenModel(body="return de.cau.cs.kieler.klighd.krendering.KRenderingUtil.setColor(this, kColor);",
+		documentation="Convenience setter for configuring<code>this</code> KColor instance.<br>\nRedirects to {@link de.cau.cs.kieler.klighd.krendering.KRenderingUtil#setColor(KColor, KColor) KRenderingUtil.setColor(KColor, KColor)}.")
+	op KColor setColor(@GenModel(documentation="the {@link KColor} instance to take the RGB values from\n")
+	KColor kColor)
+	@GenModel(body="return de.cau.cs.kieler.klighd.krendering.KRenderingUtil.equals(this,other);",
+		documentation="Checks the equality of the RGB components of <code>this</code> KColor instance and the provided <code>other</code> KColor.\nReturns false if <code>other</code> is not a KColor.<br>\n{@link de.cau.cs.kieler.klighd.krendering.KRenderingUtil#equals(KColor, Object) KRenderingUtil.equals(KColor, Object)}.\n\n@return <code>true</code> if <code>other</code> is a KColor its RGB components are equal to those of <code>this</code> instance, <code>false</code> otherwise")
+	op boolean equals(Object other)
+}
+
+@GenModel(documentation="specifies a lineWidth for a rendering. ")
+class KLineWidth extends KStyle {
+	@GenModel(documentation="the line width of the element")
+	float[1] lineWidth = "1.0"
+}
+
+@GenModel(documentation="LineStyles analog to SWT LineStyles")
+enum LineStyle {
+	SOLID
+	DASH = 1
+	DOT = 2
+	DASHDOT = 3
+	DASHDOTDOT = 4
+	CUSTOM = 5
+}
+
+@GenModel(documentation="Defines the line style of a rendering by setting one of the available values of the LineStyle enumeration.\n\'dashPattern\' and \'dashOffset\' are evaluated if and only if the literal \'CUSTOM\' is chosen.")
+class KLineStyle extends KStyle {
+	LineStyle[1] lineStyle
+	unique float[] dashPattern
+	float dashOffset
+}
+
+enum HorizontalAlignment {
+	LEFT
+	CENTER = 1
+	RIGHT = 2
+}
+
+enum VerticalAlignment {
+	TOP
+	CENTER = 1
+	BOTTOM = 2
+}
+
+class KVerticalAlignment extends KStyle {
+	VerticalAlignment[1] verticalAlignment
+}
+
+class KHorizontalAlignment extends KStyle {
+	HorizontalAlignment[1] horizontalAlignment
+}
+
+@GenModel(documentation="define an x-position by setting absolute and relative position respective to a parent rendering.\nBoth parameters are always included in the calculation of the resulting position. See Subtypes for formula. \nCan overlap the parent by setting negative values.\n")
+abstract class KXPosition<T extends KXPosition<T>> {
+	@GenModel(documentation="define absolute position in pixels")
+	float absolute
+	@GenModel(documentation="define relative position based on parent size in range of 0 to 1")
+	float relative
+	@GenModel(body="return de.cau.cs.kieler.klighd.krendering.KRenderingUtil.equals(this,other);",
+		documentation="Checks the equalilty of the <code>absolute</code> and <code>relative</code> components of <code>this</code> KXPostion instance and the provided <code>other</code> one.\nReturns false if <code>other</code> is not a KXPosition.<br>\n{@link de.cau.cs.kieler.klighd.krendering.KRenderingUtil#equals(KXPosition, Object) KRenderingUtil.equals(KXPosition, Object)}.<br>\n<br>\nHint: Equal KXPositions, however, do not imply indentical points in the figure as they may have different parents!\n\n@return <code>true</code> if <code>other</code> is a KXPosition and its <code>absolute</code> and <code>relative</code> components are equal to those of <code>this</code> instance, <code>false</code> otherwise\n")
+	op boolean equals(Object other)
+	@GenModel(body="@SuppressWarnings(\"unchecked\")\nfinal T it = (T) this;\nreturn de.cau.cs.kieler.klighd.krendering.KRenderingUtil.setPosition(it, absolute, relative);",
+		documentation="Convenience setter for configuring<code>this</code> KXPosition instance.<br>\nRedirects to {@link de.cau.cs.kieler.klighd.krendering.KRenderingUtil#setPosition(KXPosition, float, float) KRenderingUtil.setPosition(KXPosition, float, float)}.")
+	op T setPosition(@GenModel(documentation="define absolute position in pixels")
+	float absolute , @GenModel(documentation="define relative position based on parent size in range of 0 to 1")
+	float relative)
+}
+
+@GenModel(documentation="define an y-position by setting absolute and relative position respective to a parent rendering.\nBoth parameters are always included in the calculation of the resulting position. See Subtypes for formula. \nCan overlap the parent by setting negative values.")
+abstract class KYPosition<T extends KYPosition<T>> {
+	@GenModel(documentation="define absolute position in pixels")
+	float absolute
+	@GenModel(documentation="define relative position based on parent size")
+	float relative
+	@GenModel(body="return de.cau.cs.kieler.klighd.krendering.KRenderingUtil.equals(this,other);",
+		documentation="Checks the equalilty of the <code>absolute</code> and <code>relative</code> components of <code>this</code> KXPostion instance and the provided <code>other</code> one.\nReturns false if <code>other</code> is not a KXPosition.<br>\n{@link de.cau.cs.kieler.klighd.krendering.KRenderingUtil#equals(KXPosition, Object) KRenderingUtil.equals(KXPosition, Object)}.<br>\n<br>\nHint: Equal KXPositions, however, do not imply indentical points in the figure as they may have different parents!\n\n@return <code>true</code> if <code>other</code> is a KXPosition and its <code>absolute</code> and <code>relative</code> components are equal to those of <code>this</code> instance, <code>false</code> otherwise\n")
+	op boolean equals(Object other)
+	@GenModel(body="@SuppressWarnings(\"unchecked\")\nfinal T it = (T) this;\nreturn de.cau.cs.kieler.klighd.krendering.KRenderingUtil.setPosition(it, absolute, relative);",
+		documentation="Convenience setter for configuring<code>this</code> KYPosition instance.<br>\nRedirects to {@link de.cau.cs.kieler.klighd.krendering.KRenderingUtil#setPosition(KYPosition, float, float) KRenderingUtil.setPosition(KYPosition, float, float)}.")
+	op T setPosition(@GenModel(documentation="define absolute position in pixels")
+	float absolute , @GenModel(documentation="define relative position based on parent size in range of 0 to 1")
+	float relative)
+}
+
+@GenModel(documentation="defines a position starting at the leftmost point of the parent rendering.\r\npos = (L+absolute) + (R-L)*relative = (R-absolute) - widthOfParent*relative")
+class KLeftPosition extends KXPosition < KLeftPosition > {
+}
+
+@GenModel(documentation="defines a position starting at the rightmost point R of the parent rendering.\npos = (R-absolute) - (R-L)*relative = (R-absolute) - widthOfParent*relative\n")
+class KRightPosition extends KXPosition < KRightPosition > {
+}
+
+@GenModel(documentation="defines a position starting at the highest point H of the parent rendering. \npos = (H+absolute) + (B-H)*relative\npos = (H+absolute) + heightOfParent*relative")
+class KTopPosition extends KYPosition < KTopPosition > {
+}
+
+@GenModel(documentation="defines a position starting at the bottom point B of the parent rendering. \npos = (B-absolute) - (B-H-absolute)*relative\npos = (B-absolute) - heightOfParent*relative")
+class KBottomPosition extends KYPosition < KBottomPosition > {
+}
+
+@GenModel(documentation="creates a rounded edge")
+class KSpline extends KPolyline {
+}
+
+@GenModel(documentation="Defines the Foregroundcolor and its alphaChannel of a Rendering")
+class KForeground extends KColoring < KForeground > {
+}
+
+@GenModel(documentation="Defines the alphaChannel and Color of an Object")
+abstract class KColoring<T extends KColoring<T>> extends KStyle {
+	@GenModel(documentation="The color the object is supposed to get.")
+	contains KColor color
+	@GenModel(documentation="The transparency value of this color.")
+	int alpha = "255"
+	@GenModel(documentation="Optional target color for gradients. If this is not set no gradient will be displayed.")
+	contains KColor targetColor
+	@GenModel(documentation="The transparency value of the (optinal) gradient target color.")
+	int targetAlpha = "255"
+	@GenModel(documentation="Angle of the optional color gradient in degrees, has no effect if no targetColor is set.")
+	float gradientAngle = "0"
+	@GenModel(body="@SuppressWarnings(\"unchecked\")\nfinal T it = (T) this;\nreturn de.cau.cs.kieler.klighd.krendering.KRenderingUtil.setColor(it, red, green, blue);",
+		documentation="Convenience setter for configuring the color or gradient source color of <code>this</code> KColoring instance.<br>\nRedirects to {@link de.cau.cs.kieler.klighd.krendering.KRenderingUtil#setColor(KColoring, int, int, int) KRenderingUtil.setColor(KColoring, int, int, int)}.")
+	op T setColor(@GenModel(documentation="the red component of the desired color in range of 0 to 255")
+	int red , @GenModel(documentation="the green component of the desired color in range of 0 to 255")
+	int green , @GenModel(documentation="the blue component of the desired color in range of 0 to 255")
+	int blue)
+	@GenModel(body="@SuppressWarnings(\"unchecked\")\nfinal T it = (T) this;\nreturn de.cau.cs.kieler.klighd.krendering.KRenderingUtil.setColor(it, color);",
+		documentation="Convenience setter for configuring the color or gradient source color of <code>this</code> KColoring instance.<br>\nRedirects to {@link de.cau.cs.kieler.klighd.krendering.KRenderingUtil#setColor(KColoring, Colors) KRenderingUtil.setColor(KColoring, Colors)}.")
+	op T setColor(@GenModel(documentation="a color constant from the {@link Colors} enumeration")
+	Colors color)
+	@GenModel(body="@SuppressWarnings(\"unchecked\")\nfinal T it = (T) this;\nreturn de.cau.cs.kieler.klighd.krendering.KRenderingUtil.setColor(it, red, green, blue, alpha);",
+		documentation="Convenience setter for configuring the color & alpha or gradient source color & source alpha of <code>this</code> KColoring instance.<br>\nRedirects to {@link de.cau.cs.kieler.klighd.krendering.KRenderingUtil#setColor(KColoring, int, int, int, int) KRenderingUtil.setColor(KColoring, int, int, int, int)}.")
+	op T setColor(@GenModel(documentation="the red component of the desired color in range of 0 to 255")
+	int red , @GenModel(documentation="the green component of the desired color in range of 0 to 255")
+	int green , @GenModel(documentation="the blue component of the desired color in range of 0 to 255")
+	int blue , @GenModel(documentation="the alpha component of the desired color in range of 0 to 255")
+	int alpha)
+	@GenModel(body="@SuppressWarnings(\"unchecked\")\nfinal T it = (T) this;\nreturn de.cau.cs.kieler.klighd.krendering.KRenderingUtil.setColor(it, color, alpha);",
+		documentation="Convenience setter for configuring the color & alpha or gradient source color & source alpha of <code>this</code> KColoring instance.<br>\nRedirects to {@link de.cau.cs.kieler.klighd.krendering.KRenderingUtil#setColor(KColoring, Colors, int) KRenderingUtil.setColor(KColoring, Colors, int)}.")
+	op T setColor(@GenModel(documentation="a color constant from the {@link Colors} enumeration")
+	Colors color , @GenModel(documentation="the alpha component of the desired color in range of 0 to 255")
+	int alpha)
+	@GenModel(body="@SuppressWarnings(\"unchecked\")\nfinal T it = (T) this;\nthis.setColor(color);\nreturn it;",
+		documentation="Convenience setter for configuring the color or gradient source color of <code>this</code> KColoring instance.<br>\nSimply redirects to {@link #setColor(KColor)} and returns <code>this</code> KColoring instance instead of <code>void</code>.")
+	op T setColor2(@GenModel(documentation="an instance of {@link KColor}")
+	KColor color)
+	@GenModel(body="@SuppressWarnings(\"unchecked\")\nfinal T it = (T) this;\nthis.setColor(color);\nthis.setAlpha(alpha);\nreturn it;",
+		documentation="Convenience setter for configuring the color & alpha or gradient source color & alpha of <code>this</code> KColoring instance.<br>\nSimply redirects to {@link #setColor(KColor)} and {@link #setAlpha(int)}, and returns <code>this</code> KColoring instance instead of <code>void</code>.")
+	op T setColor2(@GenModel(documentation="an instance of {@link KColor}")
+	KColor color , @GenModel(documentation="the alpha component of the desired color in range of 0 to 255")
+	int alpha)
+	@GenModel(body="@SuppressWarnings(\"unchecked\")\nfinal T it = (T) this;\nreturn de.cau.cs.kieler.klighd.krendering.KRenderingUtil.setColorCopyOf(it, kColor);",
+		documentation="Convenience setter for configuring the color or gradient source color of <code>this</code> KColoring instance.<br>\nRedirects to {@link de.cau.cs.kieler.klighd.krendering.KRenderingUtil#setColorCopyOf(KColoring, KColor) KRenderingUtil.setColorCopyOf(KColoring, KColor)}.")
+	op T setColorCopyOf(@GenModel(documentation="an instance of {@link KColor}")
+	KColor kColor)
+	@GenModel(body="@SuppressWarnings(\"unchecked\")\nfinal T it = (T) this;\nreturn de.cau.cs.kieler.klighd.krendering.KRenderingUtil.setColorCopyOf(it, kColor, alpha);",
+		documentation="Convenience setter for configuring the color or gradient source color & alpha of <code>this</code> KColoring instance.<br>\nRedirects to {@link de.cau.cs.kieler.klighd.krendering.KRenderingUtil#setColorCopyOf(KColoring, KColor, int) KRenderingUtil.setColorCopyOf(KColoring, KColor, int)}.")
+	op T setColorCopyOf(@GenModel(documentation="an instance of {@link KColor}")
+	KColor kColor , @GenModel(documentation="the alpha component of the desired color in range of 0 to 255")
+	int alpha)
+	@GenModel(body="return this.setColorCopyOf(coloring.getColor());",
+		documentation="Convenience setter for configuring the color or gradient source color of <code>this</code> KColoring instance.<br>\nSimply redirects to {@link #setColorCopyOf(KColor)} and returns <code>this</code> KColoring instance.")
+	op T setColorCopiedFrom(@GenModel(documentation="an instance of {@link KColoring}")
+	KColoring<?>coloring)
+	@GenModel(body="return this.setColorCopyOf(coloring.getColor(), coloring.getAlpha());",
+		documentation="Convenience setter for configuring the color & alpha or gradient source color & alpha of <code>this</code> KColoring instance.<br>\nSimply redirects to {@link #setColorCopyOf(KColor, int)} and returns <code>this</code> KColoring instance.")
+	op T setColorAndAlphaCopiedFrom(@GenModel(documentation="an instance of {@link KColoring}")
+	KColoring<?>coloring)
+	@GenModel(body="@SuppressWarnings(\"unchecked\")\nfinal T it = (T) this;\nreturn de.cau.cs.kieler.klighd.krendering.KRenderingUtil.setTargetColor(it, red, green, blue);",
+		documentation="Convenience setter for configuring the gradient target color of <code>this</code> KColoring instance.<br>\nRedirects to {@link de.cau.cs.kieler.klighd.krendering.KRenderingUtil#setTargetColor(KColoring, int, int, int) KRenderingUtil.setTargetColor(KColoring, int, int, int)}.")
+	op T setTargetColor(@GenModel(documentation="the red component of the desired color in range of 0 to 255")
+	int red , @GenModel(documentation="the green component of the desired color in range of 0 to 255")
+	int green , @GenModel(documentation="the blue component of the desired color in range of 0 to 255")
+	int blue)
+	@GenModel(body="@SuppressWarnings(\"unchecked\")\nfinal T it = (T) this;\nreturn de.cau.cs.kieler.klighd.krendering.KRenderingUtil.setTargetColor(it, color);",
+		documentation="Convenience setter for configuring the gradient target color of <code>this</code> KColoring instance.<br>\nRedirects to {@link de.cau.cs.kieler.klighd.krendering.KRenderingUtil#setTargetColor(KColoring, Colors) KRenderingUtil.setTargetColor(KColoring, Colors)}.")
+	op T setTargetColor(@GenModel(documentation="a color constant from the {@link Colors} enumeration")
+	Colors color)
+	@GenModel(body="@SuppressWarnings(\"unchecked\")\nfinal T it = (T) this;\nreturn de.cau.cs.kieler.klighd.krendering.KRenderingUtil.setTargetColor(it, red, green, blue, alpha);",
+		documentation="Convenience setter for configuring the gradient target color & target alpha of <code>this</code> KColoring instance.<br>\nRedirects to {@link de.cau.cs.kieler.klighd.krendering.KRenderingUtil#setTargetColor(KColoring, int, int, int, int) KRenderingUtil.setTargetColor(KColoring, int, int, int, int)}.")
+	op T setTargetColor(@GenModel(documentation="the red component of the desired color in range of 0 to 255")
+	int red , @GenModel(documentation="the green component of the desired color in range of 0 to 255")
+	int green , @GenModel(documentation="the blue component of the desired color in range of 0 to 255")
+	int blue , @GenModel(documentation="the alpha component of the desired color in range of 0 to 255")
+	int alpha)
+	@GenModel(body="@SuppressWarnings(\"unchecked\")\nfinal T it = (T) this;\nreturn de.cau.cs.kieler.klighd.krendering.KRenderingUtil.setTargetColor(it, color, alpha);",
+		documentation="Convenience setter for configuring the gradient target color & target alpha of <code>this</code> KColoring instance.<br>\nRedirects to {@link de.cau.cs.kieler.klighd.krendering.KRenderingUtil#setTargetColor(KColoring, Colors, int) KRenderingUtil.setTargetColor(KColoring, Colors, int)}.")
+	op T setTargetColor(@GenModel(documentation="a color constant from the {@link Colors} enumeration")
+	Colors color , @GenModel(documentation="the alpha component of the desired color in range of 0 to 255")
+	int alpha)
+	@GenModel(body="@SuppressWarnings(\"unchecked\")\nfinal T it = (T) this;\nthis.setTargetColor(targetColor);\nreturn it;",
+		documentation="Convenience setter for configuring the gradient target color of <code>this</code> KColoring instance.<br>\nSimply redirects to {@link #setTargetColor(KColor)} and returns <code>this</code> KColoring instance instead of <code>void</code>.")
+	op T setTargetColor2(@GenModel(documentation="an instance of {@link KColor}")
+	KColor targetColor)
+	@GenModel(body="@SuppressWarnings(\"unchecked\")\nfinal T it = (T) this;\nthis.setTargetColor(targetColor);\nthis.setTargetAlpha(targetAlpha);\nreturn it;",
+		documentation="Convenience setter for configuring the gradient target color & target alpha of <code>this</code> KColoring instance.<br>\nSimply redirects to {@link #setTargetColor(KColor)} and {@link #setTargetAlpha(int)}, and returns <code>this</code> KColoring instance instead of <code>void</code>.")
+	op T setTargetColor2(@GenModel(documentation="an instance of {@link KColor}")
+	KColor targetColor , @GenModel(documentation="the alpha component of the desired color in range of 0 to 255")
+	int targetAlpha)
+	@GenModel(body="@SuppressWarnings(\"unchecked\")\nfinal T it = (T) this;\nreturn de.cau.cs.kieler.klighd.krendering.KRenderingUtil.setTargetColorCopyOf(it, targetColor);",
+		documentation="Convenience setter for configuring the gradient target color of <code>this</code> KColoring instance.<br>\nRedirects to {@link de.cau.cs.kieler.klighd.krendering.KRenderingUtil#setTargetColorCopyOf(KColoring, KColor) KRenderingUtil.setTargetColorCopyOf(KColoring, KColor)}.")
+	op T setTargetColorCopyOf(@GenModel(documentation="an instance of {@link KColor}")
+	KColor targetColor)
+	@GenModel(body="@SuppressWarnings(\"unchecked\")\nfinal T it = (T) this;\nreturn de.cau.cs.kieler.klighd.krendering.KRenderingUtil.setTargetColorCopyOf(it, targetColor, targetAlpha);",
+		documentation="Convenience setter for configuring the gradient target color & target alpha of <code>this</code> KColoring instance.<br>\nRedirects to {@link de.cau.cs.kieler.klighd.krendering.KRenderingUtil#setTargetColorCopyOf(KColoring, KColor, int) KRenderingUtil.setTargetColorCopyOf(KColoring, KColor, int)}.")
+	op T setTargetColorCopyOf(@GenModel(documentation="an instance of {@link KColor}")
+	KColor targetColor , @GenModel(documentation="the alpha component of the desired color in range of 0 to 255")
+	int targetAlpha)
+	@GenModel(body="return this.setTargetColorCopyOf(coloring.getTargetColor());",
+		documentation="Convenience setter for configuring the gradient target color of <code>this</code> KColoring instance.<br>\nSimply redirects to {@link #setTargetColorCopyOf(KColor)} and returns <code>this</code> KColoring instance.")
+	op T setTargetColorCopiedFrom(@GenModel(documentation="an instance of {@link KColoring}")
+	KColoring<?>coloring)
+	@GenModel(body="return this.setTargetColorCopyOf(coloring.getTargetColor(), coloring.getTargetAlpha());",
+		documentation="Convenience setter for configuring the gradient target color & alpha of <code>this</code> KColoring instance.<br>\nSimply redirects to {@link #setTargetColorCopyOf(KColor, int)} and returns <code>this</code> KColoring instance.")
+	op T setTargetColorAndAlphaCopiedFrom(@GenModel(documentation="an instance of {@link KColoring}")
+	KColoring<?>coloring)
+	@GenModel(body="@SuppressWarnings(\"unchecked\")\nfinal T it = (T) this;\nthis.setGradientAngle(angle);\nreturn it;",
+		documentation="Convenience setter for configuring the color gradient angle of <code>this</code> KColoring instance.<br>\nSimply redirects to {@link #setGradientAngle(int)} and returns <code>this</code> KColoring instance instead of <code>void</code>.")
+	op T setGradientAngle2(@GenModel(documentation="the desired gradient angle in degrees.")
+	float angle)
+	@GenModel(body="return this.setColor2(color).setTargetColor2(targetColor);",
+		documentation="Convenience setter for configuring the gradient source color and target color of <code>this</code> KColoring instance.<br>\nSimply redirects to {@link #setColor2(KColor)} and {@link #setTargetColor2(KColor)}, and returns <code>this</code> KColoring instance.")
+	op T setColors(@GenModel(documentation="an instance of {@link KColor}")
+	KColor color , @GenModel(documentation="an instance of {@link KColor}")
+	KColor targetColor)
+	@GenModel(body="return this.setColor2(color).setTargetColor2(targetColor).setGradientAngle2(angle);",
+		documentation="Convenience setter for configuring the gradient source and target colors as well as the color gradient angle of <code>this</code> KColoring instance.<br>\nSimply redirects to {@link #setColor2(KColor)}, {@link #setTargetColor2(KColor)}, and {@link #setGradientAngle2(float)}, and returns <code>this</code> KColoring instance.")
+	op T setColors(@GenModel(documentation="an instance of {@link KColor}")
+	KColor color , @GenModel(documentation="an instance of {@link KColor}")
+	KColor targetColor , @GenModel(documentation="the desired gradient angle in degrees.")
+	float angle)
+	@GenModel(body="return this.setColor2(color, alpha).setTargetColor2(targetColor, targetAlpha);",
+		documentation="Convenience setter for configuring the gradient source and target colors & alphas of <code>this</code> KColoring instance.<br>\nSimply redirects to {@link #setColor2(KColor, int)} and {@link #setTargetColor2(KColor, int)}, and returns <code>this</code> KColoring instance.")
+	op T setColors(@GenModel(documentation="an instance of {@link KColor}")
+	KColor color , @GenModel(documentation="the alpha component of the desired color in range of 0 to 255")
+	int alpha , @GenModel(documentation="an instance of {@link KColor}")
+	KColor targetColor , @GenModel(documentation="the alpha component of the desired color in range of 0 to 255")
+	int targetAlpha)
+	@GenModel(body="return this.setColor2(color, alpha).setTargetColor2(targetColor, targetAlpha).setGradientAngle2(angle);",
+		documentation="Convenience setter for configuring the gradient source and target colors & alphas as well as the color gradient angle of <code>this</code> KColoring instance.<br>\nSimply redirects to {@link #setColor2(KColor, int)}, {@link #setTargetColor2(KColor, int)}, and {@link #setGradientAngle2(float)}, and returns <code>this</code> KColoring instance.")
+	op T setColors(@GenModel(documentation="an instance of {@link KColor}")
+	KColor color , @GenModel(documentation="the alpha component of the desired color in range of 0 to 255")
+	int alpha , @GenModel(documentation="an instance of {@link KColor}")
+	KColor targetColor , @GenModel(documentation="the alpha component of the desired color in range of 0 to 255")
+	int targetAlpha , @GenModel(documentation="the desired gradient angle in degrees.")
+	float angle)
+	@GenModel(body="return this.setColor(color).setTargetColor(targetColor);",
+		documentation="Convenience setter for configuring the gradient source color and target color of <code>this</code> KColoring instance.<br>\nSimply redirects to {@link #setColor(Colors)} and {@link #setTargetColor(Colors)}, and returns <code>this</code> KColoring instance.")
+	op T setColors(@GenModel(documentation="a color constant from the {@link Colors} enumeration")
+	Colors color , @GenModel(documentation="a color constant from the {@link Colors} enumeration")
+	Colors targetColor)
+	@GenModel(body="return this.setColor(color).setTargetColor(targetColor).setGradientAngle2(angle);",
+		documentation="Convenience setter for configuring the gradient source and target colors as well as the color gradient angle  of <code>this</code> KColoring instance.<br>\nSimply redirects to {@link #setColor(Colors)}, {@link #setTargetColor(Colors)}, and {@link #setGradientAngle2(float)}, and returns <code>this</code> KColoring instance.")
+	op T setColors(@GenModel(documentation="a color constant from the {@link Colors} enumeration")
+	Colors color , @GenModel(documentation="a color constant from the {@link Colors} enumeration")
+	Colors targetColor , @GenModel(documentation="the desired gradient angle in degrees.")
+	float angle)
+	@GenModel(body="return this.setColor(color, alpha).setTargetColor(targetColor, targetAlpha);",
+		documentation="Convenience setter for configuring the gradient source and target colors & alphas of <code>this</code> KColoring instance.<br>\nSimply redirects to {@link #setColor(Colors, int)} and {@link #setTargetColor(Colors, int)}, and returns <code>this</code> KColoring instance.")
+	op T setColors(@GenModel(documentation="a color constant from the {@link Colors} enumeration")
+	Colors color , @GenModel(documentation="the alpha component of the desired color in range of 0 to 255")
+	int alpha , @GenModel(documentation="a color constant from the {@link Colors} enumeration")
+	Colors targetColor , @GenModel(documentation="the alpha component of the desired color in range of 0 to 255")
+	int targetAlpha)
+	@GenModel(body="return this.setColor(color, alpha).setTargetColor(targetColor, targetAlpha).setGradientAngle2(angle);",
+		documentation="Convenience setter for configuring the gradient source and target colors & alphas as well as the color gradient angle of <code>this</code> KColoring instance.<br>\nSimply redirects to {@link #setColor(Colors, int)}, {@link #setTargetColor(Colors, int)}, and {@link #setGradientAngle2(float)}, and returns <code>this</code> KColoring instance.")
+	op T setColors(@GenModel(documentation="a color constant from the {@link Colors} enumeration")
+	Colors color , @GenModel(documentation="the alpha component of the desired color in range of 0 to 255")
+	int alpha , @GenModel(documentation="a color constant from the {@link Colors} enumeration")
+	Colors targetColor , @GenModel(documentation="the alpha component of the desired color in range of 0 to 255")
+	int targetAlpha , @GenModel(documentation="the desired gradient angle in degrees.")
+	float angle)
+	@GenModel(body="return this.setColorCopyOf(color).setTargetColorCopyOf(targetColor);",
+		documentation="Convenience setter for configuring the gradient source color and target color of <code>this</code> KColoring instance.<br>\nSimply redirects to {@link #setColorCopyOf(KColor)} and {@link #setTargetColorCopyOf(KColor)}, and returns <code>this</code> KColoring instance.")
+	op T setColorsCopiesOf(@GenModel(documentation="an instance of {@link KColor}")
+	KColor color , @GenModel(documentation="an instance of {@link KColor}")
+	KColor targetColor)
+	@GenModel(body="return this.setColorCopyOf(color).setTargetColorCopyOf(targetColor);",
+		documentation="Convenience setter for configuring the gradient source and target color as well as the color gradient angle of <code>this</code> KColoring instance.<br>\nSimply redirects to {@link #setColorCopyOf(KColor)}, {@link #setTargetColorCopyOf(KColor)}, and {@link #setGradientAngle2(float)}, and returns <code>this</code> KColoring instance.")
+	op T setColorsCopiesOf(@GenModel(documentation="an instance of {@link KColor}")
+	KColor color , @GenModel(documentation="an instance of {@link KColor}")
+	KColor targetColor , @GenModel(documentation="the desired gradient angle in degrees.")
+	float angle)
+	@GenModel(body="return this.setColorCopyOf(color, alpha).setTargetColorCopyOf(targetColor, targetAlpha);",
+		documentation="Convenience setter for configuring the gradient source and target colors & alphas of <code>this</code> KColoring instance.<br>\nSimply redirects to {@link #setColorCopyOf(KColor, int)} and {@link #setTargetColorCopyOf(KColor, int)}, and returns <code>this</code> KColoring instance.")
+	op T setColorsCopiesOf(@GenModel(documentation="an instance of {@link KColor}")
+	KColor color , @GenModel(documentation="the alpha component of the desired color in range of 0 to 255")
+	int alpha , @GenModel(documentation="an instance of {@link KColor}")
+	KColor targetColor , @GenModel(documentation="the alpha component of the desired color in range of 0 to 255")
+	int targetAlpha)
+	@GenModel(body="return this.setColorCopyOf(color, alpha).setTargetColorCopyOf(targetColor, targetAlpha).setGradientAngle2(angle);",
+		documentation="Convenience setter for configuring the gradient source and target colors & alphas as well as the color gradient angle of <code>this</code> KColoring instance.<br>\nSimply redirects to {@link #setColorCopyOf(KColor, int)}, {@link #setTargetColorCopyOf(KColor, int)}, and {@link #setGradientAngle2(float)}, and returns <code>this</code> KColoring instance.")
+	op T setColorsCopiesOf(@GenModel(documentation="an instance of {@link KColor}")
+	KColor color , @GenModel(documentation="the alpha component of the desired color in range of 0 to 255")
+	int alpha , @GenModel(documentation="an instance of {@link KColor}")
+	KColor targetColor , @GenModel(documentation="the alpha component of the desired color in range of 0 to 255")
+	int targetAlpha , @GenModel(documentation="the desired gradient angle in degrees.")
+	float angle)
+	@GenModel(body="return this.setColorsCopiesOf(coloring.getColor(), coloring.getTargetColor());",
+		documentation="Convenience setter for configuring the gradient source and target colors of <code>this</code> KColoring instance.<br>\nSimply redirects to {@link #setColorsCopiesOf(KColor, KColor)}, and returns <code>this</code> KColoring instance.")
+	op T setColorsCopiedFrom(@GenModel(documentation="an instance of {@link KColoring}")
+	KColoring<?>coloring)
+	@GenModel(body="return this.setColorsCopiesOf(coloring.getColor(), coloring.getAlpha(), coloring.getTargetColor(), coloring.getTargetAlpha()).setGradientAngle2(coloring.getGradientAngle());",
+		documentation="Convenience setter for configuring the gradient source and target colors & alphas of <code>this</code> KColoring instance.<br>\nSimply redirects to {@link #setColorsCopiesOf(KColor, int, KColor, int)} and {@link #setGradientAngle2(float)}, and returns <code>this</code> KColoring instance.")
+	op T setColorsAlphasGradientAngleCopiedFrom(@GenModel(documentation="an instance of {@link KColoring}")
+	KColoring<?>coloring)
+	@GenModel(body="return de.cau.cs.kieler.klighd.krendering.KRenderingUtil.equals(this,other);",
+		documentation="Checks the equalilty of the RGB components of <code>this</code> KColor instance and the provided <code>other</code> KColor.\nReturns false if <code>other</code> is not a KColor.<br>\n{@link de.cau.cs.kieler.klighd.krendering.KRenderingUtil#equals(KColor, Object) KRenderingUtil.equals(KColor, Object)}.\n\n@return <code>true</code> if <code>other</code> is a KColor its RGB components are equal to those of <code>this</code> instance, <code>false</code> otherwise")
+	op boolean equals(Object other)
+}
+
+@GenModel(documentation="Defines the Backgroundcolor and its alphaChannel of a rendering")
+class KBackground extends KColoring < KBackground > {
+}
+
+@GenModel(documentation="FontStyle to dertermine whether to draw it bold or not.")
+class KFontBold extends KStyle {
+	@GenModel(documentation="Set true to draw the text bold.")
+	boolean[1] bold = "true"
+}
+
+@GenModel(documentation="FontStyle to dertermine whether to draw it italic or not.")
+class KFontItalic extends KStyle {
+	@GenModel(documentation="Set true to draw the text italic.")
+	boolean[1] italic = "true"
+}
+
+@GenModel(documentation="FontStyle to determine a desired font.")
+class KFontName extends KStyle {
+	@GenModel(documentation="Name of the desired font.")
+	String[1] name
+}
+
+@GenModel(documentation="FontStyle to determine the size of the font.")
+class KFontSize extends KStyle {
+	@GenModel(documentation="Desired size of the font.")
+	int[1] size = "10"
+	@GenModel(documentation="whether the font size should increase when the user is zooming out to have text still be readable even when the containing object shrinks.")
+	boolean scaleWithZoom = "false"
+}
+
+@GenModel(documentation="A polyline with rounded corners at its bendpoints")
+class KRoundedBendsPolyline extends KPolyline {
+	@GenModel(documentation="Radius of the rounded corners.")
+	float bendRadius
+}
+
+@GenModel(documentation="Specifies the (clockwise) rotation of the corresponding {@link KRendering}.")
+class KRotation extends KStyle {
+	@GenModel(documentation="Determines the rotation angle value in degrees.")
+	float[1] rotation = "0.0"
+	@GenModel(documentation="Determines the rotation anchor wrt. the bounds of the corresponding {@link KRendering};\nmay be <code>null</code>, the center position will be used in that case.")
+	contains KPosition rotationAnchor
+}
+
+@GenModel(documentation="LineCapStyles analog to SWT LineCapStyles")
+enum LineCap {
+	CAP_FLAT
+	CAP_ROUND = 1
+	CAP_SQUARE = 2
+}
+
+@GenModel(documentation="implements different line ending styles")
+class KLineCap extends KStyle {
+	LineCap[1] lineCap
+}
+
+@GenModel(documentation="performs action <id> on <trigger> event", image="false")
+class KAction {
+	@GenModel(documentation="id of the action implemenation to be executed when <trigger> occurs; in KLighD such action implementation must be registered via an extension point")
+	String[1] actionId
+	@GenModel(documentation="trigger that fires the associated action implementation")
+	Trigger[1] trigger
+	@GenModel(documentation="if <code>true</code> the \'alt\' key must be pressed to let the associated action be executed")
+	boolean altPressed
+	@GenModel(documentation="if <code>true</code> the \'ctrl\' key, on OSX the \'cmd\' key, must be pressed to let the associated action be executed")
+	boolean ctrlCmdPressed
+	@GenModel(documentation="if <code>true</code> the \'shift\' key must be pressed to let the associated action be executed")
+	boolean shiftPressed
+}
+
+@GenModel(documentation="with this placement it is possible to mount dynamic sized objects at a single point using the defined alignment")
+class KPointPlacementData extends KPlacementData {
+	@GenModel(documentation="the point within the parent to use as reference to place element")
+	contains KPosition referencePoint
+	@GenModel(documentation="Horizontal alignment of the child w.r.t. to the reference point that is based on the parent\'s bounds.")
+	HorizontalAlignment horizontalAlignment = "LEFT"
+	@GenModel(documentation="Vertical alignment of the child w.r.t. to the reference point that is based on the parent\'s bounds.")
+	VerticalAlignment verticalAlignment = "TOP"
+	@GenModel(documentation="Some horizontal margin that will be added on the right (left) for a LEFT (RIGHT) aligned child and to both left and right sides in case of a centrically aligned child.")
+	float horizontalMargin
+	@GenModel(documentation="Some vertical margin that will be added on the bottom (top) for a TOP (BOTTOM) aligned child and to both top and bottom sides in case of a centrically aligned child.")
+	float verticalMargin
+	@GenModel(documentation="Minimal width of the element. When children are smaller or not present, this size will be used.")
+	float minWidth
+	@GenModel(documentation="Minimal height of the element. When children are smaller or not present, this size will be used.")
+	float minHeight
+}
+
+@GenModel(documentation="Trigger presets to determine when to execute actions.")
+enum Trigger {
+	@GenModel(documentation="Fires on a left button\'s single click.&lt;br&gt;\nNote: Corresponding actions are not fired on the first click of a double, tripple, ... click.\nThus, triggering the actions is delayed by the system wide double click period for assuring the absence of subsequent clicks.")
+	SINGLECLICK
+	@GenModel(documentation="Fires on left button\'s double (and more) click(s).")
+	DOUBLECLICK = 1
+	@GenModel(documentation="Fires on left button\'s first click regardless if more clicks follow within the system wide double click period.")
+	SINGLE_OR_MULTICLICK = 2
+	@GenModel(documentation="Fires on middle button\'s single click.&lt;br&gt;\nNote: Corresponding actions are not fired on the first click of a double, tripple, ... click.\nThus, triggering the actions is delayed by the system wide double click period for assuring the absence of subsequent clicks.")
+	MIDDLE_SINGLECLICK = 3
+	@GenModel(documentation="Fires on middle button\'s double (and more) click(s).")
+	MIDDLE_DOUBLECLICK = 4
+	@GenModel(documentation="Fires on middle button\'s first click regardless if more clicks follow within the system wide double click period.")
+	MIDDLE_SINGLE_OR_MULTICLICK = 5
+}
+
+@GenModel(documentation="Element to define styles without attaching them to a specific rendering")
+class KStyleHolder {
+	@GenModel(documentation="The styles this holder holdes.")
+	contains KStyle[] styles
+	@GenModel(documentation="Id to reference this style holder.")
+	String ^id
+}
+
+@GenModel(documentation="defines whether an object is visible or not")
+class KInvisibility extends KStyle {
+	@GenModel(documentation="Set true to make an element invisible.")
+	boolean[1] invisible = "true"
+}
+
+class KShadow extends KStyle {
+	@GenModel(documentation="Determines x offset from element.")
+	float xOffset = "3"
+	@GenModel(documentation="Determines y offset from element.")
+	float yOffset = "3"
+	@GenModel(documentation="The amount of blur for this shadow.")
+	float blur = "0.0"
+	@GenModel(documentation="The color this shadow effect should have.")
+	contains KColor color
+}
+
+@GenModel(documentation="FontStyle to add an unterline to an text element.")
+class KTextUnderline extends KStyle {
+	@GenModel(documentation="The style of the underline.")
+	Underline[1] underline
+	@GenModel(documentation="Color the underline is supposed to have.")
+	contains KColor color
+}
+
+@GenModel(documentation="The style of an underline. Analog to SWT Underline.")
+enum Underline {
+	NONE
+	SINGLE = 1
+	DOUBLE = 2
+	ERROR = 3
+	SQUIGGLE = 4
+	LINK = 5
+}
+
+@GenModel(documentation="Special {@link KStyle} allowing to reference the styles of another {@link KRendering} or {@link KStyleHolder} in general.")
+class KStyleRef extends KStyle {
+	refers KStyleHolder[1] styleHolder
+	@GenModel(documentation="A list of {@link KStyle} class instances (List&lt;Class&lt;KStyle&gt;&gt;) that is used for filtering the styles being \"imported\" from <code>styleHolder</code>; if it is empty all styles of <code>styleHolder</code> are (transitively) evaluated.")
+	unique Class<KStyle>[] referencedTypes
+}
+
+@GenModel(documentation="FontStyle to add a strikeout to an text element.")
+class KTextStrikeout extends KStyle {
+	@GenModel(documentation="Set true to draw the text with a strikeout.")
+	Boolean[1] struckOut = "true"
+	@GenModel(documentation="Color the strikeout is supposed to have.")
+	contains KColor color
+}
+
+enum LineJoin {
+	JOIN_MITER
+	JOIN_ROUND = 1
+	JOIN_BEVEL = 2
+}
+
+@GenModel(documentation="Defines the line join style of a rendering by setting one of the available values of the LineJoin enumeration.\n\'miterLimit\' is evaluated if and only if the literal \'MITER\' is chosen.")
+class KLineJoin extends KStyle {
+	LineJoin[1] lineJoin
+	float miterLimit = "10"
+}
+
+@GenModel(documentation="The literals mirror the constants {@link java.awt.geom.Arc2D#OPEN}, {@link java.awt.geom.Arc2D#CHORD}, and {@link java.awt.geom.Arc2D#PIE}.\nThis is to be leveraged in implementation, so be careful while modifying this enumeration.")
+enum Arc {
+	@GenModel(documentation="plain arc without any closing line connection from end to beginning\n{@link Arc2D#OPEN}, {@link Arc2D#CHORD}, and\n     *            {@link Arc2D#PIE}")
+	OPEN
+	@GenModel(documentation="arc with a straight closing line connection from end to beginning via the arc\'s center")
+	CHORD = 1
+	@GenModel(documentation="arc with a straight closing line connection from end to beginning")
+	PIE = 2
+}
+
+type Colors wraps Colors
