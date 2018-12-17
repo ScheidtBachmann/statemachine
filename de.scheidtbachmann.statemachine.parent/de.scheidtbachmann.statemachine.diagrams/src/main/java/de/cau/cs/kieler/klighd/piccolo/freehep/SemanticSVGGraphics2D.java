@@ -291,7 +291,8 @@ public class SemanticSVGGraphics2D extends AbstractVectorGraphicsIO {
         awtSwtFontCache = null;
 
         // dispose the gc
-        gc.dispose();
+        if (gc != null)
+            gc.dispose();
         gc = null;
 
         super.dispose();
