@@ -72,8 +72,8 @@ public class KlighdImage extends KlighdNode.KlighdFigureNode<KImage> implements 
 
     private static final long serialVersionUID = 7201328608113593385L;
     
-    private static final ImageRegistry IMAGE_REGISTRY = 
-            KlighdPiccoloPlugin.getDefault().getImageRegistry();
+    // FIXME implement own ImageRegistry being as beneficial as the JFace one.
+    private static final ImageRegistry IMAGE_REGISTRY = new ImageRegistry((Display) null);
     
     // These two fields are to be kept consistent,
     //  i.e. both shall denote the same image.
