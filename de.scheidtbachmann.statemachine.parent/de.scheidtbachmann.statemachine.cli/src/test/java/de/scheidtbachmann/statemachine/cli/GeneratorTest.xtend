@@ -1,7 +1,6 @@
 package de.scheidtbachmann.statemachine.cli
 
 import de.scheidtbachmann.statemachine.StateMachineStandaloneSetup
-import de.scheidtbachmann.statemachine.diagrams.DiagramModelGenerator
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -128,17 +127,18 @@ class GeneratorTest {
 		
 		assertSysOutEquals('''
 			Draw the state chart specified in given input file.
-			Usage: scc draw [-diagModelOnly] [-stdin] [-o <path>] [<sourceFile>]
+			Usage: scc draw [-stdin] [-f <format>] [-o <path>] [<sourceFile>]
 			
 			Parameters:
-			      [<sourceFile>]   The input state chart file.
+			      [<sourceFile>]     The input state chart file.
 			
 			Options:
-			      -stdin           Forces the artist to read input from stdIn.
-			  -o, -output <path>   The destination folder of the drawn diagram pages.
-			                       Default is: diagrams.
-			      -diagModelOnly   Instructes the artist to skip copying the static page
-			                         components.
+			      -stdin             Forces the artist to read input from stdIn.
+			  -f, -format <format>   The desired output format of the diagram drawings.
+			                         Candidates are: bmp, jpeg, png, svg.
+			                         Default is: png.
+			  -o, -output <path>     The destination folder of the drawn diagram pages.
+			                         Default is: diagrams.
 		''')
 	}
 	
@@ -146,121 +146,121 @@ class GeneratorTest {
 	def void testDrawEmptyInputStdIn() {
 		System.setIn(new ByteArrayInputStream(#[]))
 		
-		runDraw(Paths.get(''), '-stdin', '-diagModelOnly')
+		runDraw(Paths.get(''), '-stdin')
 		
 		assertSysOutStartsWith('''
 			No content found in the provided resource.
 		''')
 	}
 	
-	@Test
-	def void testDrawStdIn() {
-		System.setIn(new ByteArrayInputStream('scchart foo { initial state foo }'.bytes))
-		
-		val basePath = Files.createTempDirectory('stateChartGenTesting')
-		runDraw(basePath, '-stdin', '-diagModelOnly')
-		
-		val diagramModelFile = basePath.resolve('diagrams/foo').resolve(DiagramModelGenerator.DIAGRAM_MODEL_FILE_NAME)
-		
-		assertSysOutEquals('''
-			Creating diagram model...done.
-		''')
-		
-		assertFileEquals(diagramModelFile, '''
-			function getDiagramModel() {
-			  return {
-			    "id": "graph",
-			    "type": "graph",
-			    "layoutOptions": {
-			      "hAlign": "left",
-			      "hGap": 5,
-			      "paddingLeft": 7,
-			      "paddingRight": 7,
-			      "paddingTop": 7,
-			      "paddingBottom": 7
-			    },
-			    "children": [
-			      {
-			        "id": "state-0",
-			        "type": "node:state",
-			        "layout": "vbox",
-			        "layoutOptions": {
-			          "paddingLeft": 10,
-			          "paddingRight": 10,
-			          "paddingTop": 8,
-			          "paddingBottom": 8,
-			          "resizeContainer": true
-			        },
-			        "children": [
-			          {
-			            "text": "foo",
-			            "id": "state-0-label-0",
-			            "type": "label:stateLabel"
-			          }
-			        ]
-			      }
-			    ]
-			  };
-			}
-		''')
-		
-		basePath.deleteDirRecursively
-	}
-	
-	@Test
-	def void testDrawFile() {
-		val fileName = 'foo.sm'
-		val basePath = Files.createTempDirectory('stateChartGenTesting')
-		basePath.resolve(fileName).write(#[ 'scchart foo { initial state foo }' ], CREATE, WRITE)
-		
-		runDraw(basePath, fileName, '-diagModelOnly')
-		
-		val diagramModelFile = basePath.resolve('diagrams/foo').resolve(DiagramModelGenerator.DIAGRAM_MODEL_FILE_NAME)
-		
-		assertSysOutEquals('''
-			Creating diagram model for foo.sm...done.
-		''')
-		
-		assertFileEquals(diagramModelFile, '''
-			function getDiagramModel() {
-			  return {
-			    "id": "graph",
-			    "type": "graph",
-			    "layoutOptions": {
-			      "hAlign": "left",
-			      "hGap": 5,
-			      "paddingLeft": 7,
-			      "paddingRight": 7,
-			      "paddingTop": 7,
-			      "paddingBottom": 7
-			    },
-			    "children": [
-			      {
-			        "id": "state-0",
-			        "type": "node:state",
-			        "layout": "vbox",
-			        "layoutOptions": {
-			          "paddingLeft": 10,
-			          "paddingRight": 10,
-			          "paddingTop": 8,
-			          "paddingBottom": 8,
-			          "resizeContainer": true
-			        },
-			        "children": [
-			          {
-			            "text": "foo",
-			            "id": "state-0-label-0",
-			            "type": "label:stateLabel"
-			          }
-			        ]
-			      }
-			    ]
-			  };
-			}
-		''')
-		
-		basePath.deleteDirRecursively
-	}
+//	@Test
+//	def void testDrawStdIn() {
+//		System.setIn(new ByteArrayInputStream('scchart foo { initial state foo }'.bytes))
+//		
+//		val basePath = Files.createTempDirectory('stateChartGenTesting')
+//		runDraw(basePath, '-stdin', '-diagModelOnly')
+//		
+//		val diagramModelFile = basePath.resolve('diagrams/foo').resolve(DiagramModelGenerator.DIAGRAM_MODEL_FILE_NAME)
+//		
+//		assertSysOutEquals('''
+//			Creating diagram model...done.
+//		''')
+//		
+//		assertFileEquals(diagramModelFile, '''
+//			function getDiagramModel() {
+//			  return {
+//			    "id": "graph",
+//			    "type": "graph",
+//			    "layoutOptions": {
+//			      "hAlign": "left",
+//			      "hGap": 5,
+//			      "paddingLeft": 7,
+//			      "paddingRight": 7,
+//			      "paddingTop": 7,
+//			      "paddingBottom": 7
+//			    },
+//			    "children": [
+//			      {
+//			        "id": "state-0",
+//			        "type": "node:state",
+//			        "layout": "vbox",
+//			        "layoutOptions": {
+//			          "paddingLeft": 10,
+//			          "paddingRight": 10,
+//			          "paddingTop": 8,
+//			          "paddingBottom": 8,
+//			          "resizeContainer": true
+//			        },
+//			        "children": [
+//			          {
+//			            "text": "foo",
+//			            "id": "state-0-label-0",
+//			            "type": "label:stateLabel"
+//			          }
+//			        ]
+//			      }
+//			    ]
+//			  };
+//			}
+//		''')
+//		
+//		basePath.deleteDirRecursively
+//	}
+//	
+//	@Test
+//	def void testDrawFile() {
+//		val fileName = 'foo.sm'
+//		val basePath = Files.createTempDirectory('stateChartGenTesting')
+//		basePath.resolve(fileName).write(#[ 'scchart foo { initial state foo }' ], CREATE, WRITE)
+//		
+//		runDraw(basePath, fileName, '-diagModelOnly')
+//		
+//		val diagramModelFile = basePath.resolve('diagrams/foo').resolve(DiagramModelGenerator.DIAGRAM_MODEL_FILE_NAME)
+//		
+//		assertSysOutEquals('''
+//			Creating diagram model for foo.sm...done.
+//		''')
+//		
+//		assertFileEquals(diagramModelFile, '''
+//			function getDiagramModel() {
+//			  return {
+//			    "id": "graph",
+//			    "type": "graph",
+//			    "layoutOptions": {
+//			      "hAlign": "left",
+//			      "hGap": 5,
+//			      "paddingLeft": 7,
+//			      "paddingRight": 7,
+//			      "paddingTop": 7,
+//			      "paddingBottom": 7
+//			    },
+//			    "children": [
+//			      {
+//			        "id": "state-0",
+//			        "type": "node:state",
+//			        "layout": "vbox",
+//			        "layoutOptions": {
+//			          "paddingLeft": 10,
+//			          "paddingRight": 10,
+//			          "paddingTop": 8,
+//			          "paddingBottom": 8,
+//			          "resizeContainer": true
+//			        },
+//			        "children": [
+//			          {
+//			            "text": "foo",
+//			            "id": "state-0-label-0",
+//			            "type": "label:stateLabel"
+//			          }
+//			        ]
+//			      }
+//			    ]
+//			  };
+//			}
+//		''')
+//		
+//		basePath.deleteDirRecursively
+//	}
 	
 	
 	@Test

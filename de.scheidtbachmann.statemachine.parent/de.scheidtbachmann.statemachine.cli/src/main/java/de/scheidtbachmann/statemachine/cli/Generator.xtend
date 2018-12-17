@@ -7,19 +7,22 @@ import de.cau.cs.kieler.kicool.compilation.Compile
 import de.cau.cs.kieler.kicool.registration.KiCoolRegistration
 import de.cau.cs.kieler.sccharts.processors.statebased.codegen.StatebasedCCodeGenerator
 import de.scheidtbachmann.statemachine.StateMachineStandaloneSetup
-import de.scheidtbachmann.statemachine.diagrams.DiagramModelGenerator
-import de.scheidtbachmann.statemachine.diagrams.WebpageCopier
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.PrintStream
+import java.net.URLClassLoader
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.Collections
+import java.util.Map
+import java.util.function.Function
+import org.eclipse.core.runtime.IStatus
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.diagnostics.Severity
+import org.eclipse.xtext.util.Wrapper
 import org.eclipse.xtext.validation.CheckMode
 import org.eclipse.xtext.validation.IResourceValidator
 import picocli.CommandLine
@@ -159,6 +162,15 @@ class Generator implements Runnable {
 	
 	static val CMD_DRAW = 'draw'
 	
+	static class FormatCandidates implements Iterable<String> {
+		
+		val candidates = #['bmp', 'jpeg', 'png', 'svg']
+		
+		override iterator() {
+			candidates.iterator
+		}
+	}
+	
 	@Command(
 		name = CMD_DRAW,
 		separator = " ",
@@ -171,14 +183,22 @@ class Generator implements Runnable {
 		@Option(names = '-stdin', description = "Forces the artist to read input from stdIn.")
 		boolean stdIn,
 		@Option(
+			names = #[ '-f', '-format'],
+			paramLabel = '<format>',
+			defaultValue = 'png',
+			completionCandidates = FormatCandidates,
+			description = "The desired output format of the diagram drawings. %nCandidates are: ${COMPLETION-CANDIDATES}. %nDefault is: ${DEFAULT-VALUE}."
+		)
+		String format,
+		@Option(
 			names = #[ '-o', '-output'],
 			paramLabel = '<path>',
 			defaultValue = 'diagrams',
 			description = "The destination folder of the drawn diagram pages. %nDefault is: ${DEFAULT-VALUE}."
 		)
 		Path outlet,
-		@Option(names = '-diagModelOnly', description = "Instructes the artist to skip copying the static page components.")
-		boolean diagramModelOnly,
+//		@Option(names = '-diagModelOnly', description = "Instructes the artist to skip copying the static page components.")
+//		boolean diagramModelOnly,
 		@Parameters(arity = "0..1", paramLabel = "<sourceFile>", description = "The input state chart file.")
 		String sourceFileName
 	) {
@@ -194,7 +214,7 @@ class Generator implements Runnable {
 				if (resolved.exists) {
 					if (resolved.isDirectory) {
 						if (resolved.isWritable) 
-							doDraw(resolved, !diagramModelOnly)
+							doDraw(resolved, format)
 						else {
 							println('The provided output path does exist, but writing is not permitted.')
 							return
@@ -211,13 +231,13 @@ class Generator implements Runnable {
 						println('Reason: ' + e.class.canonicalName + ': ' + e.message)
 						return
 					}
-					doDraw(resolved, !diagramModelOnly)
+					doDraw(resolved, format)
 				}
 			}
 		}
 	}
 	
-	def void doDraw(Path outlet, boolean doCopyStaticParts) {
+	def void doDraw(Path outlet, String format) {
 		if (!sourceFileName.nullOrEmpty)
 			print('''Creating diagram model for «sourceFileName»...''')
 		else
@@ -233,10 +253,45 @@ class Generator implements Runnable {
 		System.setErr(new PrintStream(altSyserr))
 		
 		try {
-			val pageFolders = new DiagramModelGenerator().create(resource.contents.head, outlet)
-			if (doCopyStaticParts)
-				for (f : pageFolders)
-					WebpageCopier.copyStaticPageParts(f)
+			val parentLoader = this.class.classLoader
+			
+			// determine the correct SWT implementation to use
+			val swtPath = switch os: System.properties.get('os.name').toString.toLowerCase {
+				case os.startsWith('mac'): {
+					parentLoader.getResource('swt/org.eclipse.swt.cocoa.macosx.x86_64/')
+				}
+				case os.startsWith('win'): {
+					if (System.properties.get('os.arch').toString.endsWith('86')) {
+						parentLoader.getResource('swt/org.eclipse.swt.win32.win32.x86/')
+					} else {
+						parentLoader.getResource('swt/org.eclipse.swt.win32.win32.x86_64/')
+					} 
+				}
+				case os.startsWith('linux'): {
+					parentLoader.getResource('swt/org.eclipse.swt.gtk.linux.x86_64/')
+				}
+			}
+			
+			val result = new Wrapper<Pair<IStatus, Object>>
+			
+			// in order to use the chosen SWT runtime lib a new class loader is instantiated,
+			//  for security reason, only classes loaded by that loader or child loaders
+			//  can refer to classes loaded by this loader,
+			// therefore all the diagramming parts need to be loaded by this loader, too,
+			//  and, thus, must be invoked via reflection  
+			new URLClassLoader(#[
+				swtPath,
+				parentLoader.getResource('diagramming/')
+			], parentLoader).loadClass('de.scheidtbachmann.statemachine.diagrams.DiagramRenderer')?.newInstance() as Function<Map<String,Object>, IStatus> => [
+				val args = newHashMap(#[ // need a writable map here!
+					'param-input' -> resource.contents,
+					'param-format' -> format,
+					'param-outlet' -> outlet
+				])
+				
+				result.set(
+					apply(args) -> args.get('result-written-folders'))
+			]
 			
 		} catch (Throwable t) {
 			t.printStackTrace()
@@ -253,7 +308,7 @@ class Generator implements Runnable {
 		}
 		
 		if (altSysout.size !== 0) {
-			System.out.printf('%nFurther notes: occured:%n')
+			System.out.printf('%nFurther notes occured:%n')
 			System.out.write(altSyserr.toByteArray)
 		}
 	}
