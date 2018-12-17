@@ -78,7 +78,7 @@ public class ReinitializingDiagramSynthesisProxy<S> implements ISynthesis {
      * Package protected constructor.
      * @param clazz the transformation class
      */
-    ReinitializingDiagramSynthesisProxy(final Class<AbstractDiagramSynthesis<S>> clazz) {
+    protected ReinitializingDiagramSynthesisProxy(final Class<AbstractDiagramSynthesis<S>> clazz) {
         this.transformationClass = clazz;
         this.synthesisScope = new ViewSynthesisScope(clazz);
         
