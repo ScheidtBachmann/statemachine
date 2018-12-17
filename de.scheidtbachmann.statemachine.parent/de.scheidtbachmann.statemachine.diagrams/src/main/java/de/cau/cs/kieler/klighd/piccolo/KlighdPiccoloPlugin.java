@@ -13,15 +13,12 @@
  */
 package de.cau.cs.kieler.klighd.piccolo;
 
-import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.osgi.framework.BundleContext;
-
 /**
  * The activator class controls the plug-in life cycle.
  * 
  * @author mri
  */
-public class KlighdPiccoloPlugin extends AbstractUIPlugin {
+public class KlighdPiccoloPlugin /* extends AbstractUIPlugin */ {
 
     /** the plug-in ID. */
     public static final String PLUGIN_ID = "de.cau.cs.kieler.klighd.piccolo";
@@ -35,23 +32,23 @@ public class KlighdPiccoloPlugin extends AbstractUIPlugin {
     public KlighdPiccoloPlugin() {
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void start(final BundleContext context) throws Exception {
-        super.start(context);
-        plugin = this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void stop(final BundleContext context) throws Exception {
-        plugin = null;
-        super.stop(context);
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    @Override
+//    public void start(final BundleContext context) throws Exception {
+//        super.start(context);
+//        plugin = this;
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    @Override
+//    public void stop(final BundleContext context) throws Exception {
+//        plugin = null;
+//        super.stop(context);
+//    }
 
     /**
      * Returns the shared instance.

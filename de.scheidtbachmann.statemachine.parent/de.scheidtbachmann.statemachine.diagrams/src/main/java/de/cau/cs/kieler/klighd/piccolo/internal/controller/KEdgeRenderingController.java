@@ -20,10 +20,11 @@ import java.util.List;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.ui.statushandlers.StatusManager;
 
 import com.google.common.collect.Lists;
 
+import de.cau.cs.kieler.klighd.Klighd;
+import de.cau.cs.kieler.klighd.StatusManager;
 import de.cau.cs.kieler.klighd.kgraph.KEdge;
 import de.cau.cs.kieler.klighd.krendering.KCustomRendering;
 import de.cau.cs.kieler.klighd.krendering.KPolyline;
@@ -36,7 +37,6 @@ import de.cau.cs.kieler.klighd.krendering.KSpline;
 import de.cau.cs.kieler.klighd.krendering.KStyle;
 import de.cau.cs.kieler.klighd.microlayout.Bounds;
 import de.cau.cs.kieler.klighd.piccolo.IKlighdNode.IKlighdFigureNode;
-import de.cau.cs.kieler.klighd.piccolo.KlighdPiccoloPlugin;
 import de.cau.cs.kieler.klighd.piccolo.internal.nodes.KCustomConnectionFigureNode;
 import de.cau.cs.kieler.klighd.piccolo.internal.nodes.KEdgeNode;
 import de.cau.cs.kieler.klighd.piccolo.internal.nodes.KlighdDisposingLayer;
@@ -116,7 +116,7 @@ public class KEdgeRenderingController extends AbstractKGERenderingController<KEd
                         + " allowing to set the start, end, and bend points, or 'null' letting KLighD"
                         + " trying to load the class provided by its name.";
                 StatusManager.getManager().handle(
-                        new Status(IStatus.ERROR, KlighdPiccoloPlugin.PLUGIN_ID, msg),
+                        new Status(IStatus.ERROR, Klighd.PLUGIN_ID, msg),
                         StatusManager.LOG);
                 return null;
             }

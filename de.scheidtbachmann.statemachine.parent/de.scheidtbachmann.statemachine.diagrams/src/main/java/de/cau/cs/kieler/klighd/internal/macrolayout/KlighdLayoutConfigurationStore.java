@@ -41,8 +41,9 @@ import org.eclipse.ui.IWorkbenchPart;
 
 import de.cau.cs.kieler.klighd.IDiagramWorkbenchPart;
 import de.cau.cs.kieler.klighd.IViewer;
+import de.cau.cs.kieler.klighd.Klighd;
 import de.cau.cs.kieler.klighd.KlighdOptions;
-import de.cau.cs.kieler.klighd.KlighdPlugin;
+import de.cau.cs.kieler.klighd.StatusManager;
 import de.cau.cs.kieler.klighd.internal.util.KlighdInternalProperties;
 import de.cau.cs.kieler.klighd.kgraph.KEdge;
 import de.cau.cs.kieler.klighd.kgraph.KGraphElement;
@@ -282,12 +283,13 @@ public class KlighdLayoutConfigurationStore implements ILayoutConfigurationStore
             } catch (final ConcurrentModificationException e) {
                 // add an info to the log and retry...
                 final String msg = "Concurrent modification in KGraphPropertyLayoutConfig:"
-                        + KlighdPlugin.LINE_SEPARATOR + "  element == " + graphElement
-                        + KlighdPlugin.LINE_SEPARATOR + "  sourceElement == "
+                        + Klighd.LINE_SEPARATOR + "  element == " + graphElement
+                        + Klighd.LINE_SEPARATOR + "  sourceElement == "
                         + graphElement.getProperty(KlighdInternalProperties.MODEL_ELEMEMT);
 
-                KlighdPlugin.getDefault().getLog()
-                        .log(new Status(IStatus.ERROR, KlighdPlugin.PLUGIN_ID, msg));
+                StatusManager.getManager().handle(
+                        new Status(IStatus.ERROR, Klighd.PLUGIN_ID, msg),
+                        StatusManager.LOG);
             }
         }
 

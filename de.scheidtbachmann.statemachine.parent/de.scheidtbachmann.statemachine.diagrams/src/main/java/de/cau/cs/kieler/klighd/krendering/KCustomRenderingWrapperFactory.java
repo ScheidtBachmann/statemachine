@@ -23,7 +23,6 @@ import org.eclipse.core.runtime.InvalidRegistryObjectException;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.spi.RegistryContributor;
-import org.eclipse.ui.statushandlers.StatusManager;
 import org.osgi.framework.Bundle;
 
 import com.google.common.base.Predicate;
@@ -32,8 +31,9 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
 
+import de.cau.cs.kieler.klighd.Klighd;
 import de.cau.cs.kieler.klighd.KlighdDataManager;
-import de.cau.cs.kieler.klighd.KlighdPlugin;
+import de.cau.cs.kieler.klighd.StatusManager;
 
 /**
  * A factory enabling the decoupling of KLighD viewer implementations and figures bridging to other
@@ -124,7 +124,7 @@ public final class KCustomRenderingWrapperFactory {
                 final String msg = "An extension of " + KlighdDataManager.EXTP_ID_EXTENSIONS + " in "
                     + host + " could not be examined properly and appears to be invalid in some way.";
                 StatusManager.getManager().handle(
-                        new Status(IStatus.ERROR, KlighdPlugin.PLUGIN_ID, msg, e),
+                        new Status(IStatus.ERROR, Klighd.PLUGIN_ID, msg, e),
                         StatusManager.LOG);
             } catch (final ClassNotFoundException e) {
                 String msg;
@@ -136,7 +136,7 @@ public final class KCustomRenderingWrapperFactory {
                             + element.getAttribute(WRAPPER_CLASS_ENTRY_NAME) + ".";
                 }
                 StatusManager.getManager().handle(
-                        new Status(IStatus.ERROR, KlighdPlugin.PLUGIN_ID, msg, e),
+                        new Status(IStatus.ERROR, Klighd.PLUGIN_ID, msg, e),
                         StatusManager.LOG);
             }
         }
@@ -186,7 +186,7 @@ public final class KCustomRenderingWrapperFactory {
             final String msg =
                     "KLighD custom rendering wrapper factory: Rendering type name not specified.";
             StatusManager.getManager().handle(
-                    new Status(IStatus.ERROR, KlighdPlugin.PLUGIN_ID, msg), StatusManager.LOG);
+                    new Status(IStatus.ERROR, Klighd.PLUGIN_ID, msg), StatusManager.LOG);
             return null;
         }
         
@@ -200,7 +200,7 @@ public final class KCustomRenderingWrapperFactory {
                 final String msg = "KLighD custom rendering wrapper factory: Bundle named "
                         + bundleName + " was not found.";
                 StatusManager.getManager().handle(
-                        new Status(IStatus.ERROR, KlighdPlugin.PLUGIN_ID, msg), StatusManager.LOG);
+                        new Status(IStatus.ERROR, Klighd.PLUGIN_ID, msg), StatusManager.LOG);
                 return null;
             }
         } else {
@@ -217,7 +217,7 @@ public final class KCustomRenderingWrapperFactory {
                     + "loading the custom rendering class " + renderingTypeName
                     + ((bundle != null) ? (" in bundle " + bundleName) : "") + ".";
             StatusManager.getManager().handle(
-                    new Status(IStatus.ERROR, KlighdPlugin.PLUGIN_ID, msg, e),
+                    new Status(IStatus.ERROR, Klighd.PLUGIN_ID, msg, e),
                     StatusManager.LOG);
             return null;
         }
@@ -254,7 +254,7 @@ public final class KCustomRenderingWrapperFactory {
             final String msg = "KLighD custom rendering wrapper factory: An error occured while "
                     + "instantiating the requested custom figure type " + renderingType.getName() + ".";
             StatusManager.getManager().handle(
-                    new Status(IStatus.ERROR, KlighdPlugin.PLUGIN_ID, msg, e), StatusManager.LOG);
+                    new Status(IStatus.ERROR, Klighd.PLUGIN_ID, msg, e), StatusManager.LOG);
             return null;
         }
         return this.getWrapperInstance(renderingType, figure, frameworkType);
@@ -327,7 +327,7 @@ public final class KCustomRenderingWrapperFactory {
                         + "instantiating the requested custom figure type "
                         + renderingType.getName() + ".";
                 StatusManager.getManager().handle(
-                        new Status(IStatus.ERROR, KlighdPlugin.PLUGIN_ID, msg, e),
+                        new Status(IStatus.ERROR, Klighd.PLUGIN_ID, msg, e),
                         StatusManager.LOG);
                 return null;
             }
@@ -352,7 +352,7 @@ public final class KCustomRenderingWrapperFactory {
                         + "instantiating the required wrapper figure for the requested figure type "
                         + renderingType.getName() + ".";
                 StatusManager.getManager().handle(
-                        new Status(IStatus.ERROR, KlighdPlugin.PLUGIN_ID, msg, e),
+                        new Status(IStatus.ERROR, Klighd.PLUGIN_ID, msg, e),
                         StatusManager.LOG);
             }
         }

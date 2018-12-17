@@ -28,7 +28,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.elk.core.util.WrappedException;
-import org.eclipse.ui.statushandlers.StatusManager;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
@@ -95,7 +94,7 @@ public final class KlighdDataManager {
     private static final String ATTRIBUTE_SUPPORTED_FORMATS = "supportedFormats";
 
     /** the platform-specific newline delimiter. */
-    public static final String NEW_LINE = System.getProperty("line.separator");
+    private static final String NEW_LINE = Klighd.LINE_SEPARATOR;
 
     /** error message if registered class cannot be found. */
     private static final String CORE_EXCEPTION_ERROR_MSG =
@@ -169,7 +168,7 @@ public final class KlighdDataManager {
             instance.loadModelTransformationsExtension();
         } catch (final Exception e) {
             StatusManager.getManager().handle(
-                    new Status(IStatus.ERROR, KlighdPlugin.PLUGIN_ID,
+                    new Status(IStatus.ERROR, Klighd.PLUGIN_ID,
                             "KLighD: Unexptected failure while loading registered transformations.", e));
         }
     }
@@ -204,7 +203,7 @@ public final class KlighdDataManager {
                         + element.getContributor().getName()
                         + "' contains invalid entry in attribute '" + attribute + "'";
         StatusManager.getManager().handle(
-                new Status(IStatus.WARNING, KlighdPlugin.PLUGIN_ID, 0, message, exception));
+                new Status(IStatus.WARNING, Klighd.PLUGIN_ID, 0, message, exception));
     }
 
 
@@ -320,7 +319,7 @@ public final class KlighdDataManager {
                     }
                 }
             } catch (final CoreException exception) {
-                StatusManager.getManager().handle(exception, KlighdPlugin.PLUGIN_ID);
+                StatusManager.getManager().handle(exception, Klighd.PLUGIN_ID);
             }
         }
     }
@@ -344,7 +343,7 @@ public final class KlighdDataManager {
 
                 } catch (final CoreException exception) {
                     StatusManager.getManager().handle(
-                            new Status(IStatus.ERROR, KlighdPlugin.PLUGIN_ID,
+                            new Status(IStatus.ERROR, Klighd.PLUGIN_ID,
                                     CORE_EXCEPTION_ERROR_MSG.replace("<<CLAZZ>>",
                                             element.getAttribute(ATTRIBUTE_CLASS)), exception));
                 } catch (final NoClassDefFoundError exception) {
@@ -353,14 +352,14 @@ public final class KlighdDataManager {
                                     element.getAttribute(ATTRIBUTE_CLASS).replaceFirst(
                                             GuiceBasedSynthesisFactory.CLASS_NAME + ":", ""));
                     StatusManager.getManager().handle(
-                            new Status(IStatus.ERROR, KlighdPlugin.PLUGIN_ID, msg, exception));
+                            new Status(IStatus.ERROR, Klighd.PLUGIN_ID, msg, exception));
                 } catch (final WrappedException exception) {
                     final String msg =
                             NO_CLASS_DEF_FOUND_ERROR_MSG.replace("<<CLAZZ>>",
                                     element.getAttribute(ATTRIBUTE_CLASS).replaceFirst(
                                             GuiceBasedSynthesisFactory.CLASS_NAME + ":", ""));
                     StatusManager.getManager().handle(
-                            new Status(IStatus.ERROR, KlighdPlugin.PLUGIN_ID, msg, exception
+                            new Status(IStatus.ERROR, Klighd.PLUGIN_ID, msg, exception
                                     .getCause()));
                 }
 
@@ -378,7 +377,7 @@ public final class KlighdDataManager {
 
                         } catch (final WrappedException exception) {
                             StatusManager.getManager().handle(
-                                    new Status(IStatus.ERROR, KlighdPlugin.PLUGIN_ID, exception
+                                    new Status(IStatus.ERROR, Klighd.PLUGIN_ID, exception
                                             .getMessage(), exception.getCause()));
                         } catch (final Exception exception) {
                             final String msg =
@@ -387,7 +386,7 @@ public final class KlighdDataManager {
                                             + ". See attached trace for details." + NEW_LINE
                                             + exception.getMessage();
                             StatusManager.getManager().handle(
-                                    new Status(IStatus.ERROR, KlighdPlugin.PLUGIN_ID, msg,
+                                    new Status(IStatus.ERROR, Klighd.PLUGIN_ID, msg,
                                             exception.getCause()));
                         }
                     }
@@ -768,7 +767,7 @@ public final class KlighdDataManager {
                         }
                     }
                 } catch (final CoreException exception) {
-                    StatusManager.getManager().handle(exception, KlighdPlugin.PLUGIN_ID);
+                    StatusManager.getManager().handle(exception, Klighd.PLUGIN_ID);
                 }
             }
         }

@@ -24,13 +24,13 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.ui.statushandlers.StatusManager;
 import org.osgi.framework.Bundle;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
-import de.cau.cs.kieler.klighd.KlighdPlugin;
+import de.cau.cs.kieler.klighd.Klighd;
+import de.cau.cs.kieler.klighd.StatusManager;
 import de.cau.cs.kieler.klighd.krendering.HorizontalAlignment;
 import de.cau.cs.kieler.klighd.krendering.KArc;
 import de.cau.cs.kieler.klighd.krendering.KAreaPlacementData;
@@ -631,13 +631,14 @@ final class KGERenderingControllerHelper {
                     "KLighD: Error occurred while loading an image from a bundle "
                     + "('imageObject' == null): 'bundleName' is null, too, which is not expected!";
             StatusManager.getManager().handle(
-                    new Status(IStatus.ERROR, KlighdPlugin.PLUGIN_ID, msg), StatusManager.LOG);
+                    new Status(IStatus.ERROR, Klighd.PLUGIN_ID, msg), StatusManager.LOG);
             return createDummy(parent, initialBounds);
 
         } else {
             // determine the containing bundle,
             // trim potentially leading and trailing quotation marks
             final String bundleName = image.getBundleName().replace("\"", "");
+            final String msgBundleInfix = !Klighd.IS_PLATFORM_RUNNING ? "" : " from bundle " + bundleName;
 
             final Bundle bundle = Platform.getBundle(bundleName);
 
@@ -646,15 +647,15 @@ final class KGERenderingControllerHelper {
                         + image.getBundleName()
                         + " : Bundle is not available!";
                 StatusManager.getManager().handle(new Status(
-                        IStatus.ERROR, KlighdPlugin.PLUGIN_ID, msg), StatusManager.LOG);
+                        IStatus.ERROR, Klighd.PLUGIN_ID, msg), StatusManager.LOG);
                 return createDummy(parent, initialBounds);
 
             } else if (image.getImagePath() == null) {
-                final String msg = "KLighD: Error occurred while loading an image from bundle "
-                        + bundleName + " : 'imagePath' is null!" + KlighdPlugin.LINE_SEPARATOR
+                final String msg = "KLighD: Error occurred while loading an image"
+                        + msgBundleInfix + " : 'imagePath' is null!" + Klighd.LINE_SEPARATOR
                         + "Provide a valid bundle relative path of the image!";
                 StatusManager.getManager().handle(new Status(
-                        IStatus.ERROR, KlighdPlugin.PLUGIN_ID, msg), StatusManager.LOG);
+                        IStatus.ERROR, Klighd.PLUGIN_ID, msg), StatusManager.LOG);
                 return createDummy(parent, initialBounds);
 
             } else {
@@ -662,12 +663,12 @@ final class KGERenderingControllerHelper {
                 final URL entry = bundle.getEntry(imagePath);
 
                 if (entry == null) {
-                    final String msg = "KLighD: Error occurred while loading an image from bundle "
-                            + bundleName + " : No entry could be found on path " + imagePath
-                            + KlighdPlugin.LINE_SEPARATOR
+                    final String msg = "KLighD: Error occurred while loading an image"
+                            + msgBundleInfix + " : No entry could be found on path " + imagePath
+                            + Klighd.LINE_SEPARATOR
                             + "Provide a valid bundle relative path of the image!";
                     StatusManager.getManager().handle(new Status(
-                            IStatus.ERROR, KlighdPlugin.PLUGIN_ID, msg), StatusManager.LOG);
+                            IStatus.ERROR, Klighd.PLUGIN_ID, msg), StatusManager.LOG);
                     return createDummy(parent, initialBounds);
 
                 } else {

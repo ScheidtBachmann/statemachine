@@ -30,7 +30,6 @@ import org.eclipse.elk.core.util.Pair;
 import org.eclipse.elk.graph.properties.IProperty;
 import org.eclipse.elk.graph.properties.IPropertyHolder;
 import org.eclipse.elk.graph.properties.MapPropertyHolder;
-import org.eclipse.ui.statushandlers.StatusManager;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.Collections2;
@@ -136,7 +135,7 @@ public final class LightDiagramServices {
             final String msg = "KlighD LightDiagramServices: Could not perform layout since no"
                     + "configuration has been specified.";
             StatusManager.getManager()
-                    .handle(new Status(IStatus.ERROR, KlighdPlugin.PLUGIN_ID, msg));
+                    .handle(new Status(IStatus.ERROR, Klighd.PLUGIN_ID, msg));
             return;
         }
 
@@ -149,7 +148,7 @@ public final class LightDiagramServices {
                     + config.workbenchPart() + ". "
                     + "Is the diagram correctly and completely initialized?";
             StatusManager.getManager()
-                    .handle(new Status(IStatus.ERROR, KlighdPlugin.PLUGIN_ID, msg));
+                    .handle(new Status(IStatus.ERROR, Klighd.PLUGIN_ID, msg));
             return;
         }
 
@@ -381,13 +380,13 @@ public final class LightDiagramServices {
                     + workbenchPart + ". "
                     + "Is the diagram correctly and completely initialized?";
             StatusManager.getManager().handle(
-                    new Status(IStatus.ERROR, KlighdPlugin.PLUGIN_ID, msg));
+                    new Status(IStatus.ERROR, Klighd.PLUGIN_ID, msg));
             return;
         }
 
         final ViewContext theViewContext = pair.getSecond();
         final boolean doAnimate = animate != null
-                ? animate.booleanValue() : KlighdPlugin.getDefault()
+                ? animate.booleanValue() : KlighdPreferences
                         .getPreferenceStore().getBoolean(KlighdPreferences.ANIMATE_LAYOUT);
 
         if (theViewContext.getZoomStyle() != ZoomStyle.NONE) {
@@ -496,9 +495,9 @@ public final class LightDiagramServices {
             output = new FileOutputStream(targetFileName);
         } catch (final Exception e) {
             final String msg = "KLighD: Target image file " + targetFileName
-                    + " cannot be created or accessed." + KlighdPlugin.LINE_SEPARATOR
+                    + " cannot be created or accessed." + Klighd.LINE_SEPARATOR
                     + "Is the (absolute or relative) path correct? Are the permissions sufficient?";
-            return new Status(IStatus.ERROR, KlighdPlugin.PLUGIN_ID, msg, e);
+            return new Status(IStatus.ERROR, Klighd.PLUGIN_ID, msg, e);
         }
 
         final IStatus result = renderOffScreen(model, format, output, properties);
@@ -508,7 +507,7 @@ public final class LightDiagramServices {
         } catch (final IOException e) {
             final String msg = "KLighD: Error occurred while closing the output stream employed "
                     + "for writing file " + targetFileName + ".";
-            return new Status(IStatus.ERROR, KlighdPlugin.PLUGIN_ID, msg, e);
+            return new Status(IStatus.ERROR, Klighd.PLUGIN_ID, msg, e);
         }
 
         return result;
