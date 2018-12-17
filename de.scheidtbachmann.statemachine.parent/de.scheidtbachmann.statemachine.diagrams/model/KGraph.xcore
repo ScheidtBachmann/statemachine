@@ -11,6 +11,10 @@
 	)
 package de.cau.cs.kieler.klighd.kgraph
 
+import de.cau.cs.kieler.klighd.kgraph.impl.KEdgeImpl
+import org.eclipse.elk.core.math.KVector
+import org.eclipse.elk.core.math.KVectorChain
+import org.eclipse.elk.graph.properties.IPropertyValueProxy
 import org.eclipse.emf.ecore.EClass
 import org.eclipse.emf.ecore.EMap
 
@@ -20,9 +24,27 @@ abstract class KGraphElement extends EMapPropertyHolder {
 		propertyCategory="", propertyDescription="Graph data for this graph element, e.g. layout data")
 	contains KGraphData[] data
 	@GenModel(documentation="Returns the first data instance that matches the given class. Classes\ncan be obtained using the static package methods of the corresponding\nEMF model.\n@return graph data for the given type, or {@code null} if there is none")
-	op KGraphData getData(EClass ^type)
+	op KGraphData getData(EClass ^type) {
+		if (^type !== null) {
+			for (graphData : getData()) {
+				if (^type.equals(graphData.eClass()) || ^type.isInstance(graphData)) {
+					return graphData;
+				}
+			}
+		}
+		return null;
+	}
 	@GenModel(documentation="Returns the first data instance that matches the given class.\n@param type the class of graph data to retrieve\n@return graph data for the given type, or {@code null} if there is none")
-	op <T extends KGraphData> T getData(Class<T>^type)
+	op <T extends KGraphData> T getData(Class<T>^type) {
+		if (^type !== null) {
+			for (graphData : getData()) {
+				if (^type.isInstance(graphData)) {
+					return ^type.cast(graphData);
+				}
+			}
+		}
+		return null;
+	}
 }
 
 @GenModel(documentation="Labeled graph elements contain an arbitrary number of labels.")
@@ -47,6 +69,40 @@ class KNode extends KLabeledGraphElement , KShapeLayout {
 	contains KPort[] ports opposite node
 	contains KEdge[] outgoingEdges opposite source
 	refers KEdge[] incomingEdges opposite target
+	
+	unsettable boolean modified = "false"
+	
+ 	op void setPos(float newXpos, float newYpos) {
+		val oldXpos = xpos;
+		val oldYpos = ypos;
+		if (newXpos != oldXpos || newYpos != oldYpos) {
+			modified = true;
+		}
+		xpos = newXpos;
+		ypos = newYpos;
+//        if (eNotificationRequired()) {
+//            eNotify(new ENotificationImpl(this, Notification.SET, KGraphPackage.KSHAPE_LAYOUT__YPOS, oldYpos, ypos));
+//            eNotify(new ENotificationImpl(this, Notification.SET, KGraphPackage.KSHAPE_LAYOUT__XPOS, oldXpos, xpos));
+//        }
+	}
+	
+	op void setSize(float newWidth, float newHeight) {
+		val oldWidth = width;
+		val oldHeight = height;
+		width = newWidth;
+		height = newHeight;
+		if (newWidth != oldWidth || newHeight != oldHeight) {
+			modified = true;
+		}
+//        if (eNotificationRequired()) {
+//            eNotify(new ENotificationImpl(this, Notification.SET, KGraphPackage.KSHAPE_LAYOUT__WIDTH, oldWidth, width));
+//            eNotify(new ENotificationImpl(this, Notification.SET, KGraphPackage.KSHAPE_LAYOUT__HEIGHT, oldHeight, height));
+//        }
+	}
+
+    op void resetModificationFlag() {
+        modified = false;
+    }
 }
 
 @GenModel(documentation="An edge must be assigned a source and a target node, but the source and target ports\nare optional. The source and target references are opposite to the lists of outgoing and\nincoming edges of nodes, respectively. The source and target port references are\nnot opposite to the ports\' list of edges, but despite that, setting these references will\nautomatically update the edges reference of the corresponding port.")
@@ -59,6 +115,62 @@ class KEdge extends KLabeledGraphElement , KEdgeLayout {
 	refers KPort sourcePort
 	@GenModel(documentation="This reference is optional, as a node may have no ports.\nThe reference is not opposite to the list of edges stored by ports,\nbut setting it automatically updates that list.")
 	refers KPort targetPort
+	
+	unsettable boolean modified = "false"
+	
+	op void applyVectorChain(KVectorChain points) {
+        if (sourcePoint === null) {
+            setSourcePoint(KGraphFactory.eINSTANCE.createKPoint());
+        }
+        val firstPoint = points.getFirst();
+        sourcePoint.setX(firstPoint.x as float);
+        sourcePoint.setY(firstPoint.y as float);
+        
+        // reuse as many existing bend points as possible
+        val oldPointIter = getBendPoints().listIterator();
+        val newPointIter = points.listIterator(1);
+        while (newPointIter.nextIndex() < points.size() - 1) {
+            val nextPoint = newPointIter.next();
+            var KPoint kpoint;
+            if (oldPointIter.hasNext()) {
+                kpoint = oldPointIter.next();
+            } else {
+                kpoint = KGraphFactory.eINSTANCE.createKPoint();
+                oldPointIter.add(kpoint);
+            }
+            kpoint.setX(nextPoint.x as float);
+            kpoint.setY(nextPoint.y as float);
+        }
+        while (oldPointIter.hasNext()) {
+            oldPointIter.next();
+            oldPointIter.remove();
+        }
+        
+        if (targetPoint === null) {
+            setTargetPoint(KGraphFactory.eINSTANCE.createKPoint());
+        }
+        val lastPoint = points.getLast();
+        targetPoint.setX(lastPoint.x as float);
+        targetPoint.setY(lastPoint.y as float);
+    }
+
+    op KVectorChain createVectorChain() {
+        val vectorChain = new KVectorChain();
+        if (sourcePoint !== null) {
+            vectorChain.add(sourcePoint.getX(), sourcePoint.getY());
+        }
+        for (KPoint bendPoint : getBendPoints()) {
+            vectorChain.add(bendPoint.getX(), bendPoint.getY());
+        }
+        if (targetPoint !== null) {
+            vectorChain.add(targetPoint.getX(), targetPoint.getY());
+        }
+        return vectorChain;
+    }
+
+    op void resetModificationFlag() {
+        modified = false;
+    }
 }
 
 @GenModel(documentation="Each port must be assigned a containing node. A port may contain incoming\nedges as well as outgoing edges, but usually either one or the other kind is\nreferenced. The list of edges is not opposite to the edges\' source or target\nport reference. However, the list content is automatically updated when those\nreferences are set.\n<p>\nSince the information contained in this list is redundant, it is marked as transient,\ni.e. it is not serialized.\n</p>")
@@ -80,7 +192,117 @@ abstract class EMapPropertyHolder extends IPropertyHolder {
 	contains transient IPropertyToObjectMap[] properties
 	contains PersistentEntry[] persistentEntries
 	@GenModel(documentation="Serialize all entries of the properties map using {@link Object#toString()}\nand write them into the list of persistent entries. The previous content is cleared.")
-	op void makePersistent()
+	op void makePersistent() {
+		// chsch: deactivated the delivering of notifications as that feature is not used in KIML
+		// so far and disturbs while working with KLighD
+		val deliver = this.eDeliver();
+		this.eSetDeliver(false);
+
+		var i = 0;
+		val persisEntries = getPersistentEntries();
+
+		for (entry : getProperties()) {
+			val key = entry.getKey();
+			val value = entry.getValue();
+			if (key !== null && value !== null) {
+				var PersistentEntry persisEntry;
+				if (i >= persisEntries.size()) {
+					persisEntry = KGraphFactory.eINSTANCE.createPersistentEntry();
+					persisEntries.add(persisEntry);
+					i++;
+				} else {
+					persisEntry = persisEntries.get(i++);
+				}
+
+				val pEdeliver = persisEntry.eDeliver();
+				persisEntry.eSetDeliver(false);
+				persisEntry.setKey(key.getId());
+				persisEntry.setValue(value.toString());
+				persisEntry.eSetDeliver(pEdeliver);
+			}
+		}
+
+		// remove any superfluous persistent entries that are left from previous 
+		// 'persist actions'
+		val peIt = persisEntries.listIterator(i);
+		while (peIt.hasNext()) {
+			peIt.next();
+			peIt.remove();
+		}
+
+		this.eSetDeliver(deliver);
+	}
+	op <T> IPropertyHolder setProperty(IProperty<? super T>property, T value) {
+		if (value === null) {
+			getProperties().removeKey(property);
+		} else {
+			getProperties().put(property, value);
+		}
+
+		return this;
+	}
+	op <T> T getProperty(IProperty<T>property) {
+		var value = getProperties().get(property);
+		if (value instanceof IPropertyValueProxy) {
+			value = value.resolveValue(property);
+			if (value !== null) {
+				getProperties().put(property, value);
+				return value as T;
+			}
+		} else if (value !== null) {
+			return value as T;
+		}
+
+		val defaultValue = property.getDefault();
+		if (defaultValue instanceof Cloneable) {
+			setProperty(property, defaultValue);
+		}
+
+		return defaultValue;
+	}
+	op boolean hasProperty(IProperty<?>property) {
+		return getProperties().containsKey(property);
+	}
+	op IPropertyHolder copyProperties(IPropertyHolder holder) {
+		if (holder === null) {
+			return this;
+		}
+
+		if (holder instanceof EMapPropertyHolder) {
+			val ourProps = this.getProperties();
+			for (entry : holder.getProperties()) {
+				var value = entry.getValue();
+				if (value instanceof IPropertyValueProxy) {
+					val newValue = value.resolveValue(entry.getKey());
+					if (newValue !== null) {
+						entry.setValue(newValue);
+						value = newValue;
+					}
+				}
+				ourProps.put(entry.getKey(), value);
+			}
+		} else {
+			this.getProperties().putAll(holder.getAllProperties());
+		}
+
+		return this;
+	}
+	op EMap<IProperty<?>, Object>getAllProperties() {
+		val props = getProperties();
+		// check for unresolved properties
+		for (entry : props) {
+			if (entry.getValue() instanceof IPropertyValueProxy) {
+				val proxy = entry.getValue() as IPropertyValueProxy;
+				// Try to resolve the proxy's value, maybe the layout option was 
+				// registered by now. If not, we preserve the proxy. 
+				val value = proxy.resolveValue(entry.getKey());
+				if (value !== null) {
+					entry.setValue(value);
+				}
+			}
+		}
+		return props.map();
+	}
 }
 
 @GenModel(documentation="A map entry for EMap property holders.")
@@ -147,11 +369,29 @@ class KPoint {
 	float x = "0.0f"
 	float y = "0.0f"
 	@GenModel(documentation="Set a new position for this point.\n@param x the new x coordinate value\n@param y the new y coordinate value")
-	op void setPos(float x , float y)
+	op void setPos(float newX, float newY) {
+        val float oldX = x
+        val float oldY = y
+        x = newX;
+        y = newY;
+        if ((newX != oldX || newY != oldY) && eContainer instanceof KEdgeImpl) {
+            (eContainer as KEdgeImpl).modified = true;
+        }
+//        if (eNotificationRequired()) {
+//            eNotify(new ENotificationImpl(this, Notification.SET, KGraphPackage.KPOINT__X, oldX, x));
+//            eNotify(new ENotificationImpl(this, Notification.SET, KGraphPackage.KPOINT__Y, oldY, y));
+//        }
+    }
+
 	@GenModel(documentation="Set the position of this point using a vector.\n@param pos the vector for the new position")
-	op void applyVector(KVector pos)
+    op void applyVector(KVector pos) {
+        setPos(pos.x as float, pos.y as float);
+    }
+
 	@GenModel(documentation="Create a vector from this point.\n@return a vector with the position of this point")
-	op KVector createVector()
+    op KVector createVector() {
+        return new KVector(x, y);
+    }
 }
 
 @GenModel(documentation="Insets specify the amount of space that is required between the\nchildren of a node and the node\'s boundary. Usually the inset values must\nbe added to the bounding box of the contained subgraph.")
