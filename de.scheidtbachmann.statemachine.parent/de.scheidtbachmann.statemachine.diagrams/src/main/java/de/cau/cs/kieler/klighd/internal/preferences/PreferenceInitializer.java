@@ -13,10 +13,7 @@
  */
 package de.cau.cs.kieler.klighd.internal.preferences;
 
-import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
-import org.eclipse.jface.preference.IPreferenceStore;
-
-import de.cau.cs.kieler.klighd.KlighdPlugin;
+import de.cau.cs.kieler.klighd.IPreferenceStore;
 import de.cau.cs.kieler.klighd.KlighdPreferences;
 
 /**
@@ -28,14 +25,14 @@ import de.cau.cs.kieler.klighd.KlighdPreferences;
  * @kieler.design proposed by chsch
  * @kieler.rating proposed yellow by chsch
  */
-public class PreferenceInitializer extends AbstractPreferenceInitializer {
+public class PreferenceInitializer /* extends AbstractPreferenceInitializer */ {
 
     /**
      * {@inheritDoc}
      */
-    @Override
+//    @Override
     public void initializeDefaultPreferences() {
-        final IPreferenceStore preferenceStore = KlighdPlugin.getDefault().getPreferenceStore();
+        final IPreferenceStore preferenceStore = KlighdPreferences.getPreferenceStore();
 
         // Set default option values
         preferenceStore.setDefault(KlighdPreferences.ANIMATE_LAYOUT,

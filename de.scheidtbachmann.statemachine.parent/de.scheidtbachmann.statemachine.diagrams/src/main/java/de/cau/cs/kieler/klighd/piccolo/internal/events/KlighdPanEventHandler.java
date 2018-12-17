@@ -16,10 +16,9 @@ package de.cau.cs.kieler.klighd.piccolo.internal.events;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.widgets.Widget;
 
+import de.cau.cs.kieler.klighd.IPropertyChangeListener;
 import de.cau.cs.kieler.klighd.KlighdPreferences;
 import edu.umd.cs.piccolo.PCamera;
 import edu.umd.cs.piccolo.event.PInputEvent;

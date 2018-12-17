@@ -116,4 +116,13 @@ public class Klighd {
             return KlighdStandalone.getStandaloneExtensions(extensionPointName);
         }
     }
+    
+    static IPreferenceStore getPreferenceStore() {
+        if (IS_PLATFORM_RUNNING) {
+            // TODO return something useful here 
+            return null;
+        } else {
+        	    return new IPreferenceStore.NullPreferenceStore();
+        }
+    }
 }

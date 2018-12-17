@@ -13,8 +13,6 @@
  */
 package de.cau.cs.kieler.klighd;
 
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.widgets.Widget;
@@ -139,12 +137,25 @@ public final class KlighdPreferences {
 
 
     /** The {@link IPreferenceStore} used for KLighD-specific preferences. */
-    public static final IPreferenceStore STORE = KlighdPlugin.getDefault().getPreferenceStore();
+    public static final IPreferenceStore STORE = Klighd.getPreferenceStore();
 
     /**
      * This class cannot be instantiated.
      */
     private KlighdPreferences() {
+    }
+
+    public static IPreferenceStore getPreferenceStore() {
+        return STORE;
+    }
+
+    /**
+     * Getter.
+     *
+     * @return <code>true</code> if 'animated layout' is active, <code>false</code> otherwise.
+     */
+    public static boolean isAnimateLayout() {
+        return STORE.getBoolean(ANIMATE_LAYOUT);
     }
 
     /**

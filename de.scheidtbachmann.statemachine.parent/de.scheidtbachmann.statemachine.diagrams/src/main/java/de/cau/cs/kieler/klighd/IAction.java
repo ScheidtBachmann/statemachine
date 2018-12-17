@@ -206,8 +206,6 @@ public interface IAction {
      */
     public static final class ActionResult {
 
-        private static final IPreferenceStore STORE = KlighdPlugin.getDefault().getPreferenceStore();
-
         private List<LayoutConfigurator> layoutConfigs = null;
 
         private boolean actionPerformed = true;
@@ -404,8 +402,7 @@ public interface IAction {
          * @return the {@link #animateLayout} flag
          */
         public boolean getAnimateLayout() {
-            return this.animateLayout != null
-                    ? this.animateLayout : STORE.getBoolean(KlighdPreferences.ANIMATE_LAYOUT);
+            return this.animateLayout != null ? this.animateLayout : KlighdPreferences.isAnimateLayout();
         }
 
         /**
