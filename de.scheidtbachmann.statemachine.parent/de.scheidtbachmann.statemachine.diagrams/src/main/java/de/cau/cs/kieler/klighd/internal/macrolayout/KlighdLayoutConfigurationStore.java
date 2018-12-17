@@ -32,7 +32,6 @@ import org.eclipse.elk.core.options.CoreOptions;
 import org.eclipse.elk.core.service.ILayoutConfigurationStore;
 import org.eclipse.elk.graph.properties.IProperty;
 import org.eclipse.elk.graph.properties.IPropertyValueProxy;
-import org.eclipse.emf.edit.domain.EditingDomain;
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Control;
@@ -351,7 +350,7 @@ public class KlighdLayoutConfigurationStore implements ILayoutConfigurationStore
     /**
      * {@inheritDoc}
      */
-    public EditingDomain getEditingDomain() {
+    public /*EditingDomain*/ Object getEditingDomain() {
         // MIGRATE What is our editing domain here?
         return null;
     }

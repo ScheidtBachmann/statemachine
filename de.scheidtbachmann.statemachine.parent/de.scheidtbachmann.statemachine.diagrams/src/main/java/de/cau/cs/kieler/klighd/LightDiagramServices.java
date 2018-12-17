@@ -21,10 +21,14 @@ import java.util.List;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.elk.core.LayoutConfigurator;
+import org.eclipse.elk.core.RecursiveGraphLayoutEngine;
 import org.eclipse.elk.core.options.CoreOptions;
 import org.eclipse.elk.core.service.DiagramLayoutEngine;
 import org.eclipse.elk.core.service.DiagramLayoutEngine.Parameters;
 import org.eclipse.elk.core.service.ElkServicePlugin;
+import org.eclipse.elk.core.service.IDiagramLayoutConnector;
+import org.eclipse.elk.core.service.LayoutMapping;
+import org.eclipse.elk.core.util.BasicProgressMonitor;
 import org.eclipse.elk.core.util.IElkCancelIndicator;
 import org.eclipse.elk.core.util.Pair;
 import org.eclipse.elk.graph.properties.IProperty;
@@ -38,6 +42,7 @@ import com.google.common.collect.Lists;
 
 import de.cau.cs.kieler.klighd.internal.ILayoutConfigProvider;
 import de.cau.cs.kieler.klighd.internal.ILayoutRecorder;
+import de.cau.cs.kieler.klighd.internal.macrolayout.KlighdDiagramLayoutConnector;
 import de.cau.cs.kieler.klighd.internal.util.KlighdInternalProperties;
 import de.cau.cs.kieler.klighd.kgraph.KNode;
 import de.cau.cs.kieler.klighd.util.KlighdSynthesisProperties;
@@ -158,7 +163,13 @@ public final class LightDiagramServices {
         final ILayoutRecorder recorder = theViewContext.getLayoutRecorder();
         final KNode viewModel = theViewContext.getViewModel();
 
-        if (viewModel != null) {
+        if (!Klighd.IS_PLATFORM_RUNNING) {
+            final IDiagramLayoutConnector connector = new KlighdDiagramLayoutConnector();
+            final LayoutMapping mapping = connector.buildLayoutGraph(null, config.viewContext());
+            new RecursiveGraphLayoutEngine().layout(mapping.getLayoutGraph(), new BasicProgressMonitor());
+            connector.applyLayout(mapping, config.properties());
+            
+        } else  if (viewModel != null) {
             theViewContext.setProperty(KlighdInternalProperties.NEXT_ZOOM_STYLE,
                     config.zoomStyle());
             theViewContext.setProperty(KlighdInternalProperties.NEXT_FOCUS_NODE,
@@ -173,8 +184,7 @@ public final class LightDiagramServices {
     
             // Animation
             final boolean doAnimate = config.animate() != null ? config.animate().booleanValue()
-                    : KlighdPlugin.getDefault().getPreferenceStore()
-                            .getBoolean(KlighdPreferences.ANIMATE_LAYOUT);
+                    : KlighdPreferences.isAnimateLayout();
             layoutParameters.getGlobalSettings().setProperty(CoreOptions.ANIMATE, doAnimate);
     
             // Animation time properties

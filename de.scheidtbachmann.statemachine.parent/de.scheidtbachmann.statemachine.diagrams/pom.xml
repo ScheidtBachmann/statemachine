@@ -181,6 +181,31 @@
 			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
 		</dependency>
 		<dependency>
+			<groupId>org.eclipse.elk</groupId>
+			<artifactId>org.eclipse.elk.alg.force</artifactId>
+			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.elk</groupId>
+			<artifactId>org.eclipse.elk.alg.graphviz.layouter</artifactId>
+			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.elk</groupId>
+			<artifactId>org.eclipse.elk.alg.layered</artifactId>
+			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.elk</groupId>
+			<artifactId>org.eclipse.elk.alg.mrtree</artifactId>
+			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.elk</groupId>
+			<artifactId>org.eclipse.elk.alg.radial</artifactId>
+			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
+		</dependency>
+		<dependency>
 			<groupId>org.eclipse.platform</groupId>
 			<artifactId>org.eclipse.equinox.registry</artifactId>
 			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->

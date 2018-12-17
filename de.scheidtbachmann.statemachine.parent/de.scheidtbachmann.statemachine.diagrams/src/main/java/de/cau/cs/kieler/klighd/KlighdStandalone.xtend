@@ -14,6 +14,12 @@ import java.util.ServiceLoader
 import org.eclipse.core.runtime.CoreException
 import org.eclipse.core.runtime.IConfigurationElement
 import org.eclipse.core.runtime.InvalidRegistryObjectException
+import org.eclipse.elk.alg.force.options.ForceMetaDataProvider
+import org.eclipse.elk.alg.graphviz.layouter.GraphvizMetaDataProvider
+import org.eclipse.elk.alg.layered.options.LayeredMetaDataProvider
+import org.eclipse.elk.alg.mrtree.options.MrTreeMetaDataProvider
+import org.eclipse.elk.alg.radial.options.RadialMetaDataProvider
+import org.eclipse.elk.core.data.LayoutMetaDataService
 import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 
