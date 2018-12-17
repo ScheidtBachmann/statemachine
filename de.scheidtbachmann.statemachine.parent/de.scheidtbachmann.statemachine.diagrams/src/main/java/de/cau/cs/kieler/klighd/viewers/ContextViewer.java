@@ -36,8 +36,6 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.PlatformUI;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -380,10 +378,10 @@ public class ContextViewer implements IViewer, ILayoutRecorder, ISelectionProvid
 
                 @Override
                 protected Iterator<? extends KNode> getChildren(final Object object) {
-                    if (PlatformUI.isWorkbenchRunning() && Display.getCurrent() == null) {
-                        throw new RuntimeException(NON_DISPLAY_ERROR_MSG.replace("##",
-                                "getVisibleDiagramNodes()"));
-                    }
+//                    if (PlatformUI.isWorkbenchRunning() && Display.getCurrent() == null) {
+//                        throw new RuntimeException(NON_DISPLAY_ERROR_MSG.replace("##",
+//                                "getVisibleDiagramNodes()"));
+//                    }
                     return Iterators.filter(((KNode) object).getChildren().iterator(),
                             new Predicate<KNode>() {
 
@@ -414,10 +412,10 @@ public class ContextViewer implements IViewer, ILayoutRecorder, ISelectionProvid
 
                 @Override
                 protected Iterator<? extends KGraphElement> getChildren(final Object object) {
-                    if (PlatformUI.isWorkbenchRunning() && Display.getCurrent() == null) {
-                        throw new RuntimeException(NON_DISPLAY_ERROR_MSG.replace("##",
-                                "getVisibleDiagramElements()"));
-                    }
+//                    if (PlatformUI.isWorkbenchRunning() && Display.getCurrent() == null) {
+//                        throw new RuntimeException(NON_DISPLAY_ERROR_MSG.replace("##",
+//                                "getVisibleDiagramElements()"));
+//                    }
 
                     final Iterator<EObject> candidates;
                     if (object instanceof KNode) {

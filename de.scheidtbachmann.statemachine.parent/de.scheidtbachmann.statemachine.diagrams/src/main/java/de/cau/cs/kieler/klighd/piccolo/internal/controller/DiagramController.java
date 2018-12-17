@@ -19,11 +19,8 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.elk.core.options.CoreOptions;
 import org.eclipse.elk.core.util.Pair;
 import org.eclipse.elk.graph.properties.IProperty;
@@ -31,7 +28,6 @@ import org.eclipse.elk.graph.properties.Property;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.impl.AdapterImpl;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.PlatformUI;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -65,6 +61,7 @@ import de.cau.cs.kieler.klighd.krendering.KSpline;
 import de.cau.cs.kieler.klighd.piccolo.IKlighdNode.IKGraphElementNode;
 import de.cau.cs.kieler.klighd.piccolo.IKlighdNode.IKNodeNode;
 import de.cau.cs.kieler.klighd.piccolo.internal.KlighdCanvas;
+import de.cau.cs.kieler.klighd.piccolo.internal.KlighdJob;
 import de.cau.cs.kieler.klighd.piccolo.internal.activities.ApplyBendPointsActivity;
 import de.cau.cs.kieler.klighd.piccolo.internal.activities.ApplySmartBoundsActivity;
 import de.cau.cs.kieler.klighd.piccolo.internal.activities.FadeEdgeInActivity;
@@ -789,57 +786,36 @@ public class DiagramController {
 
     private static final int RENDERING_UPDATER_DELAY = 5; /* ms */
 
-    private final Job renderingUpdater = new Job("KLighD DiagramElementUpdater") {
-
-        /* Constructor */ {
-            this.setSystem(true);
-        }
-
+    private final Supplier<Display> displayProvider = new Supplier<Display>() {
         @Override
-        protected IStatus run(final IProgressMonitor monitor) {
-            if (display != null) {
-                display.asyncExec(diagramUpdateRunnable);
-
-            } else {
-                // if no SWT display is required just execute 'diagramUpdateRunnable'
-                //  (within this job's worker thread)
-                diagramUpdateRunnable.run();
-            }
-
-            return Status.OK_STATUS;
+        public Display get() {
+            return display;
         }
-
-        private final Runnable diagramUpdateRunnable = new Runnable() {
-
-            /**
-             * {@inheritDoc}
-             */
-            public void run() {
-                final Set<AbstractKGERenderingController<?, ?>> copy;
-                final Map<AbstractKGERenderingController<?, ?>, ElementMovement> copyStyles;
-
-                synchronized (dirtyDiagramElements) {
-                    copy = ImmutableSet.copyOf(dirtyDiagramElements);
-                    dirtyDiagramElements.clear();
-                }
-
-                synchronized (dirtyDiagramElementStyles) {
-                    copyStyles = ImmutableMap.copyOf(dirtyDiagramElementStyles);
-                    dirtyDiagramElementStyles.clear();
-                }
-
-                for (final AbstractKGERenderingController<?, ?> ctrl : copy) {
-                    ctrl.updateRendering();
-                }
-
-                for (final Map.Entry<AbstractKGERenderingController<?, ?>, ElementMovement> ctrl
-                        : copyStyles.entrySet()) {
-                    ctrl.getKey().updateStyles(ctrl.getValue());
-                }
-            }
-        };
     };
 
+    private final KlighdJob renderingUpdater = new KlighdJob("KLighD DiagramElementUpdater", displayProvider, monitor -> {
+        final Set<AbstractKGERenderingController<?, ?>> copy;
+        final Map<AbstractKGERenderingController<?, ?>, ElementMovement> copyStyles;
+
+        synchronized (dirtyDiagramElements) {
+            copy = ImmutableSet.copyOf(dirtyDiagramElements);
+            dirtyDiagramElements.clear();
+        }
+
+        synchronized (dirtyDiagramElementStyles) {
+            copyStyles = ImmutableMap.copyOf(dirtyDiagramElementStyles);
+            dirtyDiagramElementStyles.clear();
+        }
+
+        for (final AbstractKGERenderingController<?, ?> ctrl : copy) {
+            ctrl.updateRendering();
+        }
+
+        for (final Map.Entry<AbstractKGERenderingController<?, ?>, ElementMovement> ctrl
+                : copyStyles.entrySet()) {
+            ctrl.getKey().updateStyles(ctrl.getValue());
+        }
+    });
 
     /**
      * Applies the recorded layout changes by creating appropriate activities.
@@ -1030,7 +1006,8 @@ public class DiagramController {
      *            because the element actually has been removed from the view model rather than just
      *            hidden
      */
-    private void remove(final KGraphElement element, final boolean releaseControllers) {
+    @SuppressWarnings("unused")
+	private void remove(final KGraphElement element, final boolean releaseControllers) {
         if (element.eContainer() == null) {
             return;
         }
@@ -2206,12 +2183,12 @@ public class DiagramController {
                     // Since changing the label text is no structural modification we support the
                     // automatic switching the Display thread here! (several potentially concurrent
                     // modifications of the diagram's structure might lead to chaos...)
-                    final String finalNewText = newText;
-                    PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
-                        public void run() {
-                            labelRep.setText(finalNewText);
-                        }
-                    });
+//                    final String finalNewText = newText;
+//                    PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+//                        public void run() {
+//                            labelRep.setText(finalNewText);
+//                        }
+//                    });
                 } else {
                     labelRep.setText(newText);
                 }
@@ -2264,6 +2241,6 @@ public class DiagramController {
      *         asyncExec(Runnable)}/{@link Display#syncExec(Runnable) syncExec(Runnable)} is required.
      */
     public static boolean UIExecRequired() { // SUPPRESS CHECKSTYLE MethodName
-        return PlatformUI.isWorkbenchRunning() && Display.getCurrent() == null;
+        return false; //PlatformUI.isWorkbenchRunning() && Display.getCurrent() == null;
     }
 }

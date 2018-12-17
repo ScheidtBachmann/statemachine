@@ -20,7 +20,6 @@ import org.eclipse.elk.core.LayoutConfigurator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.ui.PlatformUI;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
@@ -30,7 +29,6 @@ import de.cau.cs.kieler.klighd.IAction;
 import de.cau.cs.kieler.klighd.IAction.ActionResult;
 import de.cau.cs.kieler.klighd.IViewer;
 import de.cau.cs.kieler.klighd.KlighdDataManager;
-import de.cau.cs.kieler.klighd.LightDiagramLayoutConfig;
 import de.cau.cs.kieler.klighd.ViewContext;
 import de.cau.cs.kieler.klighd.ZoomStyle;
 import de.cau.cs.kieler.klighd.kgraph.KGraphElement;
@@ -233,30 +231,30 @@ public class KlighdActionEventHandler implements PInputEventListener {
             return;
         }
 
-        final boolean animate = resultOfLastAction.getAnimateLayout();
-        final ZoomStyle zoomStyle = ZoomStyle.create(resultOfLastActionRequiringLayout, vc);
-        final KNode focusNode = resultOfLastActionRequiringLayout.getFocusNode();
-        final List<LayoutConfigurator> layoutConfigs = resultOfLastAction.getLayoutConfigs();
-
-        // Execute the layout asynchronously in order to let the KLighdInputManager
-        //  finish the processing of 'inputEvent' quickly.
-        // Otherwise if the diagram layout engine interrupts its work by calling
-        //  Display.readAndDispatch() and, with that, the control flow executing this method
-        //  the processing of 'inputEvent' by the input manager might get triggered a
-        //  second time by some timer event causing a kind of nested/recursive (!) evaluation
-        //  of 'inputEvent' and, thereby, this method.
-        // In addition, this scenario is tried to avoid by setting & evaluating the 'handled'
-        //  flag of 'inputEvent' properly.
-        PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
-            public void run() {
-                new LightDiagramLayoutConfig(vc)
-                        .animate(animate)
-                        .zoomStyle(zoomStyle)
-                        .focusNode(focusNode)
-                        .options(layoutConfigs)
-                        .performLayout();
-            }
-        });
+//        final boolean animate = resultOfLastAction.getAnimateLayout();
+//        final ZoomStyle zoomStyle = ZoomStyle.create(resultOfLastActionRequiringLayout, vc);
+//        final KNode focusNode = resultOfLastActionRequiringLayout.getFocusNode();
+//        final List<LayoutConfigurator> layoutConfigs = resultOfLastAction.getLayoutConfigs();
+//
+//        // Execute the layout asynchronously in order to let the KLighdInputManager
+//        //  finish the processing of 'inputEvent' quickly.
+//        // Otherwise if the diagram layout engine interrupts its work by calling
+//        //  Display.readAndDispatch() and, with that, the control flow executing this method
+//        //  the processing of 'inputEvent' by the input manager might get triggered a
+//        //  second time by some timer event causing a kind of nested/recursive (!) evaluation
+//        //  of 'inputEvent' and, thereby, this method.
+//        // In addition, this scenario is tried to avoid by setting & evaluating the 'handled'
+//        //  flag of 'inputEvent' properly.
+//        PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+//            public void run() {
+//                new LightDiagramLayoutConfig(vc)
+//                        .animate(animate)
+//                        .zoomStyle(zoomStyle)
+//                        .focusNode(focusNode)
+//                        .options(layoutConfigs)
+//                        .performLayout();
+//            }
+//        });
     }
 
     private boolean guardsMatch(final KAction action, final KlighdMouseEvent event) {
