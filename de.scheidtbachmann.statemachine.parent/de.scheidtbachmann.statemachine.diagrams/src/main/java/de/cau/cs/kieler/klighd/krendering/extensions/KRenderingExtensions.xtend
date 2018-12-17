@@ -13,6 +13,10 @@
  */
 package de.cau.cs.kieler.klighd.krendering.extensions
 
+import de.cau.cs.kieler.klighd.kgraph.KGraphElement
+import de.cau.cs.kieler.klighd.kgraph.KLabel
+import de.cau.cs.kieler.klighd.kgraph.KNode
+import de.cau.cs.kieler.klighd.kgraph.KPort
 import de.cau.cs.kieler.klighd.krendering.Colors
 import de.cau.cs.kieler.klighd.krendering.HorizontalAlignment
 import de.cau.cs.kieler.klighd.krendering.KAreaPlacementData
@@ -42,6 +46,7 @@ import de.cau.cs.kieler.klighd.krendering.KPosition
 import de.cau.cs.kieler.klighd.krendering.KRectangle
 import de.cau.cs.kieler.klighd.krendering.KRendering
 import de.cau.cs.kieler.klighd.krendering.KRenderingFactory
+import de.cau.cs.kieler.klighd.krendering.KRenderingPackage
 import de.cau.cs.kieler.klighd.krendering.KRotation
 import de.cau.cs.kieler.klighd.krendering.KRoundedRectangle
 import de.cau.cs.kieler.klighd.krendering.KShadow
@@ -61,10 +66,6 @@ import de.cau.cs.kieler.klighd.krendering.VerticalAlignment
 import org.eclipse.emf.ecore.EClass
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
-import de.cau.cs.kieler.klighd.kgraph.KGraphElement
-import de.cau.cs.kieler.klighd.kgraph.KNode
-import de.cau.cs.kieler.klighd.kgraph.KPort
-import de.cau.cs.kieler.klighd.kgraph.KLabel
 
 /**
  * This class contains lots of convenient helper functions for configuring KRendering-based view models, 
@@ -81,6 +82,7 @@ import de.cau.cs.kieler.klighd.kgraph.KLabel
 class KRenderingExtensions {
 
     extension KRenderingFactory = KRenderingFactory::eINSTANCE
+    extension KRenderingPackage KRenderingPackage = KRenderingPackage::eINSTANCE // chsch: workaround due to a bug in the xcore-xtend-interaction 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////                    KRenderingExtensions

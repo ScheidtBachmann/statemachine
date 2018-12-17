@@ -13,7 +13,6 @@
  */
 package de.cau.cs.kieler.klighd.krendering.extensions;
 
-import org.eclipse.core.runtime.Plugin;
 import org.osgi.framework.BundleContext;
 
 import com.google.inject.Binder;
@@ -28,7 +27,7 @@ import de.cau.cs.kieler.klighd.krendering.ViewSynthesisShared;
  * 
  * @author chsch
  */
-public class KRenderingExtensionsPlugin extends Plugin {
+public class KRenderingExtensionsPlugin /* extends Plugin */ {
 
     /** The plug-in ID. */
     public static final String PLUGIN_ID = "de.cau.cs.kieler.klighd.krendering.extensions";
