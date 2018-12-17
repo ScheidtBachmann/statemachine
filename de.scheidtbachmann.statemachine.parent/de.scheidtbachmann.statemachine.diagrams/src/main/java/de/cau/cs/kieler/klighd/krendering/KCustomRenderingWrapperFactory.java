@@ -20,10 +20,7 @@ import java.util.Map.Entry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.InvalidRegistryObjectException;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.spi.RegistryContributor;
-import org.osgi.framework.Bundle;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
@@ -88,8 +85,7 @@ public final class KCustomRenderingWrapperFactory {
      */
     private KCustomRenderingWrapperFactory() {
         // get the extensions
-        final IConfigurationElement[] configurations = Platform.getExtensionRegistry()
-                .getConfigurationElementsFor(KlighdDataManager.EXTP_ID_EXTENSIONS);
+        final IConfigurationElement[] configurations = Klighd.getExtensions(KlighdDataManager.EXTP_ID_EXTENSIONS);
 
         // filter them, retain the ones named like EXTENSION_NAME
         //  this is actually not necessary right now but might be
@@ -109,24 +105,20 @@ public final class KCustomRenderingWrapperFactory {
         for (final IConfigurationElement element : wrappers) {
             Class<?> figureClass = null;
             Class<?> wrapperClass = null;
-            Bundle host = null;
             try {
 
-                // there is only that one implementation of IContributor and since it's providing
-                //  more data the returned contributor is casted without a type check
-                host = Platform.getBundle(((RegistryContributor) element.getContributor()).getName());
-                figureClass = host.loadClass(element.getAttribute(FIGURE_CLASS_ENTRY_NAME));
-                wrapperClass = host.loadClass(element.getAttribute(WRAPPER_CLASS_ENTRY_NAME));
+                figureClass = Klighd.loadClass(element, FIGURE_CLASS_ENTRY_NAME);
+                wrapperClass = Klighd.loadClass(element, WRAPPER_CLASS_ENTRY_NAME);
                 this.registerWrapper(figureClass, wrapperClass);
 
             } catch (final InvalidRegistryObjectException e) {
                 // I hope this will never happen ;-)
-                final String msg = "An extension of " + KlighdDataManager.EXTP_ID_EXTENSIONS + " in "
-                    + host + " could not be examined properly and appears to be invalid in some way.";
+                final String msg = "An extension of " + KlighdDataManager.EXTP_ID_EXTENSIONS /* + " in "
+                    + host*/ + " could not be examined properly and appears to be invalid in some way.";
                 StatusManager.getManager().handle(
                         new Status(IStatus.ERROR, Klighd.PLUGIN_ID, msg, e),
                         StatusManager.LOG);
-            } catch (final ClassNotFoundException e) {
+            } catch (final Exception e) {
                 String msg;
                 if (figureClass == null) {
                     msg = "Failed to load figure class "
@@ -190,32 +182,26 @@ public final class KCustomRenderingWrapperFactory {
             return null;
         }
         
-        Bundle bundle;
         // first get the denoted bundle by ... 
         if (!Strings.isNullOrEmpty(bundleName)) {
-        
             // ... trimming the leading and trailing quotation marks and asking the platform or ...
-            bundle = Platform.getBundle(bundleName.replace("\"", ""));
-            if (bundle == null) {
+            if (Klighd.isBundleUnavailable(bundleName.replace("\"", ""))) {
                 final String msg = "KLighD custom rendering wrapper factory: Bundle named "
                         + bundleName + " was not found.";
                 StatusManager.getManager().handle(
                         new Status(IStatus.ERROR, Klighd.PLUGIN_ID, msg), StatusManager.LOG);
                 return null;
             }
-        } else {
-            // ... by taking the KLighD bundle if none is given
-            bundle = KlighdPlugin.getDefault().getBundle();
         }
         
         Class<?> clazz = null;
         try {
             // load the figure class 
-            clazz = bundle.loadClass(renderingTypeName);
+            clazz = Klighd.loadClass(bundleName, renderingTypeName);
         } catch (final ClassNotFoundException e) {
             final String msg = "KLighD custom rendering wrapper factory: Error occurred while"
                     + "loading the custom rendering class " + renderingTypeName
-                    + ((bundle != null) ? (" in bundle " + bundleName) : "") + ".";
+                    + ((Klighd.IS_PLATFORM_RUNNING && bundleName != null) ? (" in bundle " + bundleName) : "") + ".";
             StatusManager.getManager().handle(
                     new Status(IStatus.ERROR, Klighd.PLUGIN_ID, msg, e),
                     StatusManager.LOG);

@@ -19,9 +19,7 @@ import java.util.Map;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
-import org.osgi.framework.Bundle;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
@@ -213,7 +211,7 @@ public final class SVGGeneratorManager {
     private void loadSvgGenerators() {
         // read the extension point
         final IConfigurationElement[] extensions =
-                Platform.getExtensionRegistry().getConfigurationElementsFor(EXTP_ID_SVGGENERATORS);
+                Klighd.getExtensions(EXTP_ID_SVGGENERATORS);
         for (final IConfigurationElement element : extensions) {
             try {
                 // store the generator

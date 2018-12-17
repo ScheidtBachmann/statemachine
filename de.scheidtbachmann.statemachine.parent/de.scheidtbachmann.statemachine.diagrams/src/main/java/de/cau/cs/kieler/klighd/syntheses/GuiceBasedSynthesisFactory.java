@@ -17,14 +17,10 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.core.runtime.IExecutableExtensionFactory;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.spi.RegistryContributor;
 import org.eclipse.elk.core.util.WrappedException;
-import org.osgi.framework.Bundle;
 
-import com.google.common.base.Strings;
-
-import de.cau.cs.kieler.klighd.KlighdPlugin;
+import de.cau.cs.kieler.klighd.Klighd;
 
 /**
  * A generic factory for initializing classes that leverage dependency injection by means of Google
@@ -87,14 +83,13 @@ public class GuiceBasedSynthesisFactory implements IExecutableExtension,
             // chsch: noticed bug, need to explore the duality of 'contributingBundleId' and
             //  'contributingBundleName'; should be due to some API shortcomings
             //  is tracked in KIELER-2166
-            if (Strings.isNullOrEmpty(this.contributingBundleName)) {
-                final Bundle contributingBundle = KlighdPlugin.getDefault().getBundle()
-                        .getBundleContext().getBundle(Long.parseLong(this.contributingBundleId));
-                clazz = contributingBundle.loadClass(transformationClassName);
-            } else {
-                clazz = Platform.getBundle(contributingBundleName).loadClass(
-                        transformationClassName);
-            }
+//            if (Strings.isNullOrEmpty(this.contributingBundleName)) {
+//                final Bundle contributingBundle = Klighd.getDefault().getBundle()
+//                        .getBundleContext().getBundle(Long.parseLong(this.contributingBundleId));
+//                clazz = contributingBundle.loadClass(transformationClassName);
+//            } else {
+                clazz = Klighd.loadClass(contributingBundleName, transformationClassName);
+//            }
             
             return new ReinitializingDiagramSynthesisProxy(clazz);
         } catch (final ClassNotFoundException e) {

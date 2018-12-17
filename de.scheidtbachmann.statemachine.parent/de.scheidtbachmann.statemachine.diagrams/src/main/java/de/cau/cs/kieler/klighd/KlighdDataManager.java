@@ -25,7 +25,6 @@ import java.util.TreeMap;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.elk.core.util.WrappedException;
 
@@ -58,40 +57,40 @@ public final class KlighdDataManager {
     public static final String EXTP_ID_EXTENSIONS = "de.cau.cs.kieler.klighd.extensions";
 
     /** identifier of the extension point for model transformations. */
-    private static final String EXTP_ID_DIAGRAM_SYNTHESES = "de.cau.cs.kieler.klighd.diagramSyntheses";
+    public static final String EXTP_ID_DIAGRAM_SYNTHESES = "de.cau.cs.kieler.klighd.diagramSyntheses";
 
     /** name of the 'viewer' element. */
-    private static final String ELEMENT_VIEWER = "viewer";
+    static final String ELEMENT_VIEWER = "viewer";
 
     /** name of the 'transformation' element. */
-    private static final String ELEMENT_DIAGRAM_SYNTHESIS = "diagramSynthesis";
+    static final String ELEMENT_DIAGRAM_SYNTHESIS = "diagramSynthesis";
 
     /** name of the 'updateStrategy' element. */
-    private static final String ELEMENT_UPDATE_STRATEGY = "updateStrategy";
+    static final String ELEMENT_UPDATE_STRATEGY = "updateStrategy";
 
     /** name of the 'styleModifier' element. */
-    private static final String ELEMENT_STYLE_MODIFIER = "styleModifier";
+    static final String ELEMENT_STYLE_MODIFIER = "styleModifier";
 
     /** name of the 'action' element. */
-    private static final String ELEMENT_ACTION = "action";
+    static final String ELEMENT_ACTION = "action";
 
     /** name of the 'exporter' element. */
-    private static final String ELEMENT_EXPORTER = "exporter";
+    static final String ELEMENT_EXPORTER = "exporter";
 
     /** name of the 'exportHook' element. */
-    private static final String ELEMENT_EXPORT_BRANDING = "exportBranding";
+    static final String ELEMENT_EXPORT_BRANDING = "exportBranding";
 
     /** name of the 'offscreenRenderer' element. */
-    private static final String ELEMENT_OFFSCREEN_RENDERER = "offscreenRenderer";
+    static final String ELEMENT_OFFSCREEN_RENDERER = "offscreenRenderer";
 
     /** name of the 'id' attribute in the extension points. */
-    private static final String ATTRIBUTE_ID = "id";
+    static final String ATTRIBUTE_ID = "id";
 
     /** name of the 'class' attribute in the extension points. */
-    private static final String ATTRIBUTE_CLASS = "class";
+    static final String ATTRIBUTE_CLASS = "class";
 
     /** name of the 'supportedFormats' attribute in the 'offscreenRenderer' extensions. */
-    private static final String ATTRIBUTE_SUPPORTED_FORMATS = "supportedFormats";
+    static final String ATTRIBUTE_SUPPORTED_FORMATS = "supportedFormats";
 
     /** the platform-specific newline delimiter. */
     private static final String NEW_LINE = Klighd.LINE_SEPARATOR;
@@ -234,8 +233,7 @@ public final class KlighdDataManager {
      * corresponding mappings.
      */
     private void loadViewerProviderExtension() {
-        final IConfigurationElement[] extensions = Platform.getExtensionRegistry()
-                .getConfigurationElementsFor(EXTP_ID_EXTENSIONS);
+        final IConfigurationElement[] extensions = Klighd.getExtensions(EXTP_ID_EXTENSIONS);
 
         for (final IConfigurationElement element : extensions) {
             try {
@@ -330,8 +328,7 @@ public final class KlighdDataManager {
      * {@link #typeSynthesisMapping}.
      */
     private void loadModelTransformationsExtension() {
-        final IConfigurationElement[] extensions = Platform.getExtensionRegistry()
-                .getConfigurationElementsFor(EXTP_ID_DIAGRAM_SYNTHESES);
+        final IConfigurationElement[] extensions = Klighd.getExtensions(EXTP_ID_DIAGRAM_SYNTHESES);
 
         for (final IConfigurationElement element : extensions) {
             if (ELEMENT_DIAGRAM_SYNTHESIS.equals(element.getName())) {
@@ -692,7 +689,7 @@ public final class KlighdDataManager {
             formatExportHookMapping = ArrayListMultimap.create();
 
             final IConfigurationElement[] extensions =
-                    Platform.getExtensionRegistry().getConfigurationElementsFor(EXTP_ID_EXTENSIONS);
+                    Klighd.getExtensions(EXTP_ID_EXTENSIONS);
 
             for (final IConfigurationElement element : extensions) {
                 if (!ELEMENT_EXPORT_BRANDING.equals(element.getName())) {
@@ -744,8 +741,7 @@ public final class KlighdDataManager {
         if (formatOffscreenRendererMapping == null) {
             formatOffscreenRendererMapping = ArrayListMultimap.create();
 
-            final IConfigurationElement[] extensions =
-                    Platform.getExtensionRegistry().getConfigurationElementsFor(EXTP_ID_EXTENSIONS);
+            final IConfigurationElement[] extensions = Klighd.getExtensions(EXTP_ID_EXTENSIONS);
 
             for (final IConfigurationElement element : extensions) {
                 try {

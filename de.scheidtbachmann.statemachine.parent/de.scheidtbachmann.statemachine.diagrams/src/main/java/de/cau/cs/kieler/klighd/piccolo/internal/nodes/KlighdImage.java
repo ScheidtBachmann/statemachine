@@ -20,12 +20,12 @@ import java.io.InputStream;
 import java.util.List;
 
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.widgets.Display;
 import org.osgi.framework.Bundle;
 
 import com.google.common.collect.Lists;
@@ -245,15 +245,11 @@ public class KlighdImage extends KlighdNode.KlighdFigureNode<KImage> implements 
             setImage(descr.getImageData());
 
         } else {
-            // determine the containing bundle,
-            final Bundle bundle = Platform.getBundle(bundleName);
-            
-            // get the bundle and actual image,
+            // get the actual image,
             try {
-                setImage(bundle.getEntry(path).openStream()).close();
+                setImage(Klighd.getResourceAsStream(bundleName, path));
 
-                KlighdPiccoloPlugin.getDefault().getImageRegistry()
-                        .put(imageKey, ImageDescriptor.createFromImageData(imageData));
+                IMAGE_REGISTRY.put(imageKey, ImageDescriptor.createFromImageData(imageData));
                 
             } catch (final Exception e) {
                 final String msg =

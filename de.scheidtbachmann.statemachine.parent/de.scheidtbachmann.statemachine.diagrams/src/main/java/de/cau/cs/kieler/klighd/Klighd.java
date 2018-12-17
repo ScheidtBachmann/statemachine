@@ -5,7 +5,9 @@ import java.io.InputStream;
 import java.net.URL;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.InvalidRegistryObjectException;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.spi.RegistryContributor;
 import org.osgi.framework.Bundle;
 
 import de.cau.cs.kieler.klighd.internal.preferences.PreferenceInitializer;
@@ -117,12 +119,24 @@ public class Klighd {
         }
     }
     
+    @SuppressWarnings("unchecked")
+	public static <T> Class<T> loadClass(IConfigurationElement element, String attributeName) throws ClassNotFoundException, InvalidRegistryObjectException {
+        if (IS_PLATFORM_RUNNING) {
+            // there is only that one implementation of IContributor and since it's providing
+            //  more data the returned contributor is casted without a type check
+            final Bundle host = Platform.getBundle(((RegistryContributor) element.getContributor()).getName());
+            return (Class<T>) host.loadClass(element.getAttribute(attributeName));
+        } else {
+            return (Class<T>) Klighd.class.getClassLoader().loadClass(element.getAttribute(attributeName));
+        }
+    }
+    
     static IPreferenceStore getPreferenceStore() {
         if (IS_PLATFORM_RUNNING) {
             // TODO return something useful here 
             return null;
         } else {
-        	    return new IPreferenceStore.NullPreferenceStore();
+            return new IPreferenceStore.NullPreferenceStore();
         }
     }
 }
