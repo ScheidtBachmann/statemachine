@@ -20,6 +20,60 @@
 				<groupId>org.eclipse.xtend</groupId>
 				<artifactId>xtend-maven-plugin</artifactId>
 			</plugin>
+			<!-- fetch the SWT runtime dependencies and extract the artifacts into dedicated subfolders being; they are included into the uber jar below -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.1.1</version>
+				<executions>
+					<execution>
+						<id>unpack</id>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.eclipse.swt</groupId>
+									<artifactId>org.eclipse.swt.cocoa.macosx.x86_64</artifactId>
+									<version>4.3</version>
+									<overWrite>false</overWrite>
+									<outputDirectory>${project.build.outputDirectory}/swt/org.eclipse.swt.cocoa.macosx.x86_64</outputDirectory>
+								</artifactItem>
+								<artifactItem>
+									<groupId>org.eclipse.swt</groupId>
+									<artifactId>org.eclipse.swt.gtk.linux.x86_64</artifactId>
+									<version>4.3</version>
+									<overWrite>false</overWrite>
+									<outputDirectory>${project.build.outputDirectory}/swt/org.eclipse.swt.gtk.linux.x86_64</outputDirectory>
+								</artifactItem>
+								<artifactItem>
+									<groupId>org.eclipse.swt</groupId>
+									<artifactId>org.eclipse.swt.win32.win32.x86_64</artifactId>
+									<version>4.3</version>
+									<overWrite>false</overWrite>
+									<outputDirectory>${project.build.outputDirectory}/swt/org.eclipse.swt.win32.win32.x86_64</outputDirectory>
+								</artifactItem>
+								<artifactItem>
+									<groupId>org.eclipse.swt</groupId>
+									<artifactId>org.eclipse.swt.win32.win32.x86</artifactId>
+									<version>4.3</version>
+									<overWrite>false</overWrite>
+									<outputDirectory>${project.build.outputDirectory}/swt/org.eclipse.swt.win32.win32.x86</outputDirectory>
+								</artifactItem>
+								<artifactItem>
+									<groupId>${project.groupId}</groupId>
+									<artifactId>de.scheidtbachmann.statemachine.diagrams</artifactId>
+									<version>${project.version}</version>
+									<overWrite>false</overWrite>
+									<outputDirectory>${project.build.outputDirectory}/diagramming</outputDirectory>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
@@ -81,7 +135,7 @@
 			<id>createSelfContainedExecutableUnix</id>
 			<activation>
 				<os>
-					<family>!Windows</family>
+					<family>unix</family>
 				</os>
 			</activation>
 			<properties>
@@ -114,7 +168,52 @@
 								</goals>
 								<configuration>
 									<executable>bash</executable>
-									<commandlineArgs>-c 'echo exec java -Xmx512m --add-opens java.base/java.lang=ALL-UNNAMED -jar \$0 \"\$@\" > ${executable}; echo  >> ${executable}; cat `ls target/*-app.jar` >> ${executable}; chmod u+x ${executable}'</commandlineArgs>
+									<commandlineArgs>-c 'echo exec java -Xmx512m --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/jdk.internal.loader=ALL-UNNAMED -jar \$0 \"\$@\" > ${executable}; echo  >> ${executable}; cat `ls target/*-app.jar` >> ${executable}; chmod u+x ${executable}'</commandlineArgs>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>createSelfContainedExecutableMac</id>
+			<activation>
+				<os>
+					<family>mac</family>
+				</os>
+			</activation>
+			<properties>
+				<executableJ8>${selfContainedExecutableName}Java8</executableJ8>
+				<executable>${selfContainedExecutableName}</executable>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<version>1.4.0</version>
+						<executions>
+							<execution>
+								<id>createSelfContainedExecutableJava8</id>
+								<phase>package</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>bash</executable>
+									<commandlineArgs>-c 'echo exec java -XstartOnFirstThread -Xmx512m -jar \$0 \"\$@\" > ${executableJ8}; echo  >> ${executableJ8}; cat `ls target/*-app.jar` >> ${executableJ8}; chmod u+x ${executableJ8}'</commandlineArgs>
+								</configuration>
+							</execution>
+							<execution>
+								<id>createSelfContainedExecutable</id>
+								<phase>package</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>bash</executable>
+									<commandlineArgs>-c 'echo exec java -XstartOnFirstThread -Xmx512m --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/jdk.internal.loader=ALL-UNNAMED -jar \$0 \"\$@\" > ${executable}; echo  >> ${executable}; cat `ls target/*-app.jar` >> ${executable}; chmod u+x ${executable}'</commandlineArgs>
 								</configuration>
 							</execution>
 						</executions>
@@ -159,7 +258,7 @@
 								</goals>
 								<configuration>
 									<executable>cmd</executable>
-									<commandlineArgs><![CDATA[/c echo @java -Xmx512m --add-opens java.base/java.lang=ALL-UNNAMED -jar %0 %1 %2 %3 > ${executableWin} & echo @exit /b >> ${executableWin} & type target\de.scheidtbachmann.statemachine.cli-0.1.0-SNAPSHOT-app.jar >> ${executableWin}]]></commandlineArgs>
+									<commandlineArgs><![CDATA[/c echo @java -Xmx512m --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/jdk.internal.loader=ALL-UNNAMED -jar %0 %1 %2 %3 > ${executableWin} & echo @exit /b >> ${executableWin} & type target\de.scheidtbachmann.statemachine.cli-0.1.0-SNAPSHOT-app.jar >> ${executableWin}]]></commandlineArgs>
 								</configuration>
 							</execution>
 						</executions>
@@ -176,14 +275,30 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>de.scheidtbachmann.statemachine.diagrams</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>info.picocli</groupId>
 			<artifactId>picocli</artifactId>
 			<version>${picoCliVersion}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.platform</groupId>
+			<artifactId>org.eclipse.equinox.registry</artifactId>
+			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
+		</dependency>
+		<dependency>
+			<groupId>org.freehep</groupId>
+			<artifactId>freehep-graphicsio-svg</artifactId>
+			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.elk</groupId>
+			<artifactId>org.eclipse.elk.alg.graphviz.layouter</artifactId>
+			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>de.scheidtbachmann.statemachine.diagrams</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>

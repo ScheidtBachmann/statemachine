@@ -33,6 +33,37 @@
 		<module>de.scheidtbachmann.statemachine.cli</module>
 		<module>de.scheidtbachmann.statemachine.ide</module>
 	</modules>
+	
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.eclipse.elk</groupId>
+				<artifactId>org.eclipse.elk.alg.graphviz.layouter</artifactId>
+				<version>${elkVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.freehep</groupId>
+				<artifactId>freehep-graphicsio-svg</artifactId>
+				<version>2.3</version>
+			</dependency>
+			<dependency>
+				<!-- is required by Xtext and KLighD, defines 'org.eclipse.core.runtime.IStatus', for example. -->
+				<groupId>org.eclipse.platform</groupId>
+				<artifactId>org.eclipse.equinox.common</artifactId>
+				<version>3.8.0</version>
+			</dependency>
+			<dependency>
+				<!-- is required by KLighD, defines 'org.eclipse.core.runtime.IExecutableExtension', for example. -->
+				<!-- don't alter versions of this and '...equinox.common' arbitrarily,
+				      as both artifacts contribute classes in the same package, and thus, their signatures must match each other.
+				      Otherwise, the JVM will terminate with an exception! -->
+				<groupId>org.eclipse.platform</groupId>
+				<artifactId>org.eclipse.equinox.registry</artifactId>
+				<version>3.6.100</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+	
 	<build>
 		<pluginManagement>
 			<plugins>

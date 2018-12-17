@@ -11,17 +11,6 @@
 	<packaging>jar</packaging>
 	
 	<build>
-		<resources>
-			<resource>
-				<directory>client</directory>
-				<includes>
-					<include>page/**/*</include>
-				</includes>
-				<excludes>
-					<exclude>page/diagramModel.js</exclude>
-				</excludes>
-			</resource>
-		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -36,6 +25,7 @@
 						</goals>
 						<configuration>
 							<sources>
+								<source>${basedir}/src/main/elk-gen/</source>
 								<source>${basedir}/src/main/emf-gen</source>
 							</sources>
 							<resources>
@@ -56,6 +46,7 @@
 				<configuration>
 					<filesets combine.children="append">
 						<fileset>
+							<directory>${basedir}/src/main/elk-gen/</directory>
 							<directory>${basedir}/src/main/emf-gen/</directory>
 							<includes>
 								<include>**/*</include>
@@ -64,14 +55,14 @@
 					</filesets>
 				</configuration>
 			</plugin>
-			<!-- run the xtext-maven-plugin to compile the .xcore files. -->
+			<!-- run the xtext-maven-plugin to compile the .xcore and .melk files. -->
 			<plugin>
 				<groupId>org.eclipse.xtext</groupId>
 				<artifactId>xtext-maven-plugin</artifactId>
 				<version>${xtextVersion}</version>
 				<executions>
 					<execution>
-						<id>xcore-generator</id>
+						<id>generate-xcore-and-melk</id>
 						<phase>generate-sources</phase>
 						<goals>
 							<goal>generate</goal>
@@ -94,9 +85,18 @@
 								</outputConfiguration>
 							</outputConfigurations>
 						</language>
+						<language>
+							<setup>org.eclipse.elk.core.meta.MetaDataStandaloneSetup</setup>
+							<outputConfigurations>
+								<outputConfiguration>
+									<outputDirectory>${project.basedir}/src/main/elk-gen/</outputDirectory>
+								</outputConfiguration>
+							</outputConfigurations>
+						</language>
 					</languages>
 					<sourceRoots>
 						<root>${basedir}/model/</root>
+						<root>${basedir}/src/main/java</root>
 					</sourceRoots>
 				</configuration>
 				<dependencies>
@@ -145,6 +145,16 @@
 						<artifactId>org.eclipse.emf.ecore.xcore.lib</artifactId>
 						<version>${xcoreLibVersion}</version>
 					</dependency>
+					<dependency>
+						<groupId>org.eclipse.elk</groupId>
+						<artifactId>org.eclipse.elk.core.meta</artifactId>
+						<version>${elkVersion}</version>
+					</dependency>
+					<dependency>
+						<groupId>org.eclipse.xtext</groupId>
+						<artifactId>org.eclipse.xtext.xbase</artifactId>
+						<version>${xtextVersion}</version>
+					</dependency>
 				</dependencies>
 			</plugin>
 			<plugin>
@@ -165,5 +175,93 @@
 			<artifactId>gson</artifactId>
 			<version>2.8.5</version>
 		</dependency>
+		<dependency>
+			<groupId>org.freehep</groupId>
+			<artifactId>freehep-graphicsio-svg</artifactId>
+			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.platform</groupId>
+			<artifactId>org.eclipse.equinox.registry</artifactId>
+			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
+		</dependency>
+		<dependency>
+			<!-- Use the following deps as a compile-only non-runtime dependencies, 
+			      dont't propagate them to dependent artifacts or put them in any fat jars! -->
+			<groupId>org.eclipse.platform</groupId>
+			<artifactId>org.eclipse.core.runtime</artifactId>
+			<version>3.13.0</version>
+			<scope>provided</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.eclipse.platform</groupId>
+					<artifactId>org.eclipse.osgi</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.platform</groupId>
+			<artifactId>org.eclipse.jface</artifactId>
+			<version>3.13.0</version>
+			<scope>provided</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.eclipse.platform</groupId>
+					<artifactId>org.eclipse.swt</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 	</dependencies>
+	
+	<profiles>
+		<profile>
+			<id>swt-osx</id>
+			<activation>
+				<os>
+					<family>mac</family>
+				</os>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>org.eclipse.swt</groupId>
+					<artifactId>org.eclipse.swt.cocoa.macosx.x86_64</artifactId>
+					<version>4.3</version>
+					<scope>provided</scope><!-- do not propagate this dependency to the cli artifact, SWT artifacts are included "manually". -->
+				</dependency>
+			</dependencies>
+		</profile>
+		<profile>
+			<id>swt-linux</id>
+			<activation>
+				<os>
+					<family>linux</family>
+				</os>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>org.eclipse.swt</groupId>
+					<artifactId>org.eclipse.swt.gtk.linux.x86_64</artifactId>
+					<version>4.3</version>
+					<scope>provided</scope><!-- do not propagate this dependency to the cli artifact, SWT artifacts are included "manually". -->
+				</dependency>
+			</dependencies>
+		</profile>
+		<profile>
+			<id>swt-win</id>
+			<activation>
+				<os>
+					<family>windows</family>
+				</os>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>org.eclipse.swt</groupId>
+					<artifactId>org.eclipse.swt.win32.win32.x86_64</artifactId>
+					<version>4.3</version>
+					<scope>provided</scope><!-- do not propagate this dependency to the cli artifact, SWT artifacts are included "manually". -->
+				</dependency>
+			</dependencies>
+		</profile>
+	</profiles>
+	
 </project>
