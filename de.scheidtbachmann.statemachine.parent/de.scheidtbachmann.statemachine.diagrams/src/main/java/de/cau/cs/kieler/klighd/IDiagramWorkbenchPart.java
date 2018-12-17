@@ -13,7 +13,6 @@
  */
 package de.cau.cs.kieler.klighd;
 
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 
 /**
@@ -50,16 +49,18 @@ public interface IDiagramWorkbenchPart extends IWorkbenchPart {
      */
     ViewContext getViewContext();
 
+    void bringToTop();
+
     /**
      * Extended interface for editor parts implemented by KLighD.
      */
-    public interface IDiagramEditorPart extends IDiagramWorkbenchPart, IEditorPart {
-
-        /**
-         * Set the dirty status of the editor.
-         *
-         * @param dirty the new dirty status
-         */
-        void setDirty(boolean dirty);
-    }
+//    public interface IDiagramEditorPart extends IDiagramWorkbenchPart, IEditorPart {
+//
+//        /**
+//         * Set the dirty status of the editor.
+//         *
+//         * @param dirty the new dirty status
+//         */
+//        void setDirty(boolean dirty);
+//    }
 }

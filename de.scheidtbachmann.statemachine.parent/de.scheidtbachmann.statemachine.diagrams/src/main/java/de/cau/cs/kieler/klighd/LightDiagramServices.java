@@ -112,7 +112,7 @@ public final class LightDiagramServices {
         final IDiagramWorkbenchPart diagramWP = theViewContext.getDiagramWorkbenchPart();
 
         if (diagramWP != null) {
-            diagramWP.getSite().getPage().bringToTop(diagramWP);
+            diagramWP.bringToTop();
         }
 
         config.performLayout();
