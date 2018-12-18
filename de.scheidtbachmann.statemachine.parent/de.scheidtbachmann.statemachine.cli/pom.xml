@@ -247,7 +247,7 @@
 								</goals>
 								<configuration>
 									<executable>cmd</executable>
-									<commandlineArgs><![CDATA[/c echo @java -Xmx512m -jar %0 %1 %2 %3 > ${executableWinJ8} & echo @exit /b >> ${executableWinJ8} & type target\de.scheidtbachmann.statemachine.cli-0.1.0-SNAPSHOT-app.jar >> ${executableWinJ8}]]></commandlineArgs>
+									<commandlineArgs><![CDATA[/c echo @java -Xmx512m -jar %0 %* > ${executableWinJ8} & echo @exit /b >> ${executableWinJ8} & type target\de.scheidtbachmann.statemachine.cli-0.1.0-SNAPSHOT-app.jar >> ${executableWinJ8}]]></commandlineArgs>
 								</configuration>
 							</execution>
 							<execution>
@@ -258,7 +258,7 @@
 								</goals>
 								<configuration>
 									<executable>cmd</executable>
-									<commandlineArgs><![CDATA[/c echo @java -Xmx512m --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/jdk.internal.loader=ALL-UNNAMED -jar %0 %1 %2 %3 > ${executableWin} & echo @exit /b >> ${executableWin} & type target\de.scheidtbachmann.statemachine.cli-0.1.0-SNAPSHOT-app.jar >> ${executableWin}]]></commandlineArgs>
+									<commandlineArgs><![CDATA[/c echo @java -Xmx512m --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/jdk.internal.loader=ALL-UNNAMED -jar %0 %* > ${executableWin} & echo @exit /b >> ${executableWin} & type target\de.scheidtbachmann.statemachine.cli-0.1.0-SNAPSHOT-app.jar >> ${executableWin}]]></commandlineArgs>
 								</configuration>
 							</execution>
 						</executions>
