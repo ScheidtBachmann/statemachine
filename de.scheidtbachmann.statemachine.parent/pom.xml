@@ -15,7 +15,7 @@
 		<jUnitVersion>4.12</jUnitVersion>
 		<xcoreVersion>[1.3.1]</xcoreVersion>
 		<xcoreLibVersion>[1.1.100]</xcoreLibVersion>
-		<xtextVersion>2.14.0</xtextVersion>
+		<xtextVersion>2.15.0</xtextVersion>
 		<elkVersion>0.4.1</elkVersion>
 		<picoCliVersion>3.7.0</picoCliVersion>
 		
