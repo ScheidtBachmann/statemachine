@@ -33,7 +33,6 @@ import de.cau.cs.kieler.sccharts.Region;
 import de.cau.cs.kieler.sccharts.Scope;
 import de.cau.cs.kieler.sccharts.State;
 import de.cau.cs.kieler.sccharts.Transition;
-import de.cau.cs.kieler.sccharts.ui.synthesis.srtg.SRTGSynthesis;
 
 /**
  * This class allows hooking into the {@link SRTGSynthesis}. Before and after each main
