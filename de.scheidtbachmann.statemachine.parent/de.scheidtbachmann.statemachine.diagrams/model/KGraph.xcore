@@ -185,6 +185,40 @@ class KPort extends KLabeledGraphElement , KShapeLayout {
 class KLabel extends KGraphElement , KShapeLayout {
 	String text
 	container KLabeledGraphElement[1] parent opposite labels
+	
+    unsettable boolean modified = "false"
+    
+    op void setPos(float newXpos, float newYpos) {
+        val oldXpos = xpos;
+        val oldYpos = ypos;
+        if (newXpos != oldXpos || newYpos != oldYpos) {
+            modified = true;
+        }
+        xpos = newXpos;
+        ypos = newYpos;
+//        if (eNotificationRequired()) {
+//            eNotify(new ENotificationImpl(this, Notification.SET, KGraphPackage.KSHAPE_LAYOUT__YPOS, oldYpos, ypos));
+//            eNotify(new ENotificationImpl(this, Notification.SET, KGraphPackage.KSHAPE_LAYOUT__XPOS, oldXpos, xpos));
+//        }
+    }
+    
+    op void setSize(float newWidth, float newHeight) {
+        val oldWidth = width;
+        val oldHeight = height;
+        width = newWidth;
+        height = newHeight;
+        if (newWidth != oldWidth || newHeight != oldHeight) {
+            modified = true;
+        }
+//        if (eNotificationRequired()) {
+//            eNotify(new ENotificationImpl(this, Notification.SET, KGraphPackage.KSHAPE_LAYOUT__WIDTH, oldWidth, width));
+//            eNotify(new ENotificationImpl(this, Notification.SET, KGraphPackage.KSHAPE_LAYOUT__HEIGHT, oldHeight, height));
+//        }
+    }
+    
+    op void resetModificationFlag() {
+        modified = false;
+    }
 }
 
 @GenModel(documentation="A property holder implementation based on {@link org.eclipse.emf.common.util.EMap} which can be used in Ecore models.")
