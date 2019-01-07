@@ -14,6 +14,7 @@
 package de.cau.cs.kieler.sccharts.ui.synthesis.hooks;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 
@@ -84,26 +85,46 @@ public class SynthesisHooks implements ISynthesisHooks {
      * Initializes this class with the data from the extension point.
      */
     static {
-        final IConfigurationElement[] extensions =
-                Klighd.getExtensions(EXTP_ID_HOOKS);
-
-        registeredHooks = new ArrayList<Class<? extends SynthesisHook>>(extensions.length);
-
-        for (final IConfigurationElement element : extensions) {
-            if (ELEMENT_HOOK.equals(element.getName())) {
-                try {
-                    @SuppressWarnings("unchecked")
-					Class<? extends SynthesisHook> hookClass = (Class<? extends SynthesisHook>) element
-							.createExecutableExtension(ATTRIBUTE_CLASS).getClass();
-                    registeredHooks.add(hookClass);
-                } catch (final Exception exception) {
-                    StatusManager.getManager().handle(
-                            new Status(IStatus.ERROR, SCChartsUiModule.PLUGIN_ID,
-                                    SynthesisHooks.class.getName()
-                                            + ": Error while parsing hook extension point",
-                                    exception));
+        if (Klighd.IS_PLATFORM_RUNNING) {
+            final IConfigurationElement[] extensions =
+                    Klighd.getExtensions(EXTP_ID_HOOKS);
+    
+            registeredHooks = new ArrayList<Class<? extends SynthesisHook>>(extensions.length);
+    
+            for (final IConfigurationElement element : extensions) {
+                if (ELEMENT_HOOK.equals(element.getName())) {
+                    try {
+                        @SuppressWarnings("unchecked")
+    					Class<? extends SynthesisHook> hookClass = (Class<? extends SynthesisHook>) element
+    							.createExecutableExtension(ATTRIBUTE_CLASS).getClass();
+                        registeredHooks.add(hookClass);
+                    } catch (final Exception exception) {
+                        StatusManager.getManager().handle(
+                                new Status(IStatus.ERROR, SCChartsUiModule.PLUGIN_ID,
+                                        SynthesisHooks.class.getName()
+                                                + ": Error while parsing hook extension point",
+                                        exception));
+                    }
                 }
             }
+        } else {
+            // Hardcoded registration
+            registeredHooks = new ArrayList<Class<? extends SynthesisHook>>(Arrays.asList(
+                BlackWhiteModeHook.class,
+                ColorAnnotationHook.class,
+                DeclarationsHook.class,
+                ExpandCollapseHook.class,
+                HideAnnotationHook.class,
+                HideEntryKeywordHook.class,
+                InducedDataflowHook.class,
+                LabelPlacementSideHook.class,
+                LabelShorteningHook.class,
+                LayoutHook.class,
+                ShadowHook.class,
+                ShowAnnotationsHook.class,
+                StateActionsHook.class,
+                SynthesisAnnotationHook.class
+            ));
         }
     }
 
