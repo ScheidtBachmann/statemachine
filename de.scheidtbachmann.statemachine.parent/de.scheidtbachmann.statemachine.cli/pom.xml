@@ -11,7 +11,14 @@
 	<packaging>jar</packaging>
 	
 	<properties>
-		<selfContainedExecutableName>scc</selfContainedExecutableName>
+		<selfContainedExecutableName>${project.build.directory}\scc</selfContainedExecutableName>
+		<executableJ8-nix>${selfContainedExecutableName}Java8-nix</executableJ8-nix>
+		<executable-nix>${selfContainedExecutableName}-nix</executable-nix>
+		<executableJ8-osx>${selfContainedExecutableName}Java8-osx</executableJ8-osx>
+		<executable-osx>${selfContainedExecutableName}-osx</executable-osx>
+		<executableJ8-win>${selfContainedExecutableName}Java8-win.bat</executableJ8-win>
+		<executable-win>${selfContainedExecutableName}-win.bat</executable-win>
+		<appjar>${project.build.directory}\de.scheidtbachmann.statemachine.cli-0.1.0-SNAPSHOT-app.jar</appjar>
 	</properties>
 	
 	<build>
@@ -127,6 +134,54 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>3.0.0</version>
+				<executions>
+					<execution>
+						<id>attach-artifacts</id>
+						<phase>package</phase>
+						<goals>
+							<goal>attach-artifact</goal>
+						</goals>
+						<configuration>
+							<artifacts>
+								<artifact>
+									<file>${executableJ8-nix}</file>
+									<type>jar</type>
+									<classifier>executableJ8-nix</classifier>
+								</artifact>
+								<artifact>
+									<file>${executable-nix}</file>
+									<type>jar</type>
+									<classifier>executable-nix</classifier>
+								</artifact>
+								<artifact>
+									<file>${executableJ8-win}</file>
+									<type>jar</type>
+									<classifier>executableJ8-win</classifier>
+								</artifact>
+								<artifact>
+									<file>${executable-win}</file>
+									<type>jar</type>
+									<classifier>executable-win</classifier>
+								</artifact>
+								<artifact>
+									<file>${executableJ8-osx}</file>
+									<type>jar</type>
+									<classifier>executableJ8-osx</classifier>
+								</artifact>
+								<artifact>
+									<file>${executable-osx}</file>
+									<type>jar</type>
+									<classifier>executable-osx</classifier>
+								</artifact>
+							</artifacts>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 	
@@ -138,10 +193,6 @@
 					<family>unix</family>
 				</os>
 			</activation>
-			<properties>
-				<executableJ8>${selfContainedExecutableName}Java8</executableJ8>
-				<executable>${selfContainedExecutableName}</executable>
-			</properties>
 			<build>
 				<plugins>
 					<plugin>
@@ -150,25 +201,69 @@
 						<version>1.4.0</version>
 						<executions>
 							<execution>
-								<id>createSelfContainedExecutableJava8</id>
+								<id>createSelfContainedExecutableJava8-nix</id>
 								<phase>package</phase>
 								<goals>
 									<goal>exec</goal>
 								</goals>
 								<configuration>
 									<executable>bash</executable>
-									<commandlineArgs>-c 'echo exec java -Xmx512m -jar \$0 \"\$@\" > ${executableJ8}; echo  >> ${executableJ8}; cat `ls target/*-app.jar` >> ${executableJ8}; chmod u+x ${executableJ8}'</commandlineArgs>
+									<commandlineArgs>-c 'echo exec java -Xmx512m -jar \$0 \"\$@\" > ${executableJ8-nix}; echo  >> ${executableJ8-nix}; cat `ls target/*-app.jar` >> ${executableJ8-nix}; chmod u+x ${executableJ8-nix}'</commandlineArgs>
 								</configuration>
 							</execution>
 							<execution>
-								<id>createSelfContainedExecutable</id>
+								<id>createSelfContainedExecutable-nix</id>
 								<phase>package</phase>
 								<goals>
 									<goal>exec</goal>
 								</goals>
 								<configuration>
 									<executable>bash</executable>
-									<commandlineArgs>-c 'echo exec java -Xmx512m --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/jdk.internal.loader=ALL-UNNAMED -jar \$0 \"\$@\" > ${executable}; echo  >> ${executable}; cat `ls target/*-app.jar` >> ${executable}; chmod u+x ${executable}'</commandlineArgs>
+									<commandlineArgs>-c 'echo exec java -Xmx512m --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/jdk.internal.loader=ALL-UNNAMED -jar \$0 \"\$@\" > ${executable-nix}; echo  >> ${executable-nix}; cat `ls target/*-app.jar` >> ${executable-nix}; chmod u+x ${executable-nix}'</commandlineArgs>
+								</configuration>
+							</execution>
+							<execution>
+								<id>createSelfContainedExecutableJava8-win</id>
+								<phase>package</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>bash</executable>
+									<commandlineArgs>-c 'echo @java -Xmx512m -jar %0 %* > ${executableJ8-win}; echo @exit /b >> ${executableJ8-win}; cat `ls target/*-app.jar` >> ${executableJ8-win}'></commandlineArgs>
+								</configuration>
+							</execution>
+							<execution>
+								<id>createSelfContainedExecutable-win</id>
+								<phase>package</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>bash</executable>
+									<commandlineArgs>-c 'echo @java -Xmx512m --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/jdk.internal.loader=ALL-UNNAMED -jar %0 %* > ${executable-win}; echo @exit /b >> ${executable-win}; cat `ls target/*-app.jar` >> ${executable-win}'></commandlineArgs>
+								</configuration>
+							</execution>
+							<execution>
+								<id>createSelfContainedExecutableJava8-osx</id>
+								<phase>package</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>bash</executable>
+									<commandlineArgs>-c 'echo exec java -XstartOnFirstThread -Xmx512m -jar \$0 \"\$@\" > ${executableJ8-osx}; echo  >> ${executableJ8-osx}; cat `ls target/*-app.jar` >> ${executableJ8-osx}; chmod u+x ${executableJ8-osx}'</commandlineArgs>
+								</configuration>
+							</execution>
+							<execution>
+								<id>createSelfContainedExecutable-osx</id>
+								<phase>package</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>bash</executable>
+									<commandlineArgs>-c 'echo exec java -XstartOnFirstThread -Xmx512m --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/jdk.internal.loader=ALL-UNNAMED -jar \$0 \"\$@\" > ${executable-osx}; echo  >> ${executable-osx}; cat `ls target/*-app.jar` >> ${executable-osx}; chmod u+x ${executable-osx}'</commandlineArgs>
 								</configuration>
 							</execution>
 						</executions>
@@ -183,10 +278,6 @@
 					<family>mac</family>
 				</os>
 			</activation>
-			<properties>
-				<executableJ8>${selfContainedExecutableName}Java8</executableJ8>
-				<executable>${selfContainedExecutableName}</executable>
-			</properties>
 			<build>
 				<plugins>
 					<plugin>
@@ -195,25 +286,69 @@
 						<version>1.4.0</version>
 						<executions>
 							<execution>
-								<id>createSelfContainedExecutableJava8</id>
+								<id>createSelfContainedExecutableJava8-nix</id>
 								<phase>package</phase>
 								<goals>
 									<goal>exec</goal>
 								</goals>
 								<configuration>
 									<executable>bash</executable>
-									<commandlineArgs>-c 'echo exec java -XstartOnFirstThread -Xmx512m -jar \$0 \"\$@\" > ${executableJ8}; echo  >> ${executableJ8}; cat `ls target/*-app.jar` >> ${executableJ8}; chmod u+x ${executableJ8}'</commandlineArgs>
+									<commandlineArgs>-c 'echo exec java -Xmx512m -jar \$0 \"\$@\" > ${executableJ8-nix}; echo  >> ${executableJ8-nix}; cat `ls target/*-app.jar` >> ${executableJ8-nix}; chmod u+x ${executableJ8-nix}'</commandlineArgs>
 								</configuration>
 							</execution>
 							<execution>
-								<id>createSelfContainedExecutable</id>
+								<id>createSelfContainedExecutable-nix</id>
 								<phase>package</phase>
 								<goals>
 									<goal>exec</goal>
 								</goals>
 								<configuration>
 									<executable>bash</executable>
-									<commandlineArgs>-c 'echo exec java -XstartOnFirstThread -Xmx512m --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/jdk.internal.loader=ALL-UNNAMED -jar \$0 \"\$@\" > ${executable}; echo  >> ${executable}; cat `ls target/*-app.jar` >> ${executable}; chmod u+x ${executable}'</commandlineArgs>
+									<commandlineArgs>-c 'echo exec java -Xmx512m --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/jdk.internal.loader=ALL-UNNAMED -jar \$0 \"\$@\" > ${executable-nix}; echo  >> ${executable-nix}; cat `ls target/*-app.jar` >> ${executable-nix}; chmod u+x ${executable-nix}'</commandlineArgs>
+								</configuration>
+							</execution>
+							<execution>
+								<id>createSelfContainedExecutableJava8-win</id>
+								<phase>package</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>bash</executable>
+									<commandlineArgs>-c 'echo @java -Xmx512m -jar %0 %* > ${executableJ8-win}; echo @exit /b >> ${executableJ8-win}; cat `ls target/*-app.jar` >> ${executableJ8-win}'></commandlineArgs>
+								</configuration>
+							</execution>
+							<execution>
+								<id>createSelfContainedExecutable-win</id>
+								<phase>package</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>bash</executable>
+									<commandlineArgs>-c 'echo @java -Xmx512m --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/jdk.internal.loader=ALL-UNNAMED -jar %0 %* > ${executable-win}; echo @exit /b >> ${executable-win}; cat `ls target/*-app.jar` >> ${executable-win}'></commandlineArgs>
+								</configuration>
+							</execution>
+							<execution>
+								<id>createSelfContainedExecutableJava8-osx</id>
+								<phase>package</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>bash</executable>
+									<commandlineArgs>-c 'echo exec java -XstartOnFirstThread -Xmx512m -jar \$0 \"\$@\" > ${executableJ8-osx}; echo  >> ${executableJ8-osx}; cat `ls target/*-app.jar` >> ${executableJ8-osx}; chmod u+x ${executableJ8-osx}'</commandlineArgs>
+								</configuration>
+							</execution>
+							<execution>
+								<id>createSelfContainedExecutable-osx</id>
+								<phase>package</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>bash</executable>
+									<commandlineArgs>-c 'echo exec java -XstartOnFirstThread -Xmx512m --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/jdk.internal.loader=ALL-UNNAMED -jar \$0 \"\$@\" > ${executable-osx}; echo  >> ${executable-osx}; cat `ls target/*-app.jar` >> ${executable-osx}; chmod u+x ${executable-osx}'</commandlineArgs>
 								</configuration>
 							</execution>
 						</executions>
@@ -228,10 +363,6 @@
 					<family>Windows</family>
 				</os>
 			</activation>
-			<properties>
-				<executableWinJ8>${selfContainedExecutableName}Java8.bat</executableWinJ8>
-				<executableWin>${selfContainedExecutableName}.bat</executableWin>
-			</properties>
 			<build>
 				<plugins>
 					<plugin>
@@ -240,25 +371,69 @@
 						<version>1.4.0</version>
 						<executions>
 							<execution>
-								<id>createSelfContainedExecutableJava8</id>
+								<id>createSelfContainedExecutableJava8-nix</id>
 								<phase>package</phase>
 								<goals>
 									<goal>exec</goal>
 								</goals>
 								<configuration>
 									<executable>cmd</executable>
-									<commandlineArgs><![CDATA[/c echo @java -Xmx512m -jar %0 %* > ${executableWinJ8} & echo @exit /b >> ${executableWinJ8} & type target\de.scheidtbachmann.statemachine.cli-0.1.0-SNAPSHOT-app.jar >> ${executableWinJ8}]]></commandlineArgs>
+									<commandlineArgs><![CDATA[/c echo @java -Xmx512m -jar %0 %* > ${executableJ8-nix} & echo @exit /b >> ${executableJ8-nix} & type ${appjar} >> ${executableJ8-nix}]]></commandlineArgs>
 								</configuration>
 							</execution>
 							<execution>
-								<id>createSelfContainedExecutable</id>
+								<id>createSelfContainedExecutable-nix</id>
 								<phase>package</phase>
 								<goals>
 									<goal>exec</goal>
 								</goals>
 								<configuration>
 									<executable>cmd</executable>
-									<commandlineArgs><![CDATA[/c echo @java -Xmx512m --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/jdk.internal.loader=ALL-UNNAMED -jar %0 %* > ${executableWin} & echo @exit /b >> ${executableWin} & type target\de.scheidtbachmann.statemachine.cli-0.1.0-SNAPSHOT-app.jar >> ${executableWin}]]></commandlineArgs>
+									<commandlineArgs><![CDATA[/c echo @java -Xmx512m --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/jdk.internal.loader=ALL-UNNAMED -jar %0 %* > ${executable-nix} & echo @exit /b >> ${executable-nix} & type ${appjar} >> ${executable-nix}]]></commandlineArgs>
+								</configuration>
+							</execution>
+							<execution>
+								<id>createSelfContainedExecutableJava8-win</id>
+								<phase>package</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>cmd</executable>
+									<commandlineArgs><![CDATA[/c echo @java -Xmx512m -jar %0 %* > ${executableJ8-win} & echo @exit /b >> ${executableJ8-win} & type ${appjar} >> ${executableJ8-win}]]></commandlineArgs>
+								</configuration>
+							</execution>
+							<execution>
+								<id>createSelfContainedExecutable-win</id>
+								<phase>package</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>cmd</executable>
+									<commandlineArgs><![CDATA[/c echo @java -Xmx512m --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/jdk.internal.loader=ALL-UNNAMED -jar %0 %* > ${executable-win} & echo @exit /b >> ${executable-win} & type target\de.scheidtbachmann.statemachine.cli-0.1.0-SNAPSHOT-app.jar >> ${executable-win}]]></commandlineArgs>
+								</configuration>
+							</execution>
+							<execution>
+								<id>createSelfContainedExecutableJava8-osx</id>
+								<phase>package</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>cmd</executable>
+									<commandlineArgs><![CDATA[/c echo @java -XstartOnFirstThread -Xmx512m -jar %0 %* > ${executableJ8-osx} & echo @exit /b >> ${executableJ8-osx} & type ${appjar} >> ${executableJ8-osx}]]></commandlineArgs>
+								</configuration>
+							</execution>
+							<execution>
+								<id>createSelfContainedExecutable-osx</id>
+								<phase>package</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>cmd</executable>
+									<commandlineArgs><![CDATA[/c echo @java -XstartOnFirstThread -Xmx512m --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/jdk.internal.loader=ALL-UNNAMED -jar %0 %* > ${executable-osx} & echo @exit /b >> ${executable-osx} & type ${appjar} >> ${executable-osx}]]></commandlineArgs>
 								</configuration>
 							</execution>
 						</executions>
