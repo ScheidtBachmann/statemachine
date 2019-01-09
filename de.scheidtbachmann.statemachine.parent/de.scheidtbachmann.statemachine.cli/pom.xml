@@ -150,33 +150,33 @@
 							<artifacts>
 								<artifact>
 									<file>${executableJ8-nix}</file>
-									<type>jar</type>
-									<classifier>executableJ8-nix</classifier>
+									<type></type>
+									<classifier>sccJava8-linux</classifier>
 								</artifact>
 								<artifact>
 									<file>${executable-nix}</file>
-									<type>jar</type>
-									<classifier>executable-nix</classifier>
+									<type></type>
+									<classifier>scc-linux</classifier>
 								</artifact>
 								<artifact>
 									<file>${executableJ8-win}</file>
-									<type>jar</type>
-									<classifier>executableJ8-win</classifier>
+									<type>bat</type>
+									<classifier>sccJava8-win</classifier>
 								</artifact>
 								<artifact>
 									<file>${executable-win}</file>
-									<type>jar</type>
-									<classifier>executable-win</classifier>
+									<type>bat</type>
+									<classifier>scc-win</classifier>
 								</artifact>
 								<artifact>
 									<file>${executableJ8-osx}</file>
-									<type>jar</type>
-									<classifier>executableJ8-osx</classifier>
+									<type></type>
+									<classifier>sccJava8-osx</classifier>
 								</artifact>
 								<artifact>
 									<file>${executable-osx}</file>
-									<type>jar</type>
-									<classifier>executable-osx</classifier>
+									<type></type>
+									<classifier>scc-osx</classifier>
 								</artifact>
 							</artifacts>
 						</configuration>
