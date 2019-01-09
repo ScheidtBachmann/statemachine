@@ -150,12 +150,12 @@
 							<artifacts>
 								<artifact>
 									<file>${executableJ8-nix}</file>
-									<type></type>
+									<type>sh</type>
 									<classifier>sccJava8-linux</classifier>
 								</artifact>
 								<artifact>
 									<file>${executable-nix}</file>
-									<type></type>
+									<type>sh</type>
 									<classifier>scc-linux</classifier>
 								</artifact>
 								<artifact>
@@ -170,12 +170,12 @@
 								</artifact>
 								<artifact>
 									<file>${executableJ8-osx}</file>
-									<type></type>
+									<type>sh</type>
 									<classifier>sccJava8-osx</classifier>
 								</artifact>
 								<artifact>
 									<file>${executable-osx}</file>
-									<type></type>
+									<type>sh</type>
 									<classifier>scc-osx</classifier>
 								</artifact>
 							</artifacts>
