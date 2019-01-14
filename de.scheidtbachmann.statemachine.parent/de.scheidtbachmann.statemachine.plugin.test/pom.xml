@@ -1,0 +1,98 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>de.scheidtbachmann.statemachine</groupId>
+		<artifactId>de.scheidtbachmann.statemachine.parent</artifactId>
+		<version>0.1.0-SNAPSHOT</version>
+	</parent>
+	<artifactId>de.scheidtbachmann.statemachine.plugin.test</artifactId>
+	<name>StateMachine Codegenerator Maven Plugin Test</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>de.scheidtbachmann.statemachine</groupId>
+			<artifactId>de.scheidtbachmann.statemachine.plugin</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<!-- <dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-plugin-api</artifactId>
+			<version>2.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-core</artifactId>
+			<version>3.5.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven.plugin-tools</groupId>
+			<artifactId>maven-plugin-annotations</artifactId>
+			<version>3.5</version>
+			<scope>provided</scope>
+		</dependency> -->
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>de.scheidtbachmann.statemachine</groupId>
+				<artifactId>de.scheidtbachmann.statemachine.plugin</artifactId>
+				<version>0.1.0-SNAPSHOT</version>
+				<executions>
+					<execution>
+						<id>statemachines</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>SMGen</goal>
+						</goals>
+
+						<configuration>
+							<stateMachines>
+								<param>${project.basedir}/src/main/resources/test.sm</param>
+								<param>${project.basedir}/src/main/resources/test2.sm</param>
+							</stateMachines>
+                            <outputFolder>${project.build.directory}/generated-sources/statemachines/</outputFolder>
+							<strategy>de.cau.cs.kieler.sccharts.netlist.java</strategy>
+ 						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+		<pluginManagement>
+			<plugins>
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											de.scheidtbachmann.statemachine
+										</groupId>
+										<artifactId>
+											de.scheidtbachmann.statemachine.plugin
+										</artifactId>
+										<versionRange>
+											[0.0.1-SNAPSHOT,)
+										</versionRange>
+										<goals>
+											<goal>SMGen</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+</project>
