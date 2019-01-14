@@ -34,10 +34,7 @@ import de.cau.cs.kieler.sccharts.ui.synthesis.hooks.SynthesisHooks;
 public abstract class SubSynthesis<I extends EObject, O extends KGraphElement> 
     extends AbstractSubSynthesis<I, O>{
 
-    @Inject
-    protected SynthesisHooks hooks;
-
     protected ISynthesisHooks getHooks() {
-        return hooks;
+        return parent.hooks;
     }
 }

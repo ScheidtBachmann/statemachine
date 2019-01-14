@@ -63,7 +63,7 @@ class SCChartsSynthesis extends AbstractDiagramSynthesis<SCCharts> {
     @Inject TransitionSynthesis transitionSynthesis
     @Inject CommentSynthesis commentSynthesis
         
-    @Inject SynthesisHooks hooks  
+    @Inject public var SynthesisHooks hooks  // als: Workaround for broken injection
 
     static val PRAGMA_SYMBOLS = "symbols"       
     static val PRAGMA_SYMBOL = "symbol"       

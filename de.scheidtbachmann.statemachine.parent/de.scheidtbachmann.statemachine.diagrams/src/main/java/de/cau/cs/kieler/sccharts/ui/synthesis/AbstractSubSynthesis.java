@@ -44,7 +44,7 @@ import de.cau.cs.kieler.sccharts.ui.synthesis.hooks.SynthesisHooks.Type;
 public abstract class AbstractSubSynthesis<I extends EObject, O extends KGraphElement> {
 
     @Inject
-    private AbstractDiagramSynthesis<?> parent;
+    protected SCChartsSynthesis parent;
     
     /** The input type this synthesis handles */
     protected final Type hookType;
