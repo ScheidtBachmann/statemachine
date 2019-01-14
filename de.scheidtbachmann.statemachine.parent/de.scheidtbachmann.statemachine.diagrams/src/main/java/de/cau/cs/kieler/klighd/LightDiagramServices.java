@@ -166,6 +166,7 @@ public final class LightDiagramServices {
         if (!Klighd.IS_PLATFORM_RUNNING) {
             final IDiagramLayoutConnector connector = new KlighdDiagramLayoutConnector();
             final LayoutMapping mapping = connector.buildLayoutGraph(null, config.viewContext());
+            // TODO enable layout options
             new RecursiveGraphLayoutEngine().layout(mapping.getLayoutGraph(), new BasicProgressMonitor());
             connector.applyLayout(mapping, config.properties());
             
