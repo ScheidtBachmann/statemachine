@@ -58,6 +58,7 @@ class GeneratorTest {
 		commandLineRun(Paths.get(''))
 		
 		assertSysOutEquals('''
+			Scheidt & Bachmann StateChart Compiler
 			Usage: scc [-hV] [COMMAND]
 			  -h, --help      Show this help message and exit.
 			  -V, --version   Print version information and exit.
@@ -76,13 +77,13 @@ class GeneratorTest {
 		
 		assertSysOutEquals('''
 			Check the given input file for syntactic and semantic errors and problems.
-			Usage: scc validate [-stdin] [sourceFile]
+			Usage: scc validate [--stdin] [sourceFile]
 			
 			Parameters:
 			      [sourceFile]   The input state chart file.
 			
 			Options:
-			      -stdin         Forces the validator to read input from stdIn.
+			      --stdin        Forces the validator to read input from stdIn.
 		''')
 	}
 	
@@ -90,7 +91,7 @@ class GeneratorTest {
 	def void testValidateStdIn() {
 		System.setIn(new ByteArrayInputStream('scchart foo { state }'.bytes))
 		
-		runValidate(Paths.get(''), '-stdin')
+		runValidate(Paths.get(''), '--stdin')
 		
 		assertSysOutEquals('''
 			Validation discovered the following errors:
@@ -127,18 +128,18 @@ class GeneratorTest {
 		
 		assertSysOutEquals('''
 			Draw the state chart specified in given input file.
-			Usage: scc draw [-stdin] [-f <format>] [-o <path>] [<sourceFile>]
+			Usage: scc draw [--stdin] [-f <format>] [-o <path>] [<sourceFile>]
 			
 			Parameters:
-			      [<sourceFile>]     The input state chart file.
+			      [<sourceFile>]      The input state chart file.
 			
 			Options:
-			      -stdin             Forces the artist to read input from stdIn.
-			  -f, -format <format>   The desired output format of the diagram drawings.
-			                         Candidates are: bmp, jpeg, png, svg.
-			                         Default is: png.
-			  -o, -output <path>     The destination folder of the drawn diagram pages.
-			                         Default is: diagrams.
+			      --stdin             Forces the artist to read input from stdIn.
+			  -f, --format <format>   The desired output format of the diagram drawings.
+			                          Candidates are: bmp, jpeg, png, svg.
+			                          Default is: png.
+			  -o, --output <path>     The destination folder of the drawn diagram pages.
+			                          Default is: diagrams.
 		''')
 	}
 	
@@ -146,7 +147,7 @@ class GeneratorTest {
 	def void testDrawEmptyInputStdIn() {
 		System.setIn(new ByteArrayInputStream(#[]))
 		
-		runDraw(Paths.get(''), '-stdin')
+		runDraw(Paths.get(''), '--stdin')
 		
 		assertSysOutStartsWith('''
 			No content found in the provided resource.
@@ -269,42 +270,42 @@ class GeneratorTest {
 		
 		assertSysOutEquals('''
 			Generate executable code corresponding to the given input file.
-			Usage: scc generate [-stdin] [-stdout] [-o <path>] [-s <strategy>]
+			Usage: scc generate [--stdin] [--stdout] [-o <path>] [-s <strategy>]
 			                    [<sourceFile>]
 			
 			Parameters:
-			      [<sourceFile>]         The input state chart file.
+			      [<sourceFile>]    The input state chart file.
 			
 			Options:
-			      -stdin                 Forces the generator to read input from stdIn.
-			  -o, -output <path>         The destination folder of the generated artifacts.
-			                             Default is: gen.
-			      -stdout                Forces the generator to write generated content to
-			                               stdOut.
-			  -s, -strategy <strategy>   The generation strategy to apply.
-			                             Candidates are:
-			                               de.cau.cs.kieler.sccharts.core,
-			                               de.cau.cs.kieler.sccharts.core.core,
-			                               de.cau.cs.kieler.sccharts.dataflow,
-			                               de.cau.cs.kieler.sccharts.dataflow.lustre,
-			                               de.cau.cs.kieler.sccharts.extended,
-			                               de.cau.cs.kieler.sccharts.extended.core,
-			                               de.cau.cs.kieler.sccharts.netlist,
-			                               de.cau.cs.kieler.sccharts.netlist.java,
-			                               de.cau.cs.kieler.sccharts.netlist.java.tts,
-			                               de.cau.cs.kieler.sccharts.netlist.sccp,
-			                               de.cau.cs.kieler.sccharts.netlist.simple,
-			                               de.cau.cs.kieler.sccharts.netlist.tts,
-			                               de.cau.cs.kieler.sccharts.priority,
-			                               de.cau.cs.kieler.sccharts.priority.java,
-			                               de.cau.cs.kieler.sccharts.priority.java.tts,
-			                               de.cau.cs.kieler.sccharts.scssa,
-			                               de.cau.cs.kieler.sccharts.statebased,
-			                               de.cau.cs.kieler.scg.netlist,
-			                               de.cau.cs.kieler.scg.priority,
-			                               or a path to a custom <.kico> file.
-			                             Default is:
-			                               de.cau.cs.kieler.sccharts.statebased.
+			      --stdin           Forces the generator to read input from stdIn.
+			  -o, --output <path>   The destination folder of the generated artifacts.
+			                        Default is: gen.
+			      --stdout          Forces the generator to write generated content to stdOut.
+			  -s, --strategy <strategy>
+			                        The generation strategy to apply.
+			                        Candidates are:
+			                          de.cau.cs.kieler.sccharts.core,
+			                          de.cau.cs.kieler.sccharts.core.core,
+			                          de.cau.cs.kieler.sccharts.dataflow,
+			                          de.cau.cs.kieler.sccharts.dataflow.lustre,
+			                          de.cau.cs.kieler.sccharts.extended,
+			                          de.cau.cs.kieler.sccharts.extended.core,
+			                          de.cau.cs.kieler.sccharts.netlist,
+			                          de.cau.cs.kieler.sccharts.netlist.java,
+			                          de.cau.cs.kieler.sccharts.netlist.java.tts,
+			                          de.cau.cs.kieler.sccharts.netlist.sccp,
+			                          de.cau.cs.kieler.sccharts.netlist.simple,
+			                          de.cau.cs.kieler.sccharts.netlist.tts,
+			                          de.cau.cs.kieler.sccharts.priority,
+			                          de.cau.cs.kieler.sccharts.priority.java,
+			                          de.cau.cs.kieler.sccharts.priority.java.tts,
+			                          de.cau.cs.kieler.sccharts.scssa,
+			                          de.cau.cs.kieler.sccharts.statebased,
+			                          de.cau.cs.kieler.scg.netlist,
+			                          de.cau.cs.kieler.scg.priority,
+			                          or a path to a custom <.kico> file.
+			                        Default is:
+			                          de.cau.cs.kieler.sccharts.statebased.
 		''')
 	}
 	
@@ -313,7 +314,7 @@ class GeneratorTest {
 	def void testGenerateInputStdInOutputStdOut() {
 		System.setIn(new ByteArrayInputStream('scchart foo { initial state foo }'.bytes))
 		
-		runGenerate(basePath, '-stdin', '-stdout')
+		runGenerate(basePath, '--stdin', '--stdout')
 		
 		assertSysOutStartsWith('''
 			Compiling using strategy 'de.cau.cs.kieler.sccharts.statebased'...done.
@@ -325,7 +326,7 @@ class GeneratorTest {
 	def void testGenerateEmptyInputStdInOutputStdOut() {
 		System.setIn(new ByteArrayInputStream(#[]))
 		
-		runGenerate(basePath, '-stdin', '-stdout')
+		runGenerate(basePath, '--stdin', '--stdout')
 		
 		assertSysOutStartsWith('''
 			No content found in the provided resource.
@@ -360,7 +361,7 @@ class GeneratorTest {
 		val fileName = 'foo.sm'
 		basePath.resolve(fileName).write(#[ 'scchart foo { initial state foo }' ], CREATE, WRITE)
 		
-		runGenerate(basePath, '-stdout', fileName)
+		runGenerate(basePath, '--stdout', fileName)
 		
 		assertSysOutStartsWith('''
 			Compiling foo.sm using strategy 'de.cau.cs.kieler.sccharts.statebased'...done.
@@ -409,7 +410,7 @@ class GeneratorTest {
 		val fileName = 'foo.sm'
 		basePath.resolve(fileName).write(#[ 'scchart foo { initial state foo }' ], CREATE, WRITE)
 		
-		runGenerate(basePath, '-stdout', '-s de.cau.cs.kieler.sccharts.priority', fileName)
+		runGenerate(basePath, '--stdout', '-s de.cau.cs.kieler.sccharts.priority', fileName)
 		
 		assertSysOutStartsWith('''
 			Compiling foo.sm using strategy 'de.cau.cs.kieler.sccharts.priority'...done.
@@ -428,7 +429,7 @@ class GeneratorTest {
 			#[ 'public system my.java label "foo" system de.cau.cs.kieler.sccharts.priority.java' ], CREATE, WRITE
 		)
 		
-		runGenerate(basePath, '-stdout', '-s', strategyFileName, fileName)
+		runGenerate(basePath, '--stdout', '-s', strategyFileName, fileName)
 		
 		assertSysOutStartsWith('''
 			Did load bar.kico without errors.
@@ -445,7 +446,7 @@ class GeneratorTest {
 		
 		val strategyFileName = 'bar.kico'
 		
-		runGenerate(basePath, '-stdout', '-s', strategyFileName, fileName)
+		runGenerate(basePath, '--stdout', '-s', strategyFileName, fileName)
 		
 		assertSysOutEquals('''
 			The provided strategy file 'bar.kico' does not exist.
@@ -461,7 +462,7 @@ class GeneratorTest {
 		val strategyFileName = 'bar.kic'
 		basePath.resolve(strategyFileName).createFile()
 		
-		runGenerate(basePath, '-stdout', '-s', strategyFileName, fileName)
+		runGenerate(basePath, '--stdout', '-s', strategyFileName, fileName)
 		
 		assertSysOutEquals('''
 			The extension of the provided strategy file 'bar.kic' is invalid, see help content.
@@ -477,7 +478,7 @@ class GeneratorTest {
 		val strategyFileName = 'bar.kico'
 		basePath.resolve(strategyFileName).createDirectory()
 		
-		runGenerate(basePath, '-stdout', '-s', strategyFileName, fileName)
+		runGenerate(basePath, '--stdout', '-s', strategyFileName, fileName)
 		
 		assertSysOutEquals('''
 			The provided strategy file 'bar.kico' is not a file.
@@ -497,7 +498,7 @@ class GeneratorTest {
 			#[ 'public system my.java label "foo" system de.cau.cs.kieler.sccharts.priority.java' ], CREATE, WRITE
 		).toFile.setReadable(false, false)
 		
-		runGenerate(basePath, '-stdout', '-s', strategyFileName, fileName)
+		runGenerate(basePath, '--stdout', '-s', strategyFileName, fileName)
 		
 		assertSysOutEquals('''
 			The provided strategy file 'bar.kico' is not readable.
@@ -513,7 +514,7 @@ class GeneratorTest {
 		val strategyFileName = 'bar.kico'
 		basePath.resolve(strategyFileName).write(#[ '' ], CREATE, WRITE)
 		
-		runGenerate(basePath, '-stdout', '-s', strategyFileName, fileName)
+		runGenerate(basePath, '--stdout', '-s', strategyFileName, fileName)
 		
 		assertSysOutEquals('''
 			Could not find valid compilation strategy description in bar.kico.
@@ -533,7 +534,7 @@ class GeneratorTest {
 			#[ 'public system my.java /* label "foo" */ system de.cau.cs.kieler.sccharts.priority.java' ], CREATE, WRITE
 		)
 		
-		runGenerate(basePath, '-stdout', '-s', strategyFileName, fileName)
+		runGenerate(basePath, '--stdout', '-s', strategyFileName, fileName)
 		
 		assertSysOutEquals('''
 			Did load bar.kico with errors:
