@@ -16,33 +16,42 @@ package de.cau.cs.kieler.klighd;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.elk.core.LayoutConfigurator;
 import org.eclipse.elk.core.RecursiveGraphLayoutEngine;
+import org.eclipse.elk.core.data.LayoutMetaDataService;
+import org.eclipse.elk.core.data.LayoutOptionData;
 import org.eclipse.elk.core.options.CoreOptions;
 import org.eclipse.elk.core.service.DiagramLayoutEngine;
 import org.eclipse.elk.core.service.DiagramLayoutEngine.Parameters;
 import org.eclipse.elk.core.service.ElkServicePlugin;
 import org.eclipse.elk.core.service.IDiagramLayoutConnector;
+import org.eclipse.elk.core.service.ILayoutConfigurationStore;
 import org.eclipse.elk.core.service.LayoutMapping;
 import org.eclipse.elk.core.util.BasicProgressMonitor;
 import org.eclipse.elk.core.util.IElkCancelIndicator;
 import org.eclipse.elk.core.util.Pair;
+import org.eclipse.elk.graph.ElkGraphElement;
 import org.eclipse.elk.graph.properties.IProperty;
 import org.eclipse.elk.graph.properties.IPropertyHolder;
 import org.eclipse.elk.graph.properties.MapPropertyHolder;
+import org.eclipse.elk.graph.util.ElkGraphUtil;
+import org.eclipse.ui.IWorkbenchPart;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
 import de.cau.cs.kieler.klighd.internal.ILayoutConfigProvider;
 import de.cau.cs.kieler.klighd.internal.ILayoutRecorder;
 import de.cau.cs.kieler.klighd.internal.macrolayout.KlighdDiagramLayoutConnector;
+import de.cau.cs.kieler.klighd.internal.macrolayout.KlighdLayoutConfigurationStore;
 import de.cau.cs.kieler.klighd.internal.util.KlighdInternalProperties;
 import de.cau.cs.kieler.klighd.kgraph.KNode;
 import de.cau.cs.kieler.klighd.util.KlighdSynthesisProperties;
@@ -166,10 +175,19 @@ public final class LightDiagramServices {
         if (!Klighd.IS_PLATFORM_RUNNING) {
             final IDiagramLayoutConnector connector = new KlighdDiagramLayoutConnector();
             final LayoutMapping mapping = connector.buildLayoutGraph(null, config.viewContext());
-            // TODO enable layout options
+
+            // Attach layout options from KGraph to ELKGraph
+            ILayoutConfigurationStore.Provider provider = new KlighdLayoutConfigurationStore.Provider();
+            configureElement(mapping.getLayoutGraph(), mapping, provider);
+            Iterator<ElkGraphElement> allElements = Iterators.filter(
+                    ElkGraphUtil.propertiesSkippingIteratorFor(mapping.getLayoutGraph(), true), ElkGraphElement.class);
+            while (allElements.hasNext()) {
+                ElkGraphElement element = allElements.next();
+                configureElement(element, mapping, provider);
+            }
+
             new RecursiveGraphLayoutEngine().layout(mapping.getLayoutGraph(), new BasicProgressMonitor());
             connector.applyLayout(mapping, config.properties());
-            
         } else  if (viewModel != null) {
             theViewContext.setProperty(KlighdInternalProperties.NEXT_ZOOM_STYLE,
                     config.zoomStyle());
@@ -248,6 +266,42 @@ public final class LightDiagramServices {
             }
         }
         
+    }
+
+    // Taken and adapted from ELK LayoutConfigurationManager
+    /**
+     * Transfer option values from a configuration store of a graph element to a
+     * configurator. The configuration store is obtained for the diagram part that
+     * corresponds to the given graph element in the layout mapping.
+     */
+    protected static void configureElement(final ElkGraphElement element, final LayoutMapping layoutMapping,
+            ILayoutConfigurationStore.Provider configProvider) {
+        Object diagramPart = layoutMapping.getGraphMap().get(element);
+        ILayoutConfigurationStore configurationStore = configProvider.get((IWorkbenchPart) layoutMapping.getWorkbenchPart(),
+                diagramPart);
+        if (configurationStore != null) {
+            configureElement(element, configurationStore, configProvider);
+        }
+    }
+
+    // Taken and adapted from ELK LayoutConfigurationManager
+    /**
+     * Transfer option values from the given configuration store to a configurator
+     * using the given graph element as key.
+     */
+    protected static void configureElement(final ElkGraphElement element, final ILayoutConfigurationStore configStore,
+            ILayoutConfigurationStore.Provider configProvider) {
+        LayoutMetaDataService layoutDataService = LayoutMetaDataService.getInstance();
+        for (String optionId : configStore.getAffectedOptions()) {
+            Object value = configStore.getOptionValue(optionId);
+            LayoutOptionData optionData = layoutDataService.getOptionData(optionId);
+            if (optionData != null && value != null) {
+                if (value instanceof String) {
+                    value = optionData.parseValue((String) value);
+                }
+                element.setProperty(optionData, value);
+            }
+        }
     }
 
     private static Pair<IDiagramWorkbenchPart, ViewContext> determineDWPandVC(
