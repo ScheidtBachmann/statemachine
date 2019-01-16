@@ -1,0 +1,5 @@
+scchart Chart2 {
+ initial state x
+ go to y
+ state y
+}
