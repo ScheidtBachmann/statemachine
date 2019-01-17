@@ -19,9 +19,15 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.Resource.Diagnostic;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.xtext.diagnostics.Severity;
+import org.eclipse.xtext.validation.CheckMode;
+import org.eclipse.xtext.validation.IResourceValidator;
+import org.eclipse.xtext.validation.Issue;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
+import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 import de.cau.cs.kieler.kicool.compilation.CodeContainer;
 import de.cau.cs.kieler.kicool.compilation.CodeFile;
@@ -41,9 +47,10 @@ public class StateMachineGeneratorPlugin extends AbstractMojo {
 
 	public StateMachineGeneratorPlugin() {
 		super();
-		new StateMachineStandaloneSetup().createInjectorAndDoEMFRegistration();
+		new StateMachineStandaloneSetup().createInjectorAndDoEMFRegistration().injectMembers(this);
+		;
 	}
-	
+
 	/**
 	 * The files to read as StateMachines
 	 */
@@ -57,6 +64,9 @@ public class StateMachineGeneratorPlugin extends AbstractMojo {
 	/** The compilation strategy to use during code generation */
 	@Parameter(property = "strategy", defaultValue = "de.cau.cs.kieler.sccharts.statebased")
 	private String strategy;
+
+	@Inject
+	private Provider<IResourceValidator> validatorProvider;
 
 	private Path basePath = Paths.get("");
 
@@ -85,12 +95,61 @@ public class StateMachineGeneratorPlugin extends AbstractMojo {
 		for (String fileName : stateMachines) {
 			// Load input data
 			Resource resource = loadResource(fileName);
-			doExecute(resource, outputPath);
+			doValidate(resource);
+			doGenerate(resource, outputPath);
 		}
-
 	}
 
-	private void doExecute(final Resource resource, Path outputPath) throws MojoFailureException, MojoExecutionException {
+	/**
+	 * Do the real validation work.
+	 */
+	private void doValidate(Resource resource) {
+		// Resolve the injected provider for a validator
+		IResourceValidator validator = validatorProvider.get();
+		// Validate the resource and gather all the issues
+		List<Issue> issues = validator.validate(resource, CheckMode.ALL, null);
+		if (issues == null || issues.isEmpty()) {
+			// Validation successful. We happy!
+			getLog().debug("Input is fine.");
+		} else {
+			// Something is not fine. Filter various severities
+			Iterable<Issue> errors = Iterables.filter(issues, issue -> {
+				return issue.getSeverity() == Severity.ERROR;
+			});
+			Iterable<Issue> warnings = Iterables.filter(issues, issue -> {
+				return issue.getSeverity() == Severity.WARNING;
+			});
+			Iterable<Issue> infos = Iterables.filter(issues, issue -> {
+				return issue.getSeverity() == Severity.INFO;
+			});
+			// Print all the issues to stdout
+			StringBuilder builder = new StringBuilder();
+			if (errors.iterator().hasNext()) {
+				builder.append("Validation discovered the following errors:\n");
+				for (Issue issue : errors) {
+					builder.append(String.format("Line %d, column %d %s: %s%n", issue.getLineNumber(),
+							issue.getColumn(), issue.isSyntaxError() ? "(syntax error)" : "", issue.getMessage()));
+				}
+			}
+			if (warnings.iterator().hasNext()) {
+				builder.append("%nValidation discovered the following warnings:\n");
+				for (Issue issue : warnings) {
+					builder.append(String.format("Line %d, column %d: %s%n", issue.getLineNumber(), issue.getColumn(),
+							issue.getMessage()));
+				}
+			}
+			if (infos.iterator().hasNext()) {
+				builder.append("%nFurther infos/remarks:\n");
+				for (Issue issue : infos) {
+					builder.append(String.format("Line %d, column %d: %s%n", issue.getLineNumber(), issue.getColumn(),
+							issue.getMessage()));
+				}
+			}
+		}
+	}
+
+	private void doGenerate(final Resource resource, Path outputPath)
+			throws MojoFailureException, MojoExecutionException {
 		String strategyId = loadCustomStrategy(strategy);
 		getLog().debug(String.format("Compiling %s using strategy %s ...", resource, strategyId));
 
@@ -101,8 +160,8 @@ public class StateMachineGeneratorPlugin extends AbstractMojo {
 			for (CodeFile file : cc.getFiles()) {
 				try {
 					final Path fileOutputPath = outputPath.resolve(file.getFileName());
-					Files.write(fileOutputPath, file.getCode().getBytes(),
-							StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+					Files.write(fileOutputPath, file.getCode().getBytes(), StandardOpenOption.CREATE,
+							StandardOpenOption.WRITE);
 				} catch (IOException e) {
 					throw new MojoFailureException("Failed to write output file " + file.getFileName() + ".\n" + e);
 				}
@@ -172,10 +231,8 @@ public class StateMachineGeneratorPlugin extends AbstractMojo {
 					strategyResource.getWarnings());
 			StringBuilder issuesText = new StringBuilder();
 			for (Diagnostic issue : issues) {
-				issuesText.append("Line ").append(issue.getLine());
-				issuesText.append(", column ").append(issue.getColumn());
-				issuesText.append(": ").append(issue.getMessage());
-				issuesText.append("\n");
+				issuesText.append(String.format("Line %d, column %d: %s%n", issue.getLine(), issue.getColumn(),
+						issue.getMessage()));
 			}
 
 			EObject root = strategyResource.getContents().get(0);
