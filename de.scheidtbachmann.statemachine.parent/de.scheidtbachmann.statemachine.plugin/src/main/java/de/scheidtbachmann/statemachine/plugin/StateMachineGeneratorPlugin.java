@@ -102,8 +102,9 @@ public class StateMachineGeneratorPlugin extends AbstractMojo {
 
 	/**
 	 * Do the real validation work.
+	 * @throws MojoFailureException 
 	 */
-	private void doValidate(Resource resource) {
+	private void doValidate(Resource resource) throws MojoFailureException {
 		// Resolve the injected provider for a validator
 		IResourceValidator validator = validatorProvider.get();
 		// Validate the resource and gather all the issues
@@ -145,7 +146,10 @@ public class StateMachineGeneratorPlugin extends AbstractMojo {
 							issue.getMessage()));
 				}
 			}
+			
+			throw new MojoFailureException(builder.toString());
 		}
+		
 	}
 
 	private void doGenerate(final Resource resource, Path outputPath)
