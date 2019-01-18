@@ -38,6 +38,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 import de.cau.cs.kieler.kexpressions.RandomizeCall
 import de.cau.cs.kieler.scg.extensions.SCGControlFlowExtensions
 import de.cau.cs.kieler.kexpressions.FunctionCall
+import de.cau.cs.kieler.kexpressions.ReferenceCall
 
 /**
  * C Code Generator Logic Module
@@ -134,8 +135,11 @@ class CCodeGeneratorLogicModule extends SCGCodeGeneratorModule {
             } else if (assignment.expression instanceof FunctionCall) {
                 indent(conditionalStack.size + 1)
                 code.append((assignment.expression as FunctionCall).serialize).append(";\n")
+            } else if (assignment.expression instanceof ReferenceCall) {
+                indent(conditionalStack.size + 1)
+                code.append((assignment.expression as ReferenceCall).serialize).append(";\n")
             } else {
-                throw new NullPointerException("Assigned valued object is null")
+                throw new NullPointerException("Assigned valued object is null or not supported")
             }
             
         } else {
