@@ -20,6 +20,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 import de.cau.cs.kieler.kexpressions.ValuedObject
 import de.cau.cs.kieler.scg.processors.transformators.codegen.c.CCodeSerializeHRExtensions
 import de.cau.cs.kieler.kexpressions.ValueType
+import de.cau.cs.kieler.kexpressions.ReferenceDeclaration
 
 /**
  * Java Code Generator Struct Module
@@ -61,6 +62,24 @@ class JavaCodeGeneratorStructModule extends CCodeGeneratorStructModule {
     }
     
     override generate(extension CCodeSerializeHRExtensions serializer) {
+
+        // Generate an enum for all boolean inputs annotated as InputEvent
+        code.append(
+            scg.declarations.filter(VariableDeclaration).filter[annotations.exists[name.equalsIgnoreCase('InputEvent')]].join(
+                '  public enum InputEvent {\n    ',
+                ',\n    ',
+                '\n  }\n\n',
+                [ decl |
+                    decl.valuedObjects.join(", ", [name])
+                ]
+            )
+        )
+        
+        // Add a context element if there are context functions declared
+        if (scg.declarations.filter(ReferenceDeclaration).exists[annotations.exists[name.equalsIgnoreCase('Context')]]) {
+            indent
+            code.append('public ').append(scg.name).append('Context context;\n')
+        }
         
         // Add the declarations of the model.
         for (declaration : scg.declarations.filter(VariableDeclaration)) {

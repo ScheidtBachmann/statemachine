@@ -18,6 +18,8 @@ import de.cau.cs.kieler.kicool.compilation.CodeContainer
 import de.cau.cs.kieler.scg.processors.transformators.codegen.c.CCodeGenerator
 import de.cau.cs.kieler.scg.processors.transformators.codegen.c.CCodeGeneratorModule
 import de.cau.cs.kieler.annotations.extensions.PragmaExtensions
+import de.cau.cs.kieler.scg.codegen.SCGCodeGeneratorModule
+import org.eclipse.xtend.lib.annotations.Accessors
 
 /**
  * Root C Code Generator Module
@@ -37,36 +39,70 @@ class JavaCodeGeneratorModule extends CCodeGeneratorModule {
     @Inject Injector injector
     
     public static val JAVA_EXTENSION = ".java"
-    
+    public static val CONTEXT_SUFFIX = "Context" 
+
+    @Accessors var SCGCodeGeneratorModule contextInterface
+            
     override configure() {
         struct = injector.getInstance(JavaCodeGeneratorStructModule)
         reset = injector.getInstance(JavaCodeGeneratorResetModule)
         tick = injector.getInstance(JavaCodeGeneratorTickModule)
         logic = injector.getInstance(JavaCodeGeneratorLogicModule)
-            
+        contextInterface = injector.getInstance(JavaCodeGeneratorContextModule)
+
         struct.configure(baseName, SCGraphs, scg, processorInstance, codeGeneratorModuleMap, codeFilename + JAVA_EXTENSION, this)
         reset.configure(baseName, SCGraphs, scg, processorInstance, codeGeneratorModuleMap, codeFilename + JAVA_EXTENSION, this)
         tick.configure(baseName, SCGraphs, scg, processorInstance, codeGeneratorModuleMap, codeFilename + JAVA_EXTENSION, this)
         logic.configure(baseName, SCGraphs, scg, processorInstance, codeGeneratorModuleMap, codeFilename + JAVA_EXTENSION, this)
+        contextInterface.configure(baseName, SCGraphs, scg, processorInstance, codeGeneratorModuleMap, codeFilename + CONTEXT_SUFFIX + JAVA_EXTENSION, this)
+    }
+    
+    override generateInit() {
+        super.generateInit
+        contextInterface.generateInit
+    }
+    
+    override generate() {
+        super.generate
+        contextInterface.generate
+    }
+    
+    override generateDone() {
+        super.generateDone
+        contextInterface.generateDone
     }
     
     override generateWrite(CodeContainer codeContainer) {
-        val cFilename = codeFilename + JAVA_EXTENSION
-        val cFile = new StringBuilder
+        val classFilename = codeFilename + JAVA_EXTENSION
+        val classFile = new StringBuilder
 
-        cFile.addHeader
-        cFile.hostcodeAdditions
+        classFile.addHeader
+        classFile.hostcodeAdditions
         
-        cFile.append("public class " + codeFilename + " {\n\n")
+        classFile.append("public class " + codeFilename + " {\n\n")
 
-        cFile.append(struct.code).append("\n")        
-        cFile.append(reset.code).append("\n")
-        cFile.append(logic.code).append("\n")
-        cFile.append(tick.code)
+        classFile.append(struct.code).append("\n")        
+        classFile.append(reset.code).append("\n")
+        classFile.append(logic.code).append("\n")
+        classFile.append(tick.code)
         
-        cFile.append("}\n")
+        classFile.append("}\n")
 
-        codeContainer.addJavaCode(cFilename, cFile.toString)        
+        codeContainer.addJavaCode(classFilename, classFile.toString)
+
+        val contextCode = contextInterface.code
+        if (contextCode.length > 0) {
+            val contextFilename = codeFilename + CONTEXT_SUFFIX + JAVA_EXTENSION
+            val contextFile = new StringBuilder
+            
+            contextFile.addHeader
+            contextFile.append("public interface " + codeFilename + CONTEXT_SUFFIX + " {\n\n")
+            contextFile.append(contextCode).append("\n")
+            contextFile.append("}\n")
+            
+            codeContainer.addJavaContextInterface(contextFilename, contextFile.toString)
+        } 
+
     }    
     
     override def void addHeader(StringBuilder sb) {

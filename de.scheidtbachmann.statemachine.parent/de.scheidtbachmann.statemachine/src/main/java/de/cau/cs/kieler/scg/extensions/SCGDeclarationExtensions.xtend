@@ -27,6 +27,7 @@ import de.cau.cs.kieler.scg.Assignment
 import de.cau.cs.kieler.scg.ScgFactory
 import de.cau.cs.kieler.kexpressions.keffects.extensions.KEffectsExtensions
 import de.cau.cs.kieler.kexpressions.kext.extensions.ValuedObjectMapping
+import de.cau.cs.kieler.annotations.extensions.AnnotationsExtensions
 
 /**
  * The SCG Extensions are a collection of common methods for SCG queries and manipulation.
@@ -54,6 +55,7 @@ class SCGDeclarationExtensions {
     @Inject extension KExpressionsDeclarationExtensions
     @Inject extension KEffectsExtensions
     @Inject extension SCGCoreExtensions
+    @Inject extension AnnotationsExtensions
 
     // -------------------------------------------------------------------------
     // -- Valued object handling
@@ -122,6 +124,7 @@ class SCGDeclarationExtensions {
     		declaration.valuedObjects.forEach[ 
     			map.put(it, <ValuedObject> newLinkedList(it.copyValuedObject(newDeclaration)))
     		]
+        declaration.copyAnnotations(newDeclaration)
     		target.declarations += newDeclaration
     	}
     	map

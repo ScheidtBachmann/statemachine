@@ -268,6 +268,7 @@ class SCGTransformation extends Processor<SCCharts, SCGraphs> implements Traceab
         // }
         for (declaration : rootState.declarations) {
             val newDeclaration = createDeclaration(declaration).trace(declaration)
+            declaration.copyAnnotations(newDeclaration)
             declaration.valuedObjects.forEach [
                 val newValuedObject = it.copy
                 newDeclaration.valuedObjects += newValuedObject

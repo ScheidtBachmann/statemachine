@@ -19,6 +19,10 @@ import de.cau.cs.kieler.kexpressions.ValueType
 import de.cau.cs.kieler.scg.processors.transformators.codegen.c.CCodeSerializeHRExtensions
 import de.cau.cs.kieler.kexpressions.RandomCall
 import de.cau.cs.kieler.kexpressions.RandomizeCall
+import de.cau.cs.kieler.annotations.extensions.AnnotationsExtensions
+import com.google.inject.Inject
+import de.cau.cs.kieler.kexpressions.extensions.KExpressionsValuedObjectExtensions
+import de.cau.cs.kieler.kexpressions.ReferenceCall
 
 /**
  * @author ssm
@@ -30,6 +34,9 @@ import de.cau.cs.kieler.kexpressions.RandomizeCall
 class JavaCodeSerializeHRExtensions extends CCodeSerializeHRExtensions {
     
     public static val GLOBAL_OBJECTS = "globalObjects"
+
+    @Inject extension AnnotationsExtensions
+    @Inject extension KExpressionsValuedObjectExtensions
     
     new() {
         CODE_ANNOTATION = "Java"
@@ -78,5 +85,22 @@ class JavaCodeSerializeHRExtensions extends CCodeSerializeHRExtensions {
             
         return "random.setSeet(System.currentTimeMillis())"
     }
-    
+
+    override dispatch CharSequence serialize(ReferenceCall referenceCall) {
+        val declaration = referenceCall.valuedObject.referenceDeclaration
+        if (declaration.extern.nullOrEmpty) { 
+            return referenceCall.valuedObject.serialize.toString + referenceCall.parameters.serializeParameters
+        } else {
+            val contextCall = if (declaration.annotations.exists[name.equalsIgnoreCase('Context')]) {
+                'context.'
+            } else {
+                ''
+            }
+            var code = declaration.extern.head.code
+            if (declaration.extern.exists[ hasAnnotation(codeAnnotation) ]) {
+                code = declaration.extern.filter[ hasAnnotation(codeAnnotation) ].head.code
+            }
+            return contextCall + code + referenceCall.parameters.serializeParameters
+        }
+    }
 }
