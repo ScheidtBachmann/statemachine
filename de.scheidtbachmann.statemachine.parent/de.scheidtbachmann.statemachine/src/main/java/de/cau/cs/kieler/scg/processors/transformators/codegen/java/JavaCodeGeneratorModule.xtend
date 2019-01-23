@@ -22,6 +22,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 import de.cau.cs.kieler.scg.codegen.SCGCodeGeneratorModule
 import de.cau.cs.kieler.annotations.registry.PragmaRegistry
 import de.cau.cs.kieler.annotations.StringPragma
+import de.cau.cs.kieler.kexpressions.VariableDeclaration
 
 /**
  * Root C Code Generator Module
@@ -83,6 +84,7 @@ class JavaCodeGeneratorModule extends CCodeGeneratorModule {
         classFile.packageAdditions
         classFile.addHeader
         classFile.hostcodeAdditions
+        classFile.inputEventAdditions
         
         classFile.append("public class " + codeFilename + " {\n\n")
 
@@ -141,5 +143,12 @@ class JavaCodeGeneratorModule extends CCodeGeneratorModule {
         if (packagePragma.size > 0) {
             sb.append("package ").append(packagePragma.head.values.head).append(";\n\n")
         }
+    }
+    
+    def void inputEventAdditions(StringBuilder sb) {
+       // Generate an enum for all boolean inputs annotated as InputEvent
+        if (scg.declarations.filter(VariableDeclaration).exists[annotations.exists[name.equalsIgnoreCase('InputEvent')]]) {
+            sb.append("import java.util.Arrays;\n")
+        }           
     }
 }
