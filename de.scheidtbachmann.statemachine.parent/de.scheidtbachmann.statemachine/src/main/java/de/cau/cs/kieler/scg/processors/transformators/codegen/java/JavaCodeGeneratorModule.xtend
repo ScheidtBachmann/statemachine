@@ -18,8 +18,10 @@ import de.cau.cs.kieler.kicool.compilation.CodeContainer
 import de.cau.cs.kieler.scg.processors.transformators.codegen.c.CCodeGenerator
 import de.cau.cs.kieler.scg.processors.transformators.codegen.c.CCodeGeneratorModule
 import de.cau.cs.kieler.annotations.extensions.PragmaExtensions
-import de.cau.cs.kieler.scg.codegen.SCGCodeGeneratorModule
 import org.eclipse.xtend.lib.annotations.Accessors
+import de.cau.cs.kieler.scg.codegen.SCGCodeGeneratorModule
+import de.cau.cs.kieler.annotations.registry.PragmaRegistry
+import de.cau.cs.kieler.annotations.StringPragma
 
 /**
  * Root C Code Generator Module
@@ -37,6 +39,8 @@ class JavaCodeGeneratorModule extends CCodeGeneratorModule {
     @Inject extension JavaCodeSerializeHRExtensions
     
     @Inject Injector injector
+    
+    protected static val PACKAGE = PragmaRegistry.register("package", StringPragma, "Package name for the generated file(s)")
     
     public static val JAVA_EXTENSION = ".java"
     public static val CONTEXT_SUFFIX = "Context" 
@@ -76,6 +80,7 @@ class JavaCodeGeneratorModule extends CCodeGeneratorModule {
         val classFilename = codeFilename + JAVA_EXTENSION
         val classFile = new StringBuilder
 
+        classFile.packageAdditions
         classFile.addHeader
         classFile.hostcodeAdditions
         
@@ -95,6 +100,7 @@ class JavaCodeGeneratorModule extends CCodeGeneratorModule {
             val contextFilename = codeFilename + CONTEXT_SUFFIX + JAVA_EXTENSION
             val contextFile = new StringBuilder
             
+            contextFile.packageAdditions
             contextFile.addHeader
             contextFile.append("public interface " + codeFilename + CONTEXT_SUFFIX + " {\n\n")
             contextFile.append(contextCode).append("\n")
@@ -130,4 +136,10 @@ class JavaCodeGeneratorModule extends CCodeGeneratorModule {
         }
     }  
     
+    def void packageAdditions(StringBuilder sb) {
+        val packagePragma = SCGraphs.getStringPragmas(PACKAGE)
+        if (packagePragma.size > 0) {
+            sb.append("package ").append(packagePragma.head.values.head).append(";\n\n")
+        }
+    }
 }

@@ -1,4 +1,6 @@
-scchart Chart2 {
+#package "de.scheidtbachmann.statemachine.foo"
+
+scchart PackageMachine {
  initial state x
  go to y
  state y
