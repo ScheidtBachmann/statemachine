@@ -179,7 +179,7 @@ class JavaCodeGeneratorStructModule extends CCodeGeneratorStructModule {
     
     protected def void createApply(extension CCodeSerializeHRExtensions serializer) {
     	code.append("\n" + indentation)
-        code.append("public apply(InputEvent... events) {\n")
+        code.append("public void apply(InputEvent... events) {\n")
         
         code.append(
             scg.declarations.filter(VariableDeclaration).filter[annotations.exists[name.equalsIgnoreCase('InputEvent')]].join('',
@@ -193,7 +193,7 @@ class JavaCodeGeneratorStructModule extends CCodeGeneratorStructModule {
         )
 
         indent(2)
-        code.append("tick()\n")
+        code.append("tick();\n")
         indent
         code.append("}\n")
     }
