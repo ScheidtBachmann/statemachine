@@ -67,7 +67,7 @@ class JavaCodeGeneratorStructModule extends CCodeGeneratorStructModule {
 
         // Generate an enum for all boolean inputs annotated as InputEvent
         if (scg.declarations.filter(VariableDeclaration).exists[annotations.exists[name.equalsIgnoreCase('InputEvent')]]) {
-            hasContext = true
+            hasEvents = true
         }        
         code.append(
             scg.declarations.filter(VariableDeclaration).filter[annotations.exists[name.equalsIgnoreCase('InputEvent')]].join(
@@ -82,7 +82,7 @@ class JavaCodeGeneratorStructModule extends CCodeGeneratorStructModule {
         
         // Add a context element if there are context functions declared
         if (scg.declarations.filter(ReferenceDeclaration).exists[annotations.exists[name.equalsIgnoreCase('Context')]]) {
-            hasEvents = true
+            hasContext = true
             indent
             code.append('private final ').append(scg.name).append('Context context;\n')
         }

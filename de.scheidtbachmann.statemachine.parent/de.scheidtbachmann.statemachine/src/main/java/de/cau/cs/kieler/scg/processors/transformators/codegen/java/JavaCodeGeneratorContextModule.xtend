@@ -49,6 +49,7 @@ class JavaCodeGeneratorContextModule extends SCGCodeGeneratorModule {
 
     override generate() {
         if (needsContext) {
+            code.append("\n")
             // We want to support method overloading (at least roughly)
             // So we gather all method calls and store the information of the used argument types 
             val Multimap<ReferenceDeclaration, List<CharSequence>> referenceUsages = HashMultimap.create
