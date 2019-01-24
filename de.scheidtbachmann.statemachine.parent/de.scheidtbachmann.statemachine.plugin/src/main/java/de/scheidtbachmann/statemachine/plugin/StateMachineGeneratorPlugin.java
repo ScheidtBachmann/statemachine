@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.List;
 
 import org.apache.maven.plugin.AbstractMojo;
@@ -164,8 +163,7 @@ public class StateMachineGeneratorPlugin extends AbstractMojo {
 			for (CodeFile file : cc.getFiles()) {
 				try {
 					final Path fileOutputPath = outputPath.resolve(file.getFileName());
-					Files.write(fileOutputPath, file.getCode().getBytes(), StandardOpenOption.CREATE,
-							StandardOpenOption.WRITE);
+					Files.write(fileOutputPath, file.getCode().getBytes());
 				} catch (IOException e) {
 					throw new MojoFailureException("Failed to write output file " + file.getFileName() + ".\n" + e);
 				}

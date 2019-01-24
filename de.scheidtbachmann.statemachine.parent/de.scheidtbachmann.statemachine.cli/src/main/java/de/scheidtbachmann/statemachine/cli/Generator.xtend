@@ -323,7 +323,7 @@ class Generator implements Runnable {
         for (f : result.files) {
           try {
             // Resolving the filename and writing the data
-            val res = outlet.resolve(f.fileName).write(f.code.bytes, CREATE, WRITE)
+            val res = outlet.resolve(f.fileName).write(f.code.bytes)
             // We happy, print log
             println('''Wrote «res»''')
           } catch (IOException e) {
