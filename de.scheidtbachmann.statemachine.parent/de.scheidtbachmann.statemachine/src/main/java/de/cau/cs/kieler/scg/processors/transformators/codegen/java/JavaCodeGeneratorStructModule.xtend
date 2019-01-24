@@ -66,22 +66,24 @@ class JavaCodeGeneratorStructModule extends CCodeGeneratorStructModule {
     override generate(extension CCodeSerializeHRExtensions serializer) {
 
         // Generate an enum for all boolean inputs annotated as InputEvent
-        if (scg.declarations.filter(VariableDeclaration).exists[annotations.exists[name.equalsIgnoreCase('InputEvent')]]) {
+        val inputEventDecls = scg.declarations.filter(VariableDeclaration).filter[annotations.exists['InputEvent'.equalsIgnoreCase(name)]]
+
+        if (inputEventDecls.size > 0) {
             hasEvents = true
-        }        
-        code.append(
-            scg.declarations.filter(VariableDeclaration).filter[annotations.exists[name.equalsIgnoreCase('InputEvent')]].join(
-                '  public enum InputEvent {\n    ',
-                ',\n    ',
-                '\n  }\n\n',
-                [ decl |
-                    decl.valuedObjects.join(", ", [name])
-                ]
+            code.append(
+                inputEventDecls.join(
+                    '  public enum InputEvent {\n    ',
+                    ',\n    ',
+                    '\n  }\n\n',
+                    [ decl |
+                        decl.valuedObjects.join(", ", [name])
+                    ]
+                )
             )
-        )
+        }
         
         // Add a context element if there are context functions declared
-        if (scg.declarations.filter(ReferenceDeclaration).exists[annotations.exists[name.equalsIgnoreCase('Context')]]) {
+        if (scg.declarations.filter(ReferenceDeclaration).exists[annotations.exists['Context'.equalsIgnoreCase(name)]]) {
             hasContext = true
             indent
             code.append('private final ').append(scg.name).append('Context context;\n')
@@ -182,7 +184,7 @@ class JavaCodeGeneratorStructModule extends CCodeGeneratorStructModule {
         code.append("public void apply(InputEvent... events) {\n")
         
         code.append(
-            scg.declarations.filter(VariableDeclaration).filter[annotations.exists[name.equalsIgnoreCase('InputEvent')]].join('',
+            scg.declarations.filter(VariableDeclaration).filter[annotations.exists['InputEvent'.equalsIgnoreCase(name)]].join('',
                 [ decl | '''
                     «FOR vo : decl.valuedObjects»
                       «indentation»«indentation»«vo.name» = Arrays.stream(events).anyMatch(it -> it == InputEvent.«vo.name»);

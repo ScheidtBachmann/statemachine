@@ -44,7 +44,7 @@ class JavaCodeGeneratorContextModule extends SCGCodeGeneratorModule {
 
     override generateInit() {
         // We only need the context interface if we have anything tagged as context methods
-        needsContext = scg.declarations.exists[annotations.exists[name.equalsIgnoreCase('Context')]]
+        needsContext = scg.declarations.exists[annotations.exists['Context'.equalsIgnoreCase(name)]]
     }
 
     override generate() {
@@ -55,7 +55,7 @@ class JavaCodeGeneratorContextModule extends SCGCodeGeneratorModule {
             val Multimap<ReferenceDeclaration, List<CharSequence>> referenceUsages = HashMultimap.create
             // Grab all function calls to context methods
             val calls = scg.nodes.filter(Assignment).map[expression].filter(ReferenceCall).filter [
-                valuedObject.referenceDeclaration.annotations.exists[name.equalsIgnoreCase('Context')]
+                valuedObject.referenceDeclaration.annotations.exists['Context'.equalsIgnoreCase(name)]
             ]
 
             // Gather all different parameter lists we can find
