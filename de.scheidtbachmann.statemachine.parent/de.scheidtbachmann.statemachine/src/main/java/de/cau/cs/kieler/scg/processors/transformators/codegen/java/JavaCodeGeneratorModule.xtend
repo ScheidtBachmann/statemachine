@@ -42,6 +42,7 @@ class JavaCodeGeneratorModule extends CCodeGeneratorModule {
     @Inject Injector injector
     
     protected static val PACKAGE = PragmaRegistry.register("package", StringPragma, "Package name for the generated file(s)")
+    protected static val INCLUDE = PragmaRegistry.register("include", StringPragma, "Additional things that should be imported")
     
     public static val JAVA_EXTENSION = ".java"
     public static val CONTEXT_SUFFIX = "Context" 
@@ -104,6 +105,7 @@ class JavaCodeGeneratorModule extends CCodeGeneratorModule {
             
             contextFile.packageAdditions
             contextFile.addHeader
+            contextFile.hostcodeAdditions
             contextFile.append("public interface " + codeFilename + CONTEXT_SUFFIX + " {\n\n")
             contextFile.append(contextCode).append("\n")
             contextFile.append("}\n")
@@ -129,11 +131,16 @@ class JavaCodeGeneratorModule extends CCodeGeneratorModule {
             sb.append("import " + include + "\n")
         }
         
+        val includePragmas = SCGraphs.getStringPragmas(INCLUDE)
+        for (pragma : includePragmas) {
+            sb.append("import ").append(pragma.values.head).append(";\n")
+        }
+        
         val hostcodePragmas = SCGraphs.getStringPragmas(HOSTCODE)
         for (pragma : hostcodePragmas) {
             sb.append(pragma.values.head + "\n")
         }
-        if (hostcodePragmas.size > 0 || includes.size > 0) {
+        if (hostcodePragmas.size > 0 || includes.size > 0 || includePragmas.size > 0) {
             sb.append("\n")
         }
     }  
@@ -148,7 +155,7 @@ class JavaCodeGeneratorModule extends CCodeGeneratorModule {
     def void inputEventAdditions(StringBuilder sb) {
        // Generate an enum for all boolean inputs annotated as InputEvent
         if (scg.declarations.filter(VariableDeclaration).exists[annotations.exists[name.equalsIgnoreCase('InputEvent')]]) {
-            sb.append("import java.util.Arrays;\n")
+            sb.append("import java.util.Arrays;\n\n")
         }           
     }
 }
