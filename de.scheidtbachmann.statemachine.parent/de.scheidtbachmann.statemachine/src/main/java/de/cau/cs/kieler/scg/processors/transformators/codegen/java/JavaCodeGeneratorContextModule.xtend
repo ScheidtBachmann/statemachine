@@ -15,6 +15,7 @@ package de.cau.cs.kieler.scg.processors.transformators.codegen.java
 import com.google.common.collect.HashMultimap
 import com.google.common.collect.Multimap
 import com.google.inject.Inject
+import de.cau.cs.kieler.annotations.StringAnnotation
 import de.cau.cs.kieler.kexpressions.Expression
 import de.cau.cs.kieler.kexpressions.ReferenceCall
 import de.cau.cs.kieler.kexpressions.ReferenceDeclaration
@@ -72,7 +73,7 @@ class JavaCodeGeneratorContextModule extends SCGCodeGeneratorModule {
 
             // Go through all different usages and serialize a method head for each
             for (usage : referenceUsages.entries.sortBy[key.extern.head.code]) {
-                generateMethod(usage.key.extern.head.code, usage.value)
+                generateMethod(usage.key, usage.value)
             }
         }
     }
@@ -104,9 +105,16 @@ class JavaCodeGeneratorContextModule extends SCGCodeGeneratorModule {
     /**
      * Generates the method head with the given list of types 
      */
-    def generateMethod(String methodName, List<CharSequence> types) {
+    def generateMethod(ReferenceDeclaration decl, List<CharSequence> types) {
         indent
-        code.append('''public void «methodName»(''')
+        code.append("public ")
+        val typeAnnotations = decl.annotations.filter(StringAnnotation).filter['Context'.equalsIgnoreCase(name)].filter[!values.nullOrEmpty]
+        if (typeAnnotations.size == 0) {
+            code.append("void ")
+        } else {
+            code.append(typeAnnotations.head.values.head + " ")
+        }
+        code.append(decl.extern.head.code + "(")
 
         if (types.length > 1) {
             // If we have multiple parameters, we want to count them down.
