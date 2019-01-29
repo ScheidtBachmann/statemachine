@@ -55,7 +55,12 @@ class JavaCodeGeneratorContextModule extends SCGCodeGeneratorModule {
             // So we gather all method calls and store the information of the used argument types 
             val Multimap<ReferenceDeclaration, List<CharSequence>> referenceUsages = HashMultimap.create
             // Grab all function calls to context methods
-            val calls = scg.nodes.filter(Assignment).map[expression].filter(ReferenceCall).filter [
+            val exprs = scg.nodes.filter(Assignment).map[
+                val list = expression.eAllContents.toList
+                list.add(expression)
+                list
+            ].flatten
+            val calls = exprs.filter(ReferenceCall).filter [
                 valuedObject.referenceDeclaration.annotations.exists['Context'.equalsIgnoreCase(name)]
             ]
 
