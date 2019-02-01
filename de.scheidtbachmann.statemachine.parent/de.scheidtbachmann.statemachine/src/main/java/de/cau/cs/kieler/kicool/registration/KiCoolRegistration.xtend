@@ -178,7 +178,7 @@ class KiCoolRegistration {
                     Files.find(Paths.get(toURI), 5)[ it, attributes | 
                         attributes.regularFile && fileName.toString.endsWith('kico')
                     ].map[
-                        toString -> new ByteArrayInputStream(Files.readAllBytes(it))
+                        toUri.toString -> new ByteArrayInputStream(Files.readAllBytes(it))
                     ].iterator
                 }
             ].flatten.toList => [
