@@ -15,17 +15,17 @@ package de.cau.cs.kieler.scg.processors.transformators.codegen.java
 import com.google.common.collect.HashMultimap
 import com.google.common.collect.Multimap
 import com.google.inject.Inject
-import de.cau.cs.kieler.annotations.StringAnnotation
-import de.cau.cs.kieler.kexpressions.Expression
 import de.cau.cs.kieler.kexpressions.ReferenceCall
 import de.cau.cs.kieler.kexpressions.ReferenceDeclaration
 import de.cau.cs.kieler.kexpressions.ValueType
-import de.cau.cs.kieler.kexpressions.ValuedObjectReference
 import de.cau.cs.kieler.kexpressions.extensions.KExpressionsTypeExtensions
 import de.cau.cs.kieler.kexpressions.extensions.KExpressionsValuedObjectExtensions
 import de.cau.cs.kieler.scg.Assignment
 import de.cau.cs.kieler.scg.codegen.SCGCodeGeneratorModule
 import java.util.List
+import de.cau.cs.kieler.kexpressions.Expression
+import de.cau.cs.kieler.kexpressions.ValuedObjectReference
+import de.cau.cs.kieler.annotations.StringAnnotation
 
 /**
  * Generates a context interface that is used to perform 
@@ -95,13 +95,21 @@ class JavaCodeGeneratorContextModule extends SCGCodeGeneratorModule {
      * create the string representation of the type.
      */
     def CharSequence inferTypeWithHostTypes(Expression expression) {
+        // We first try the pre-implemented inference, that is able to detect mostly primitive types
         if (expression.inferType != ValueType.UNKNOWN) {
             return expression.inferType.serialize
         } else {
+            // The first try returned unknown, so we have to step in. We mostly deal with references to host calls or objects.
             if (expression instanceof ValuedObjectReference) {
-                expression.valuedObject.declaration.asVariableDeclaration.hostType
+                // It is some kind of Reference, it could be many things, but let's start with VOs and calls 
+                if (expression instanceof ReferenceCall) {
+                    // Just hand it over to the annotation detection
+                    return extractContextType(expression.valuedObject.declaration.asReferenceDeclaration)
+                } else {
+                    // Extract the host type directly from the VO
+                    expression.valuedObject.declaration.asVariableDeclaration.hostType
+                }
             } else {
-                println(expression)
                 return 'Object'
             }
         }
@@ -113,12 +121,7 @@ class JavaCodeGeneratorContextModule extends SCGCodeGeneratorModule {
     def generateMethod(ReferenceDeclaration decl, List<CharSequence> types) {
         indent
         code.append("public ")
-        val typeAnnotations = decl.annotations.filter(StringAnnotation).filter['Context'.equalsIgnoreCase(name)].filter[!values.nullOrEmpty]
-        if (typeAnnotations.size == 0) {
-            code.append("void ")
-        } else {
-            code.append(typeAnnotations.head.values.head + " ")
-        }
+        code.append(extractContextType(decl)).append(" ")
         code.append(decl.extern.head.code + "(")
 
         if (types.length > 1) {
@@ -138,6 +141,18 @@ class JavaCodeGeneratorContextModule extends SCGCodeGeneratorModule {
             code.append(types.map[it + " " + INTERFACE_PARAM_NAME].join())
         }
         code.append(");\n")
+    }
+
+    /**
+     * Checks the given declaration for annotations with the return type. 
+     */
+    def extractContextType(ReferenceDeclaration decl) {
+        val typeAnnotations = decl.annotations.filter(StringAnnotation).filter['Context'.equalsIgnoreCase(name)].filter[!values.nullOrEmpty]
+        if (typeAnnotations.size == 0) {
+            return "void"
+        } else {
+            return typeAnnotations.head.values.head
+        }        
     }
 
     override generateDone() {}
