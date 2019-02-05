@@ -91,7 +91,7 @@ class JavaCodeSerializeHRExtensions extends CCodeSerializeHRExtensions {
         if (declaration.extern.nullOrEmpty) { 
             return referenceCall.valuedObject.serialize.toString + referenceCall.parameters.serializeParameters
         } else {
-            val contextCall = if (declaration.annotations.exists[name.equalsIgnoreCase('Context')]) {
+            val contextCall = if (declaration.annotations.exists['Context'.equalsIgnoreCase(name)]) {
                 'context.'
             } else {
                 ''
@@ -101,6 +101,24 @@ class JavaCodeSerializeHRExtensions extends CCodeSerializeHRExtensions {
                 code = declaration.extern.filter[ hasAnnotation(codeAnnotation) ].head.code
             }
             return contextCall + code + referenceCall.parameters.serializeParameters
+        }
+    }
+
+    override dispatch CharSequence serializeHR(ReferenceCall referenceCall) {
+        val declaration = referenceCall.valuedObject.referenceDeclaration
+        if (declaration.extern.nullOrEmpty) { 
+            return referenceCall.valuedObject.serializeHR.toString + referenceCall.parameters.serializeHRParameters
+        } else {
+            val contextCall = if (declaration.annotations.exists['Context'.equalsIgnoreCase(name)]) {
+                'context.'
+            } else {
+                ''
+            }
+            var code = declaration.extern.head.code
+            if (declaration.extern.exists[ hasAnnotation(codeAnnotation) ]) {
+                code = declaration.extern.filter[ hasAnnotation(codeAnnotation) ].head.code
+            }
+            return contextCall + code + referenceCall.parameters.serializeHRParameters
         }
     }
 }
