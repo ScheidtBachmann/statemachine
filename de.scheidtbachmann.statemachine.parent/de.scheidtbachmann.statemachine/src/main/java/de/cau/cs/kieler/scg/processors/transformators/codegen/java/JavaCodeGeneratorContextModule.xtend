@@ -26,6 +26,7 @@ import java.util.List
 import de.cau.cs.kieler.kexpressions.Expression
 import de.cau.cs.kieler.kexpressions.ValuedObjectReference
 import de.cau.cs.kieler.annotations.StringAnnotation
+import de.cau.cs.kieler.kexpressions.TextExpression
 
 /**
  * Generates a context interface that is used to perform 
@@ -95,6 +96,10 @@ class JavaCodeGeneratorContextModule extends SCGCodeGeneratorModule {
      * create the string representation of the type.
      */
     def CharSequence inferTypeWithHostTypes(Expression expression) {
+        // First thing: We check if the expression is a simple text (hostcode) expression, we can't infer.
+        if (expression instanceof TextExpression) {
+            return 'Object'
+        } 
         // We first try the pre-implemented inference, that is able to detect mostly primitive types
         if (expression.inferType != ValueType.UNKNOWN) {
             return expression.inferType.serialize
