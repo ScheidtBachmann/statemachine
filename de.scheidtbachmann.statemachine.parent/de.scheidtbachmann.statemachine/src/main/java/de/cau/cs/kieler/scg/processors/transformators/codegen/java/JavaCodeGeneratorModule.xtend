@@ -106,6 +106,7 @@ class JavaCodeGeneratorModule extends CCodeGeneratorModule {
             contextFile.packageAdditions
             contextFile.addHeader
             contextFile.hostcodeAdditions
+            contextFile.append("@SuppressWarnings(\"unused\")\n")
             contextFile.append("public interface " + codeFilename + CONTEXT_SUFFIX + " {\n\n")
             contextFile.append(contextCode).append("\n")
             contextFile.append("}\n")
