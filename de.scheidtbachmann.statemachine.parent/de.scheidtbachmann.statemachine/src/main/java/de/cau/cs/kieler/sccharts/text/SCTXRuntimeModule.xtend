@@ -7,6 +7,7 @@ import de.cau.cs.kieler.sccharts.text.converter.SCTXValueConverter
 import org.eclipse.xtext.conversion.IValueConverterService
 import org.eclipse.xtext.parsetree.reconstr.ITransientValueService
 import org.eclipse.xtext.resource.XtextResource
+import org.eclipse.xtext.linking.ILinker
 
 /**
  * Use this class to register components to be used at runtime / without the Equinox extension registry.
@@ -16,6 +17,10 @@ class SCTXRuntimeModule extends AbstractSCTXRuntimeModule {
     override Class<? extends XtextResource> bindXtextResource() {
         return SCTXResource
     }  
+        
+    override Class<? extends ILinker> bindILinker() {
+        return SCTXLinker
+    }     
     
     override Class<? extends ITransientValueService> bindITransientValueService() {
         return SCTXTransientValueService

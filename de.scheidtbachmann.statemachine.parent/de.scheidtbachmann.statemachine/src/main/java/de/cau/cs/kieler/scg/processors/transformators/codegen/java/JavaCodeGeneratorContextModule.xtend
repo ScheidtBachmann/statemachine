@@ -125,7 +125,6 @@ class JavaCodeGeneratorContextModule extends SCGCodeGeneratorModule {
      */
     def generateMethod(ReferenceDeclaration decl, List<CharSequence> types) {
         indent
-        code.append("public ")
         code.append(extractContextType(decl)).append(" ")
         code.append(decl.extern.head.code + "(")
 

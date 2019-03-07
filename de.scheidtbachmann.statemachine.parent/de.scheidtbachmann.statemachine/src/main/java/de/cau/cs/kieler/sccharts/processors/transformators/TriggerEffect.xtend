@@ -80,7 +80,7 @@ class TriggerEffect extends SCChartsProcessor implements Traceable {
     @Inject extension SCChartsActionExtensions
     @Inject extension SCChartsTransitionExtensions
     @Inject extension SCChartsUniqueNameExtensions
-    @Inject extension ValuedObjectRise
+//    @Inject extension ValuedObjectRise
 
     // This prefix is used for naming of all generated signals, states and regions
     static public final String GENERATED_PREFIX = "__te_"
@@ -98,7 +98,7 @@ class TriggerEffect extends SCChartsProcessor implements Traceable {
     //     Add T_eff to C's outgoing transitions. 
     def State transform(State rootState) {
         nameCache.clear
-        rootState.transformValuedObjectRise
+//        rootState.transformValuedObjectRise
 
         // Traverse all transitions
         for (targetTransition : rootState.getAllContainedTransitions.toList) {

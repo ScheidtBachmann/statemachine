@@ -29,11 +29,9 @@ import de.cau.cs.kieler.kexpressions.Expression
 import de.cau.cs.kieler.kexpressions.PrintCall
 import com.google.common.collect.Multimap
 import com.google.common.collect.HashMultimap
-import com.google.inject.Singleton
 import de.cau.cs.kieler.kexpressions.RandomCall
 import de.cau.cs.kieler.kexpressions.keffects.RandomizeCallEffect
 import de.cau.cs.kieler.kexpressions.RandomizeCall
-import de.cau.cs.kieler.kexpressions.extensions.KExpressionsDeclarationExtensions
 import de.cau.cs.kieler.annotations.extensions.AnnotationsExtensions
 import de.cau.cs.kieler.kexpressions.extensions.KExpressionsValuedObjectExtensions
 import de.cau.cs.kieler.kexpressions.keffects.AssignOperator
@@ -43,7 +41,6 @@ import de.cau.cs.kieler.sccharts.extensions.SCChartsSerializeHRExtensions
  * @author ssm
  *
  */
-@Singleton
 class StatebasedCCodeSerializeHRExtensions extends SCChartsSerializeHRExtensions {
     
     public static val INCLUDES = "includes"
@@ -51,7 +48,6 @@ class StatebasedCCodeSerializeHRExtensions extends SCChartsSerializeHRExtensions
     
     @Inject extension AnnotationsExtensions
     @Inject extension KEffectsExtensions    
-    @Inject extension KExpressionsDeclarationExtensions
     @Inject extension KExpressionsValuedObjectExtensions
     
     @Accessors var String valuedObjectPrefix
@@ -111,7 +107,7 @@ class StatebasedCCodeSerializeHRExtensions extends SCChartsSerializeHRExtensions
         return "0"
     }
     
-    public override CharSequence serializeAssignment(Assignment assignment, CharSequence expressionStr) {
+    override CharSequence serializeAssignment(Assignment assignment, CharSequence expressionStr) {
         var res = ""
         
         if (assignment.valuedObject !== null) {

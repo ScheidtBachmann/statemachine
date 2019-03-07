@@ -74,7 +74,7 @@ class Const extends SCChartsProcessor implements Traceable {
     @Inject extension KExpressionsValuedObjectExtensions
     @Inject extension KExtDeclarationExtensions
     @Inject extension SCChartsScopeExtensions
-    @Inject extension ValuedObjectRise
+//    @Inject extension ValuedObjectRise
 
     // This prefix is used for naming of all generated signals, states and regions
     static public final String GENERATED_PREFIX = "_"
@@ -87,7 +87,7 @@ class Const extends SCChartsProcessor implements Traceable {
     def State transform(State rootState) {
         var targetRootState = rootState
 
-        targetRootState.transformValuedObjectRise
+//        targetRootState.transformValuedObjectRise
 
         // Traverse all states
         for (scopes : targetRootState.getAllScopes.toList) {

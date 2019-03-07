@@ -34,6 +34,7 @@ import de.cau.cs.kieler.kicool.compilation.CompilationContext;
 import de.cau.cs.kieler.kicool.compilation.Compile;
 import de.cau.cs.kieler.kicool.registration.KiCoolRegistration;
 import de.cau.cs.kieler.sccharts.processors.statebased.codegen.StatebasedCCodeGenerator;
+import de.cau.cs.kieler.sccharts.processors.transformators.ModelSelect;
 import de.scheidtbachmann.statemachine.StateMachineStandaloneSetup;
 
 /**
@@ -51,18 +52,10 @@ public class StateMachineGeneratorPlugin extends AbstractMojo {
 	}
 
 	/**
-	 * The files to read as StateMachines
+	 * The Configuration of all StateMachines that should be compiled
 	 */
 	@Parameter(property = "stateMachines", required = true)
-	private List<String> stateMachines;
-
-	/** The folder the generated files should be placed in */
-	@Parameter(property = "outputFolder", defaultValue = "sm-gen")
-	private String outputFolder;
-
-	/** The compilation strategy to use during code generation */
-	@Parameter(property = "strategy", defaultValue = "de.cau.cs.kieler.sccharts.statebased")
-	private String strategy;
+	private List<StateMachine> stateMachines;
 
 	@Inject
 	private Provider<IResourceValidator> validatorProvider;
@@ -74,28 +67,27 @@ public class StateMachineGeneratorPlugin extends AbstractMojo {
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 
-		// Make sure the output folder exists and is writable
-		Path basePath = Paths.get("");
-		Path outputPath = basePath.toAbsolutePath().resolve(outputFolder);
-		if (!Files.exists(outputPath)) {
-			try {
-				Files.createDirectories(outputPath);
-			} catch (IOException e) {
-				throw new MojoFailureException("Couldn't create output path.");
+		for (StateMachine machine : stateMachines) {
+			// Make sure the output folder exists and is writable
+			Path basePath = Paths.get("");
+			Path outputPath = basePath.toAbsolutePath().resolve(machine.getOutputFolder());
+			if (!Files.exists(outputPath)) {
+				try {
+					Files.createDirectories(outputPath);
+				} catch (IOException e) {
+					throw new MojoFailureException("Couldn't create output path.");
+				}
 			}
-		}
-		if (!Files.isDirectory(outputPath)) {
-			throw new MojoFailureException("Output path exists, but is no directory.");
-		}
-		if (!Files.isWritable(outputPath)) {
-			throw new MojoFailureException("Output paths is not writable.");
-		}
-
-		for (String fileName : stateMachines) {
+			if (!Files.isDirectory(outputPath)) {
+				throw new MojoFailureException("Output path exists, but is no directory.");
+			}
+			if (!Files.isWritable(outputPath)) {
+				throw new MojoFailureException("Output paths is not writable.");
+			}
 			// Load input data
-			Resource resource = loadResource(fileName);
+			Resource resource = loadResource(machine.getFileName());
 			doValidate(resource);
-			doGenerate(resource, outputPath);
+			doGenerate(resource, machine, outputPath);
 		}
 	}
 
@@ -151,12 +143,12 @@ public class StateMachineGeneratorPlugin extends AbstractMojo {
 		
 	}
 
-	private void doGenerate(final Resource resource, Path outputPath)
+	private void doGenerate(final Resource resource, StateMachine machine, Path outputPath)
 			throws MojoFailureException, MojoExecutionException {
-		String strategyId = loadCustomStrategy(strategy);
+		String strategyId = loadCustomStrategy(machine.getStrategy());
 		getLog().debug(String.format("Compiling %s using strategy %s ...", resource, strategyId));
 
-		Object result = doCompile(resource, strategyId);
+		Object result = doCompile(resource, machine, strategyId);
 
 		if (result instanceof CodeContainer) {
 			CodeContainer cc = (CodeContainer) result;
@@ -173,13 +165,16 @@ public class StateMachineGeneratorPlugin extends AbstractMojo {
 		}
 	}
 
-	private Object doCompile(final Resource resource, String strategyId) {
+	private Object doCompile(final Resource resource, StateMachine machine, String strategyId) {
 
 		try {
 			CompilationContext ctx = Compile.createCompilationContext(strategyId, resource.getContents().get(0));
 			// the following property setting only applies to strategy
 			// 'de.cau.cs.kieler.sccharts.statebased'
 			ctx.getStartEnvironment().setProperty(StatebasedCCodeGenerator.LEAN_MODE, true);
+			if (machine.getSelectedModel() != null && !machine.getSelectedModel().isEmpty()) {
+	          ctx.getStartEnvironment().setProperty(ModelSelect.SELECTED_MODEL, machine.getSelectedModel());
+	        }
 			return ctx.compile().getModel();
 
 		} catch (Throwable t) {

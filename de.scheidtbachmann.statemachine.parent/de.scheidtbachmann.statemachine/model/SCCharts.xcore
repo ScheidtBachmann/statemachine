@@ -63,6 +63,7 @@ class State extends Scope {
 	boolean connector
 	contains Transition[] outgoingTransitions opposite sourceState
 	refers Transition[] incomingTransitions opposite targetState
+	refers State[] baseStates
 }
 
 abstract class Region extends Scope , Linkable {

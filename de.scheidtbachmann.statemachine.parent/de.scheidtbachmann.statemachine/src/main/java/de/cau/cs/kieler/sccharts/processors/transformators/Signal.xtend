@@ -95,7 +95,7 @@ class Signal extends SCChartsProcessor implements Traceable {
     @Inject extension SCChartsActionExtensions
     @Inject extension SCChartsTransitionExtensions
     @Inject extension SCChartsUniqueNameExtensions
-    @Inject extension ValuedObjectRise
+//    @Inject extension ValuedObjectRise
     @Inject extension KExpressionsArrayExtensions
 
     // This prefix is used for naming of all generated signals, states and regions
@@ -119,7 +119,7 @@ class Signal extends SCChartsProcessor implements Traceable {
     // input signal S:integer; --> input boolean S; input integer S_val;
     // Transforming a signal to a variable. 
     def State transform(State rootState) {
-        rootState.transformValuedObjectRise
+//        rootState.transformValuedObjectRise
         
         // Traverse all states
         rootState.getAllStates.toList.forEach [ targetState |

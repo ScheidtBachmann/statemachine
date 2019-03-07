@@ -65,7 +65,7 @@ class Static extends SCChartsProcessor implements Traceable {
     @Inject extension SCChartsCoreExtensions
     @Inject extension SCChartsScopeExtensions
     @Inject extension KExpressionsDeclarationExtensions
-    @Inject extension ValuedObjectRise
+//    @Inject extension ValuedObjectRise
     
     // This prefix is used for naming of all generated signals, states and regions
     static val String GENERATED_PREFIX = "_"
@@ -80,7 +80,7 @@ class Static extends SCChartsProcessor implements Traceable {
     // This is applied for all superstates that contain static variable declarations.
     //
     def State transform(State rootState) {
-        rootState.transformValuedObjectRise
+//        rootState.transformValuedObjectRise
         
         // Traverse all states
         for (targetTransition : rootState.getAllStates.toList) {

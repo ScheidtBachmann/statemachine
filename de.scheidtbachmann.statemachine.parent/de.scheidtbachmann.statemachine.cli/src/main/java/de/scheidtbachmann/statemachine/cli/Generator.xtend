@@ -32,9 +32,8 @@ import picocli.CommandLine.Option
 import picocli.CommandLine.Parameters
 import picocli.CommandLine.Spec
 
-import static java.nio.file.StandardOpenOption.*
-
 import static extension java.nio.file.Files.*
+import de.cau.cs.kieler.sccharts.processors.transformators.ModelSelect
 
 @Command(name='scc', header="Scheidt & Bachmann StateChart Compiler", version="0.1.0", mixinStandardHelpOptions=true)
 class Generator implements Runnable {
@@ -223,6 +222,8 @@ class Generator implements Runnable {
     @Option(names=#['-s',
       '--strategy'], paramLabel='<strategy>', completionCandidates=StrategyCandidates, defaultValue='de.cau.cs.kieler.sccharts.statebased', description="The generation strategy to apply. %nCandidates are: ${COMPLETION-CANDIDATES}. %nDefault is: %n  ${DEFAULT-VALUE}.")
     String strategy,
+    @Option(names='--select', description="The parts of the model that should be taken from the input file", paramLabel='<model>')
+    String selectedCharts,
     @Parameters(arity='0..1', paramLabel='<sourceFile>', description="The input state chart file.")
     String sourceFileName
   ) {
@@ -240,7 +241,7 @@ class Generator implements Runnable {
           println('No content found in the provided resource.')
         } else if (stdOut) {
           // Resource is okay and writing to stdout. Get on with it.
-          doGenerate(strategy, null)
+          doGenerate(strategy, null, selectedCharts)
         } else {
           // Build up the output path
           val outputPath = basePath.toAbsolutePath.resolve(outlet)
@@ -249,7 +250,7 @@ class Generator implements Runnable {
             if (outputPath.isDirectory) {
               if (outputPath.isWritable) {
                 // All good. Let's do it!
-                doGenerate(strategy, outputPath)
+                doGenerate(strategy, outputPath, selectedCharts)
               } else {
                 // Output path is a directory but seems to be write-protected
                 println('The provided output path does exist, but writing is not permitted.')
@@ -272,7 +273,7 @@ class Generator implements Runnable {
               return
             }
             // We got our output path, start compilation
-            doGenerate(strategy, outputPath)
+            doGenerate(strategy, outputPath, selectedCharts)
           }
         }
       }
@@ -283,7 +284,7 @@ class Generator implements Runnable {
    * Does some of the heavy lifting for code generation.
    * Loads the strategy before compilation, calls compilation, and writes files afterwards.
    */
-  def doGenerate(String strategy, Path outlet) {
+  def doGenerate(String strategy, Path outlet, String selectedCharts) {
     // Make sure the compilation strategy is available
     val strategyId = strategy.loadStrategy()
 
@@ -304,7 +305,7 @@ class Generator implements Runnable {
     val altSyserr = new ByteArrayOutputStream()
 
     // Perform the actual compilation
-    val result = doCompile(strategyId, altSysout, altSyserr)
+    val result = doCompile(strategyId, selectedCharts, altSysout, altSyserr)
 
     // Check the proper compilation result
     if (result instanceof CodeContainer) {
@@ -353,7 +354,7 @@ class Generator implements Runnable {
   /**
    * Invokes the actual compilation through KiCool.
    */
-  def doCompile(String strategyId, ByteArrayOutputStream altSysout, ByteArrayOutputStream altSyserr) {
+  def doCompile(String strategyId, String selectedCharts, ByteArrayOutputStream altSysout, ByteArrayOutputStream altSyserr) {
     // Store the current stdout/stderr streams to restore them in the end.
     val sysoutOri = System.out
     val syserrOri = System.err
@@ -366,6 +367,9 @@ class Generator implements Runnable {
       val ctx = Compile.createCompilationContext(strategyId, resource.contents.head)
       // the following property setting only applies to strategy 'de.cau.cs.kieler.sccharts.statebased'
       ctx.startEnvironment.setProperty(StatebasedCCodeGenerator.LEAN_MODE, true)
+      if (!selectedCharts.nullOrEmpty) {
+        ctx.startEnvironment.setProperty(ModelSelect.SELECTED_MODEL, selectedCharts)
+      }
       // Perform the compilation and return the model
       return ctx.compile().model
     } catch (Throwable t) {
