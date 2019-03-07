@@ -1,0 +1,8 @@
+system de.scheidtbachmann.statemachine.codegen.statebased.lean.java.template.selective
+	label "State-based Compilation (Java) lean-mode (Template, Selective) - Scheidt & Bachmann"
+  start config {
+      "de.cau.cs.kieler.kicool.kitt.tracingActive": true
+    }
+  
+de.scheidtbachmann.statemachine.processors.modelselect
+system de.scheidtbachmann.statemachine.codegen.statebased.lean.java.template

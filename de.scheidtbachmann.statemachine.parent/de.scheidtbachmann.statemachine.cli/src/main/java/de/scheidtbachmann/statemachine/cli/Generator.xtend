@@ -1,12 +1,15 @@
 package de.scheidtbachmann.statemachine.cli
 
 import com.google.inject.Inject
+import com.google.inject.Injector
 import com.google.inject.Provider
 import de.cau.cs.kieler.kicool.compilation.CodeContainer
 import de.cau.cs.kieler.kicool.compilation.Compile
 import de.cau.cs.kieler.kicool.registration.KiCoolRegistration
 import de.cau.cs.kieler.sccharts.processors.statebased.codegen.StatebasedCCodeGenerator
-import de.scheidtbachmann.statemachine.StateMachineStandaloneSetup
+import de.cau.cs.kieler.sccharts.text.SCTXStandaloneSetup
+import de.cau.cs.kieler.scg.ScgPackage
+import de.scheidtbachmann.statemachine.transformators.ModelSelect
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.PrintStream
@@ -32,11 +35,9 @@ import picocli.CommandLine.Option
 import picocli.CommandLine.Parameters
 import picocli.CommandLine.Spec
 
-import static java.nio.file.StandardOpenOption.*
-
 import static extension java.nio.file.Files.*
 
-@Command(name='scc', header="Scheidt & Bachmann StateChart Compiler", version="0.1.0", mixinStandardHelpOptions=true)
+@Command(name='scc', header="Scheidt & Bachmann StateChart Compiler", version="0.2.0", mixinStandardHelpOptions=true)
 class Generator implements Runnable {
 
   static val CMD_VALIDATE = 'validate'
@@ -68,10 +69,11 @@ class Generator implements Runnable {
    */
   def static void main(String[] args) {
     // Trigger injection before the tool runs
-    CommandLine.run(
-      new StateMachineStandaloneSetup().createInjectorAndDoEMFRegistration().getInstance(Generator),
-      args
-    )
+    val Injector injector = new SCTXStandaloneSetup().createInjectorAndDoEMFRegistration
+    ScgPackage.eINSTANCE.eClass
+    val CommandLine cmd = new CommandLine(injector.getInstance(Generator))
+    val exitCode = cmd.execute(args)
+    System.exit(exitCode)
   }
 
   override void run() {
@@ -94,7 +96,7 @@ class Generator implements Runnable {
     } else if (useStdIn) {
       // Load resource from stdin. Simulate a file resource by calling the 'file' stdIn.sm
       resource = resourceSetProvider.get().createResource(
-        URI::createFileURI('stdIn.sm')
+        URI::createFileURI('stdIn.sctx')
       )
       resource.load(System.in, emptyMap)
       return resource
@@ -223,6 +225,8 @@ class Generator implements Runnable {
     @Option(names=#['-s',
       '--strategy'], paramLabel='<strategy>', completionCandidates=StrategyCandidates, defaultValue='de.cau.cs.kieler.sccharts.statebased', description="The generation strategy to apply. %nCandidates are: ${COMPLETION-CANDIDATES}. %nDefault is: %n  ${DEFAULT-VALUE}.")
     String strategy,
+    @Option(names='--select', description="The parts of the model that should be taken from the input file", paramLabel='<model>')
+    String selectedCharts,
     @Parameters(arity='0..1', paramLabel='<sourceFile>', description="The input state chart file.")
     String sourceFileName
   ) {
@@ -240,7 +244,7 @@ class Generator implements Runnable {
           println('No content found in the provided resource.')
         } else if (stdOut) {
           // Resource is okay and writing to stdout. Get on with it.
-          doGenerate(strategy, null)
+          doGenerate(strategy, null, selectedCharts)
         } else {
           // Build up the output path
           val outputPath = basePath.toAbsolutePath.resolve(outlet)
@@ -249,7 +253,7 @@ class Generator implements Runnable {
             if (outputPath.isDirectory) {
               if (outputPath.isWritable) {
                 // All good. Let's do it!
-                doGenerate(strategy, outputPath)
+                doGenerate(strategy, outputPath, selectedCharts)
               } else {
                 // Output path is a directory but seems to be write-protected
                 println('The provided output path does exist, but writing is not permitted.')
@@ -272,7 +276,7 @@ class Generator implements Runnable {
               return
             }
             // We got our output path, start compilation
-            doGenerate(strategy, outputPath)
+            doGenerate(strategy, outputPath, selectedCharts)
           }
         }
       }
@@ -283,7 +287,7 @@ class Generator implements Runnable {
    * Does some of the heavy lifting for code generation.
    * Loads the strategy before compilation, calls compilation, and writes files afterwards.
    */
-  def doGenerate(String strategy, Path outlet) {
+  def doGenerate(String strategy, Path outlet, String selectedCharts) {
     // Make sure the compilation strategy is available
     val strategyId = strategy.loadStrategy()
 
@@ -304,7 +308,7 @@ class Generator implements Runnable {
     val altSyserr = new ByteArrayOutputStream()
 
     // Perform the actual compilation
-    val result = doCompile(strategyId, altSysout, altSyserr)
+    val result = doCompile(strategyId, selectedCharts, altSysout, altSyserr)
 
     // Check the proper compilation result
     if (result instanceof CodeContainer) {
@@ -353,7 +357,7 @@ class Generator implements Runnable {
   /**
    * Invokes the actual compilation through KiCool.
    */
-  def doCompile(String strategyId, ByteArrayOutputStream altSysout, ByteArrayOutputStream altSyserr) {
+  def doCompile(String strategyId, String selectedCharts, ByteArrayOutputStream altSysout, ByteArrayOutputStream altSyserr) {
     // Store the current stdout/stderr streams to restore them in the end.
     val sysoutOri = System.out
     val syserrOri = System.err
@@ -366,6 +370,9 @@ class Generator implements Runnable {
       val ctx = Compile.createCompilationContext(strategyId, resource.contents.head)
       // the following property setting only applies to strategy 'de.cau.cs.kieler.sccharts.statebased'
       ctx.startEnvironment.setProperty(StatebasedCCodeGenerator.LEAN_MODE, true)
+      if (!selectedCharts.nullOrEmpty) {
+        ctx.startEnvironment.setProperty(ModelSelect.SELECTED_MODEL, selectedCharts)
+      }
       // Perform the compilation and return the model
       return ctx.compile().model
     } catch (Throwable t) {
@@ -386,7 +393,7 @@ class Generator implements Runnable {
    */
   def loadStrategy(String strategy) {
     // Check if the given strategy id is already known
-    if (KiCoolRegistration.availableSystemsIDs.exists[it == strategy]) {
+    if (KiCoolRegistration.systemModels.map[id].exists[it == strategy]) {
       // It is known. Just keep it that way.
       return strategy
     } else if (!strategy.endsWith('.kico')) {
@@ -429,9 +436,9 @@ class Generator implements Runnable {
       val strategyData = strategyResource.contents.head
       if (strategyData instanceof de.cau.cs.kieler.kicool.System) {
         // We got a compilation system. Make sure it doesn't collide with an existing strategy id.
-        if (KiCoolRegistration.availableSystemsIDs.exists[it == strategyData.id]) {
+        if (KiCoolRegistration.systemModels.map[id].exists[it == strategyData.id]) {
           // We got conflicting IDs
-          println('''Did load «strategy» without errors, but the strategy's «strategyData.id» is already used.''')
+          println('''Did load «strategy», but the strategy's id «strategyData.id» is already used.''')
           return null
         } else if (issuesText === null) {
           // Strategy is fine and we can register it in KiCool
@@ -624,7 +631,7 @@ class Generator implements Runnable {
    */
   static class StrategyCandidates implements Iterable<String> {
     // Request all known compilation systems from KiCool and store in a nice sorted list
-    val sortedIds = KiCoolRegistration.availableSystemsIDs.toIterable.sort
+    val sortedIds = KiCoolRegistration.systemModels.map[id].sort
 
     // Use the iterator to detect the end and append the "bring your own strategy" help text
     override iterator() {

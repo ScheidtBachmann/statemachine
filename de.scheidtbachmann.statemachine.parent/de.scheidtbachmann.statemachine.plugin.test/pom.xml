@@ -14,22 +14,6 @@
 			<artifactId>de.scheidtbachmann.statemachine.plugin</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<!-- <dependency>
-			<groupId>org.apache.maven</groupId>
-			<artifactId>maven-plugin-api</artifactId>
-			<version>2.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.maven</groupId>
-			<artifactId>maven-core</artifactId>
-			<version>3.5.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.maven.plugin-tools</groupId>
-			<artifactId>maven-plugin-annotations</artifactId>
-			<version>3.5</version>
-			<scope>provided</scope>
-		</dependency> -->
 	</dependencies>
 
 	<build>
@@ -48,12 +32,30 @@
 
 						<configuration>
 							<stateMachines>
-								<param>${project.basedir}/src/main/resources/test.sm</param>
-								<param>${project.basedir}/src/main/resources/test2.sm</param>
+								<stateMachine>
+									<fileName>${project.basedir}/src/main/resources/test.sctx</fileName>
+									<outputFolder>${project.build.directory}/generated-sources/statemachines/</outputFolder>
+									<strategy>de.cau.cs.kieler.sccharts.netlist.java</strategy>
+								</stateMachine>
+								<stateMachine>
+									<fileName>${project.basedir}/src/main/resources/test2.sctx</fileName>
+									<outputFolder>${project.build.directory}/generated-sources/statemachines/</outputFolder>
+									<strategy>de.scheidtbachmann.statemachine.codegen.statebased.lean.java.template</strategy>
+								</stateMachine>
+ 								<stateMachine>
+									<fileName>${project.basedir}/src/main/resources/testSelective.sctx</fileName>
+									<selectedModel>SelectiveChart</selectedModel>
+									<outputFolder>${project.build.directory}/generated-sources/statemachines/</outputFolder>
+									<strategy>de.scheidtbachmann.statemachine.codegen.statebased.lean.java.template.selective</strategy>
+								</stateMachine>
+								<stateMachine>
+									<fileName>${project.basedir}/src/main/resources/testSelective.sctx</fileName>
+									<selectedModel>OtherChart</selectedModel>
+									<outputFolder>${project.build.directory}/generated-sources/statemachines/</outputFolder>
+									<strategy>de.scheidtbachmann.statemachine.codegen.statebased.lean.java.template.selective</strategy>
+								</stateMachine>
 							</stateMachines>
-                            <outputFolder>${project.build.directory}/generated-sources/statemachines/</outputFolder>
-							<strategy>de.cau.cs.kieler.sccharts.netlist.java</strategy>
- 						</configuration>
+						 </configuration>
 					</execution>
 				</executions>
 			</plugin>

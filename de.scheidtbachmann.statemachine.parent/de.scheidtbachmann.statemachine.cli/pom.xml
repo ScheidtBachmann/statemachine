@@ -28,60 +28,6 @@
 				<groupId>org.eclipse.xtend</groupId>
 				<artifactId>xtend-maven-plugin</artifactId>
 			</plugin>
-			<!-- fetch the SWT runtime dependencies and extract the artifacts into dedicated subfolders being; they are included into the uber jar below -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<version>3.1.1</version>
-				<executions>
-					<execution>
-						<id>unpack</id>
-						<phase>process-classes</phase>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>org.eclipse.swt</groupId>
-									<artifactId>org.eclipse.swt.cocoa.macosx.x86_64</artifactId>
-									<version>4.3</version>
-									<overWrite>false</overWrite>
-									<outputDirectory>${project.build.outputDirectory}/swt/org.eclipse.swt.cocoa.macosx.x86_64</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.eclipse.swt</groupId>
-									<artifactId>org.eclipse.swt.gtk.linux.x86_64</artifactId>
-									<version>4.3</version>
-									<overWrite>false</overWrite>
-									<outputDirectory>${project.build.outputDirectory}/swt/org.eclipse.swt.gtk.linux.x86_64</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.eclipse.swt</groupId>
-									<artifactId>org.eclipse.swt.win32.win32.x86_64</artifactId>
-									<version>4.3</version>
-									<overWrite>false</overWrite>
-									<outputDirectory>${project.build.outputDirectory}/swt/org.eclipse.swt.win32.win32.x86_64</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.eclipse.swt</groupId>
-									<artifactId>org.eclipse.swt.win32.win32.x86</artifactId>
-									<version>4.3</version>
-									<overWrite>false</overWrite>
-									<outputDirectory>${project.build.outputDirectory}/swt/org.eclipse.swt.win32.win32.x86</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>${project.groupId}</groupId>
-									<artifactId>de.scheidtbachmann.statemachine.diagrams</artifactId>
-									<version>${project.version}</version>
-									<overWrite>false</overWrite>
-									<outputDirectory>${project.build.outputDirectory}/diagramming</outputDirectory>
-								</artifactItem>
-							</artifactItems>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
@@ -96,7 +42,8 @@
 							implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
 							<resource>plugin.properties</resource>
 						</transformer>
-					</transformers>
+            <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+          </transformers>
 					<filters>
 						<filter>
 							<artifact>*:*</artifact>
@@ -357,56 +304,105 @@
 	</profiles>
 	
 	<dependencies>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>de.scheidtbachmann.statemachine</artifactId>
-			<version>${project.version}</version>
-		</dependency>
+  <dependency>
+      <groupId>de.cau.cs.kieler</groupId>
+      <artifactId>de.cau.cs.kieler.core</artifactId>
+      <version>${kielerVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>de.cau.cs.kieler</groupId>
+      <artifactId>de.cau.cs.kieler.annotations</artifactId>
+      <version>${kielerVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>de.cau.cs.kieler</groupId>
+      <artifactId>de.cau.cs.kieler.kexpressions</artifactId>
+      <version>${kielerVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>de.cau.cs.kieler</groupId>
+      <artifactId>de.cau.cs.kieler.sccharts</artifactId>
+      <version>${kielerVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>de.cau.cs.kieler</groupId>
+      <artifactId>de.cau.cs.kieler.scl</artifactId>
+      <version>${kielerVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>de.cau.cs.kieler</groupId>
+      <artifactId>de.cau.cs.kieler.scg</artifactId>
+      <version>${kielerVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>de.cau.cs.kieler</groupId>
+      <artifactId>de.cau.cs.kieler.sccharts.scg</artifactId>
+      <version>${kielerVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>de.cau.cs.kieler</groupId>
+      <artifactId>de.cau.cs.kieler.verification</artifactId>
+      <version>0.14.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>de.cau.cs.kieler</groupId>
+      <artifactId>de.cau.cs.kieler.kicool</artifactId>
+      <version>${kielerVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.xtext</groupId>
+      <artifactId>org.eclipse.xtext</artifactId>
+      <version>${xtextVersion}</version>
+    </dependency>
 		<dependency>
 			<groupId>info.picocli</groupId>
 			<artifactId>picocli</artifactId>
 			<version>${picoCliVersion}</version>
 		</dependency>
+    <dependency>
+      <groupId>org.eclipse.platform</groupId>
+      <artifactId>org.eclipse.core.resources</artifactId>
+      <version>3.13.0</version>
+    </dependency>
+    <dependency>
+        <groupId>org.freemarker</groupId>
+        <artifactId>freemarker</artifactId>
+        <version>2.3.28</version>
+    </dependency>
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
 			<artifactId>org.eclipse.equinox.registry</artifactId>
-			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
 		</dependency>
 		<dependency>
 			<groupId>org.freehep</groupId>
 			<artifactId>freehep-graphicsio-svg</artifactId>
-			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.elk</groupId>
 			<artifactId>org.eclipse.elk.alg.force</artifactId>
-			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.elk</groupId>
 			<artifactId>org.eclipse.elk.alg.graphviz.layouter</artifactId>
-			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.elk</groupId>
 			<artifactId>org.eclipse.elk.alg.layered</artifactId>
-			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.elk</groupId>
 			<artifactId>org.eclipse.elk.alg.mrtree</artifactId>
-			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.elk</groupId>
 			<artifactId>org.eclipse.elk.alg.radial</artifactId>
-			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>de.scheidtbachmann.statemachine.diagrams</artifactId>
+			<artifactId>
+				de.scheidtbachmann.statemachine.codegen
+			</artifactId>
 			<version>${project.version}</version>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>

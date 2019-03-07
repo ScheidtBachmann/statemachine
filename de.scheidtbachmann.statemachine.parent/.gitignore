@@ -5,3 +5,4 @@ xtext-gen
 xtend-gen
 bin
 target
+settings.xml

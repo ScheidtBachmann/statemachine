@@ -1,5 +1,0 @@
-scchart Chart {
- initial state x
- go to y
- state y
-}

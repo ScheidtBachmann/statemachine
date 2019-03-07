@@ -24,7 +24,6 @@ import org.eclipse.xtext.validation.IResourceValidator;
 import org.eclipse.xtext.validation.Issue;
 
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Iterators;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
@@ -34,7 +33,8 @@ import de.cau.cs.kieler.kicool.compilation.CompilationContext;
 import de.cau.cs.kieler.kicool.compilation.Compile;
 import de.cau.cs.kieler.kicool.registration.KiCoolRegistration;
 import de.cau.cs.kieler.sccharts.processors.statebased.codegen.StatebasedCCodeGenerator;
-import de.scheidtbachmann.statemachine.StateMachineStandaloneSetup;
+import de.cau.cs.kieler.sccharts.text.SCTXStandaloneSetup;
+import de.scheidtbachmann.statemachine.transformators.ModelSelect;
 
 /**
  * Maven plugin to run the StateMachine code generator.
@@ -46,23 +46,15 @@ public class StateMachineGeneratorPlugin extends AbstractMojo {
 
 	public StateMachineGeneratorPlugin() {
 		super();
-		new StateMachineStandaloneSetup().createInjectorAndDoEMFRegistration().injectMembers(this);
+		new SCTXStandaloneSetup().createInjectorAndDoEMFRegistration().injectMembers(this);
 		;
 	}
 
 	/**
-	 * The files to read as StateMachines
+	 * The Configuration of all StateMachines that should be compiled
 	 */
 	@Parameter(property = "stateMachines", required = true)
-	private List<String> stateMachines;
-
-	/** The folder the generated files should be placed in */
-	@Parameter(property = "outputFolder", defaultValue = "sm-gen")
-	private String outputFolder;
-
-	/** The compilation strategy to use during code generation */
-	@Parameter(property = "strategy", defaultValue = "de.cau.cs.kieler.sccharts.statebased")
-	private String strategy;
+	private List<StateMachine> stateMachines;
 
 	@Inject
 	private Provider<IResourceValidator> validatorProvider;
@@ -74,28 +66,31 @@ public class StateMachineGeneratorPlugin extends AbstractMojo {
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 
-		// Make sure the output folder exists and is writable
-		Path basePath = Paths.get("");
-		Path outputPath = basePath.toAbsolutePath().resolve(outputFolder);
-		if (!Files.exists(outputPath)) {
-			try {
-				Files.createDirectories(outputPath);
-			} catch (IOException e) {
-				throw new MojoFailureException("Couldn't create output path.");
+		for (StateMachine machine : stateMachines) {
+			// Make sure the output folder exists and is writable
+			Path basePath = Paths.get("");
+			Path outputPath = basePath.toAbsolutePath().resolve(machine.getOutputFolder());
+			if (!Files.exists(outputPath)) {
+				try {
+					Files.createDirectories(outputPath);
+				} catch (IOException e) {
+					throw new MojoFailureException("Couldn't create output path.");
+				}
 			}
-		}
-		if (!Files.isDirectory(outputPath)) {
-			throw new MojoFailureException("Output path exists, but is no directory.");
-		}
-		if (!Files.isWritable(outputPath)) {
-			throw new MojoFailureException("Output paths is not writable.");
-		}
-
-		for (String fileName : stateMachines) {
+			if (!Files.isDirectory(outputPath)) {
+				throw new MojoFailureException("Output path exists, but is no directory.");
+			}
+			if (!Files.isWritable(outputPath)) {
+				throw new MojoFailureException("Output paths is not writable.");
+			}
 			// Load input data
-			Resource resource = loadResource(fileName);
-			doValidate(resource);
-			doGenerate(resource, outputPath);
+			Resource resource = loadResource(machine.getFileName());
+			if (resource != null) {
+				doValidate(resource);
+				doGenerate(resource, machine, outputPath);
+			} else {
+				throw new MojoExecutionException("Loading resource yielded null.");
+			}
 		}
 	}
 
@@ -151,12 +146,12 @@ public class StateMachineGeneratorPlugin extends AbstractMojo {
 		
 	}
 
-	private void doGenerate(final Resource resource, Path outputPath)
+	private void doGenerate(final Resource resource, StateMachine machine, Path outputPath)
 			throws MojoFailureException, MojoExecutionException {
-		String strategyId = loadCustomStrategy(strategy);
+		String strategyId = loadCustomStrategy(machine.getStrategy());
 		getLog().debug(String.format("Compiling %s using strategy %s ...", resource, strategyId));
 
-		Object result = doCompile(resource, strategyId);
+		Object result = doCompile(resource, machine, strategyId);
 
 		if (result instanceof CodeContainer) {
 			CodeContainer cc = (CodeContainer) result;
@@ -173,13 +168,16 @@ public class StateMachineGeneratorPlugin extends AbstractMojo {
 		}
 	}
 
-	private Object doCompile(final Resource resource, String strategyId) {
+	private Object doCompile(final Resource resource, StateMachine machine, String strategyId) {
 
 		try {
 			CompilationContext ctx = Compile.createCompilationContext(strategyId, resource.getContents().get(0));
 			// the following property setting only applies to strategy
 			// 'de.cau.cs.kieler.sccharts.statebased'
 			ctx.getStartEnvironment().setProperty(StatebasedCCodeGenerator.LEAN_MODE, true);
+			if (machine.getSelectedModel() != null && !machine.getSelectedModel().isEmpty()) {
+	          ctx.getStartEnvironment().setProperty(ModelSelect.SELECTED_MODEL, machine.getSelectedModel());
+	        }
 			return ctx.compile().getModel();
 
 		} catch (Throwable t) {
@@ -214,7 +212,7 @@ public class StateMachineGeneratorPlugin extends AbstractMojo {
 	 * @throws MojoFailureException
 	 */
 	private String loadCustomStrategy(final String strategy) throws MojoFailureException {
-		if (Iterators.contains(KiCoolRegistration.getAvailableSystemsIDs(), strategy)) {
+		if (KiCoolRegistration.getSystemModels().stream().map(system -> system.getId()).anyMatch(id -> id.equals(strategy))) {
 			return strategy;
 		} else if (!strategy.endsWith(".kico")) {
 			throw new MojoFailureException("The extension of the provided strategy file is invalid.");
@@ -241,7 +239,7 @@ public class StateMachineGeneratorPlugin extends AbstractMojo {
 
 			if (root instanceof de.cau.cs.kieler.kicool.System) {
 				de.cau.cs.kieler.kicool.System sys = (de.cau.cs.kieler.kicool.System) root;
-				if (Iterators.contains(KiCoolRegistration.getAvailableSystemsIDs(), strategy)) {
+				if (KiCoolRegistration.getSystemModels().stream().map(system -> system.getId()).anyMatch(id -> id.equals(strategy))) {
 					throw new MojoFailureException("Did load strategy without errors, but the strategy's id "
 							+ sys.getId() + "is already used.");
 				} else if (issuesText.length() == 0) {
