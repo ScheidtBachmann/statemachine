@@ -42,6 +42,7 @@ import org.eclipse.xtext.resource.XtextResourceSet
 import static org.eclipse.emf.common.util.URI.*
 
 import static extension com.google.common.collect.Sets.*
+import de.cau.cs.kieler.kexpressions.keffects.converter.KEffectsEmissionReferenceCallConverter
 
 /**
  * A customized {@link LazyLinkingResource}. Modifies the parsed model and fixes some runtime bugs.
@@ -54,6 +55,8 @@ import static extension com.google.common.collect.Sets.*
 public class SCTXResource extends LazyLinkingResource {
 
     @Inject extension PragmaExtensions
+    @Inject extension KEffectsEmissionReferenceCallConverter
+    
 
     public static val FILE_EXTENSION = "sctx"
     private static val FILE_EXTENSION_INTERN = "." + FILE_EXTENSION
@@ -129,6 +132,9 @@ public class SCTXResource extends LazyLinkingResource {
                 // fail silent
             }
         }
+        
+        // Fix Emission vs. ReferenceCallEffect uncertainty.
+        parseResult.fixEmissionReferenceCallEffectDuality
 
         super.updateInternalState(parseResult);
 

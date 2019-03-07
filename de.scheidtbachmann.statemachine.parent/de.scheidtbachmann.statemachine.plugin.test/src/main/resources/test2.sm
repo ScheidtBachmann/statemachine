@@ -1,7 +1,12 @@
 #package "de.scheidtbachmann.statemachine.foo"
 
 scchart PackageMachine {
+
+  extern "foo" foo
+
  initial state x
+ do foo()
  go to y
+
  state y
 }

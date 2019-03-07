@@ -57,6 +57,10 @@ class AnnotationsExtensions {
         ]
     }
     
+  def addTagAnnotation(Annotatable annotatable, String name) {
+    annotatable.annotations += createTagAnnotation(name)
+  }
+    
     def Annotation createTagAnnotation(String name) {
         AnnotationsFactory::eINSTANCE.createTagAnnotation => [
             it.name = name
