@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>de.scheidtbachmann.statemachine</groupId>
 		<artifactId>de.scheidtbachmann.statemachine.parent</artifactId>
-		<version>0.1.0-SNAPSHOT</version>
+		<version>0.2.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>de.scheidtbachmann.statemachine.codegen</artifactId>
 	<packaging>jar</packaging>
