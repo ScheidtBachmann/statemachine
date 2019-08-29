@@ -117,14 +117,14 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             /**
              * The interface containing all model variables (inputs, outputs)
              */
-            public class Iface {
+            public static class Iface {
               « rootState.createDeclarations »
             }
 
             /**
              * Runtime data for the root level program
              */
-            public class TickData {
+            public static class TickData {
               ThreadStatus threadStatus;
 
               « FOR r : rootState.regions.filter(ControlflowRegion) »
@@ -164,7 +164,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
               /**
                * The runtime thread data of region « r.name »
                */
-              public class « r.uniqueContextMemberName » {
+              public static class « r.uniqueContextMemberName » {
                 ThreadStatus threadStatus;
                 « r.uniqueName »States activeState; 
                 boolean delayedEnabled; 
