@@ -92,7 +92,9 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
           @SuppressWarnings("unused")
           public class « rootState.uniqueName »« IF superClass !== null » extends « superClass »« ENDIF » {
 
+            « IF rootState.declarations.filter(VariableDeclaration).map[it.valuedObjects].flatten.size > 0 »
             public Iface iface;
+            « ENDIF »
             private TickData rootContext;
             « IF needsContextInterface »
               private final «rootState.uniqueName»Context externalContext; // Auto-Created context interface
@@ -114,6 +116,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
               TERMINATED, RUNNING, READY, PAUSING;
             }
 
+            « IF rootState.declarations.filter(VariableDeclaration).map[it.valuedObjects].flatten.size > 0 »
             /**
              * The interface containing all model variables (inputs, outputs)
              */
@@ -121,6 +124,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
               « rootState.createDeclarations »
             }
 
+            « ENDIF »
             /**
              * Runtime data for the root level program
              */
@@ -240,7 +244,9 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
               « IF needsContextInterface»
                 this.externalContext = externalContext;
               « ENDIF »
+              « IF rootState.declarations.filter(VariableDeclaration).map[it.valuedObjects].flatten.size > 0 »
               this.iface = new Iface();
+              « ENDIF »
               this.rootContext = new TickData();
             }
 
