@@ -12,6 +12,7 @@ class CodegeneratorProcessorProvider implements IProcessorProvider {
     override getProcessors() {
         #[
             de.scheidtbachmann.statemachine.transformators.ModelSelect,
+            de.scheidtbachmann.statemachine.transformators.StateOriginMarker,            
             de.scheidtbachmann.statemachine.codegen.lean.cpp.StatebasedLeanCppCodeGenerator,
             de.scheidtbachmann.statemachine.codegen.lean.java.StatebasedLeanJavaCodeGenerator
         ]
