@@ -67,6 +67,7 @@ class StatebasedLeanJavaCodeGenerator extends ExogenousProcessor<SCCharts, CodeC
         val javaFile = new StringBuilder
 
         javaFile.append(addHeader)
+        javaFile.packageAdditions(scc)
         javaFile.hostcodeAdditions(scc, template)
         javaFile.append(template.source)
 
@@ -110,10 +111,16 @@ class StatebasedLeanJavaCodeGenerator extends ExogenousProcessor<SCCharts, CodeC
             sb.append("import " + include + ";\n")
         }
         
+        val includePragmas = scc.getStringPragmas(INCLUDE)
+        for (pragma : includePragmas) {
+            sb.append("import ").append(pragma.values.head).append(";\n")
+        }
+
         val hostcodePragmas = scc.getStringPragmas(HOSTCODE)
         for (pragma : hostcodePragmas) {
             sb.append(pragma.values.head + "\n")
         }
+
         if (hostcodePragmas.size > 0 || includes.size > 0) {
             sb.append("\n")
         }

@@ -15,7 +15,9 @@ package de.scheidtbachmann.statemachine.codegen.lean.java
 import com.google.common.collect.HashMultimap
 import com.google.common.collect.Multimap
 import com.google.inject.Inject
+import de.cau.cs.kieler.annotations.CommentAnnotation
 import de.cau.cs.kieler.annotations.StringAnnotation
+import de.cau.cs.kieler.annotations.extensions.AnnotationsExtensions
 import de.cau.cs.kieler.kexpressions.Expression
 import de.cau.cs.kieler.kexpressions.ReferenceCall
 import de.cau.cs.kieler.kexpressions.ReferenceDeclaration
@@ -33,12 +35,9 @@ import de.cau.cs.kieler.sccharts.State
 import de.cau.cs.kieler.sccharts.Transition
 import de.cau.cs.kieler.sccharts.extensions.SCChartsActionExtensions
 import de.cau.cs.kieler.sccharts.extensions.SCChartsStateExtensions
-import de.cau.cs.kieler.sccharts.processors.statebased.codegen.java.StatebasedJavaCodeSerializeHRExtensions
 import de.cau.cs.kieler.sccharts.processors.statebased.lean.codegen.AbstractStatebasedLeanTemplate
 import java.util.List
 import org.eclipse.xtend.lib.annotations.Accessors
-import de.cau.cs.kieler.annotations.CommentAnnotation
-import de.cau.cs.kieler.annotations.extensions.AnnotationsExtensions
 
 /**
  * @author wechselberg
@@ -50,7 +49,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
     @Inject extension KExpressionsValuedObjectExtensions
     @Inject extension SCChartsStateExtensions
     @Inject extension SCChartsActionExtensions
-    @Inject extension StatebasedJavaCodeSerializeHRExtensions
+    @Inject extension EnhancedStatebasedJavaCodeSerializeHRExtensions
 
     @Accessors val source = new StringBuilder
     @Accessors val context = new StringBuilder
@@ -170,8 +169,10 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
                */
               public static class « r.uniqueContextMemberName » {
                 ThreadStatus threadStatus;
-                « r.uniqueName »States activeState; 
-                boolean delayedEnabled; 
+                « r.uniqueName »States activeState;
+                « IF r.states.exists[s | s.outgoingTransitions.exists[t | !t.immediate]] »
+                boolean delayedEnabled;
+                « ENDIF »
                 « FOR c : r.states.map[ regions ].flatten.filter(ControlflowRegion) »
                   « c.uniqueContextMemberName » « c.uniqueContextName » = new « c.uniqueContextMemberName »();
                 « ENDFOR »
@@ -250,7 +251,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
               this.rootContext = new TickData();
             }
 
-            « FOR globalObject : modifications.get(StatebasedJavaCodeSerializeHRExtensions.GLOBAL_OBJECTS) »
+            « FOR globalObject : modifications.get(EnhancedStatebasedJavaCodeSerializeHRExtensions.GLOBAL_OBJECTS) »
               « globalObject »
             « ENDFOR »
           }
@@ -264,7 +265,9 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
           « IF state !== rootState »
             « FOR r : state.regions.filter(ControlflowRegion) »
               context.« r.uniqueContextName ».activeState = « r.uniqueName »States.« r.states.filter[ initial ].head.uniqueEnumName »;
+              « IF r.states.exists[s | s.outgoingTransitions.exists[t | !t.immediate]] »
               context.« r.uniqueContextName ».delayedEnabled = false;
+              « ENDIF »
               context.« r.uniqueContextName ».threadStatus = ThreadStatus.READY;
             « ENDFOR »
           
@@ -334,7 +337,9 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
     protected def CharSequence addDelayedEnabledCode(State state) {
         return '''
           « FOR r : state.regions.filter(ControlflowRegion) »
+            « IF r.states.exists[s | s.outgoingTransitions.exists[t | !t.immediate]] »
             context.« r.uniqueName ».delayedEnabled = true;
+            « ENDIF »
           « ENDFOR » 
         '''
     }
@@ -382,7 +387,9 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
           « FOR e : transition.effects »
             « e.serializeHR »;
           « ENDFOR »
+          « IF transition.sourceState.parentRegion.states.exists[s | s.outgoingTransitions.exists[t | !t.immediate]] »
           context.delayedEnabled = false;
+          « ENDIF »
           « IF transition.sourceState != transition.targetState || transition.targetState.isHierarchical »
             context.activeState = « transition.targetState.parentRegion.uniqueName »States.« transition.targetState.uniqueEnumName »;
           « ENDIF »

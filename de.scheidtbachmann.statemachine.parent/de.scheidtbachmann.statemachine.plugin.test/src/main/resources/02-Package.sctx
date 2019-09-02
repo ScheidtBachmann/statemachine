@@ -5,7 +5,7 @@
 
 scchart PackageChart {
 
-  extern "foo" foo
+  @Context extern "foo" foo
 
   initial state x
   do foo()
