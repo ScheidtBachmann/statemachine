@@ -155,7 +155,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
 
                 private String origin;
 
-                private « r.uniqueName »States(String origin) {
+                « r.uniqueName »States(String origin) {
                   this.origin = origin;
                 }
                 
