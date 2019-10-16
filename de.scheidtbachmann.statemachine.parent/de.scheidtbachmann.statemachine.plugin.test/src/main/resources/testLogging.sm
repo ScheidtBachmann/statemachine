@@ -1,0 +1,13 @@
+#package "de.scheidtbachmann.statemachine.foo"
+#logging yes
+
+scchart LoggingMachine {
+
+  extern "foo" foo
+
+ initial state x
+ do foo()
+ go to y
+
+ state y
+}

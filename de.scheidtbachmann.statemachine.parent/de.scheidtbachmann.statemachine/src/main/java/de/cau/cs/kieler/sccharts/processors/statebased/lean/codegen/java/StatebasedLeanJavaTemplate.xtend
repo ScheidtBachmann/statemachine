@@ -57,7 +57,9 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
    
     @Accessors var boolean needsContextInterface = false
     protected Iterable<VariableDeclaration> inputEventDeclarations
-    @Accessors var String superClass = null  
+    @Accessors var String superClass = null
+
+    @Accessors var boolean enableLogging = false  
 
     static val INTERFACE_PARAM_NAME = "arg"
 
@@ -73,6 +75,10 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
         }
         modifications.put("imports", "java.util.stream.Stream")
         modifications.put("imports", "java.util.stream.Collectors")
+		if (enableLogging) {
+			modifications.put("imports", "org.slf4j.Logger")
+			modifications.put("imports", "org.slf4j.LoggerFactory")
+		}
 
 
         scopes = <Scope>newLinkedList
@@ -91,6 +97,10 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
         source.append('''
           @SuppressWarnings("unused")
           public class « rootState.uniqueName »« IF superClass !== null » extends « superClass »« ENDIF » {
+          	« IF enableLogging »
+          	  
+          	  private static final Logger LOG = LoggerFactory.getLogger(«rootState.uniqueName».class);
+          	« ENDIF »
 
             public Iface iface;
             private TickData rootContext;
@@ -201,11 +211,17 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             « ENDFOR »
 
             public void init() {
+              « IF enableLogging »
+                LOG.trace("Initializing StateMachine");
+              « ENDIF »
               reset();
               tick();
             }
 
             public void reset() {
+              « IF enableLogging »
+                LOG.trace("Resetting StateMachine");
+              « ENDIF »
               « FOR r : rootState.regions.filter(ControlflowRegion) »
                 rootContext.« r.uniqueContextName ».activeState = « r.uniqueName »States.« r.states.filter[ initial ].head.uniqueEnumName »;
                 rootContext.« r.uniqueContextName ».threadStatus = ThreadStatus.READY;
@@ -215,6 +231,9 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             }
 
             public void tick() {
+              « IF enableLogging »
+                LOG.trace("Performing tick on StateMachine");
+              « ENDIF »
               if (rootContext.threadStatus == ThreadStatus.TERMINATED) return;
 
               « rootState.uniqueName »_root(rootContext);
@@ -222,6 +241,9 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             « IF inputEventDeclarations.size > 0 »
 
             public void apply(InputEvent... events) {
+              « IF enableLogging »
+                LOG.trace("Performing action on input events {}", Arrays.toString(events));
+              « ENDIF »
               « FOR decl : inputEventDeclarations »
               « FOR vo: decl.valuedObjects »
               iface.«vo.name» = Arrays.stream(events).anyMatch(it -> it == InputEvent.«vo.name»);
@@ -254,6 +276,9 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
     protected def CharSequence createCodeState(State state) {
         return '''
           private void « state.uniqueName »« IF (state == rootState) »_root« ENDIF »(« state.uniqueContextMemberName » context) {
+            « IF enableLogging »
+              LOG.trace("Activating state « state.getStringAnnotationValue("SourceState") »");
+            « ENDIF »
           « IF state.isHierarchical »
           « IF state !== rootState »
             « FOR r : state.regions.filter(ControlflowRegion) »
@@ -266,6 +291,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
           }
 
           private void « state.uniqueName »_running(« state.uniqueContextMemberName » context) {
+          	« IF enableLogging »LOG.trace("Activating state « state.getStringAnnotationValue("SourceState") »");« ENDIF »
           « ENDIF »
             « createCodeSuperstate(state) »
           « ENDIF »

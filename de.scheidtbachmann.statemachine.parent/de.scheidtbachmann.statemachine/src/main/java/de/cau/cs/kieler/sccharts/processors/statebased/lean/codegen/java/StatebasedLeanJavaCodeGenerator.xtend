@@ -37,6 +37,7 @@ class StatebasedLeanJavaCodeGenerator extends ExogenousProcessor<SCCharts, CodeC
     protected static val PACKAGE = PragmaRegistry.register("package", StringPragma, "Package name for the generated file(s)")
     protected static val INCLUDE = PragmaRegistry.register("include", StringPragma, "Additional things that should be imported")
     protected static val SUPERCLASS = PragmaRegistry.register("superclass", StringPragma, "Superclass to use for the generated class file.")
+    protected static val LOGGING = PragmaRegistry.register("logging", StringPragma, "Flag to enable integrated logging in the generated code.")
 
     public static val JAVA_EXTENSION = ".java"
     public static val IMPORTS = "imports"
@@ -56,6 +57,9 @@ class StatebasedLeanJavaCodeGenerator extends ExogenousProcessor<SCCharts, CodeC
         if (model.getStringPragmas(SUPERCLASS).size > 0) {
             template.superClass = model.getStringPragmas(SUPERCLASS).head.values.head
         }
+        if (model.getPragma(LOGGING) !== null) {
+	      	template.enableLogging = true;
+        }
         
         template.create(model.rootStates.head)
 
@@ -71,7 +75,7 @@ class StatebasedLeanJavaCodeGenerator extends ExogenousProcessor<SCCharts, CodeC
 
         javaFile.append(addHeader)
         javaFile.packageAdditions(scc)
-        javaFile.hostcodeAdditions(scc, template)
+        javaFile.hostcodeAdditions(scc, template, true)
         javaFile.append(template.source)
 
         codeContainer.addJavaCode(javaFilename, javaFile.toString)
@@ -82,7 +86,7 @@ class StatebasedLeanJavaCodeGenerator extends ExogenousProcessor<SCCharts, CodeC
           
           contextFile.packageAdditions(scc)
           contextFile.append(addHeader)
-          contextFile.hostcodeAdditions(scc, template)
+          contextFile.hostcodeAdditions(scc, template, false)
           contextFile.append(template.context)
           
           codeContainer.addJavaContextInterface(contextFilename, contextFile.toString)
@@ -102,12 +106,14 @@ class StatebasedLeanJavaCodeGenerator extends ExogenousProcessor<SCCharts, CodeC
         '''
     }      
     
-    protected def void hostcodeAdditions(StringBuilder sb, SCCharts scc, StatebasedLeanJavaTemplate template) {
-        val includes = template.findModifications.get(IMPORTS)
-        for (include : includes)  {
-            sb.append("import " + include + ";\n")
-        }
-
+    protected def void hostcodeAdditions(StringBuilder sb, SCCharts scc, StatebasedLeanJavaTemplate template, boolean allCodeImports) {
+    	val includes = template.findModifications.get(IMPORTS)
+        if (allCodeImports) {
+        	for (include : includes)  {
+            	sb.append("import " + include + ";\n")
+        	}
+		}
+		
         val includePragmas = scc.getStringPragmas(INCLUDE)
         for (pragma : includePragmas) {
             sb.append("import ").append(pragma.values.head).append(";\n")

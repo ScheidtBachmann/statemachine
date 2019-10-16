@@ -54,6 +54,11 @@
 									<outputFolder>${project.build.directory}/generated-sources/statemachines/</outputFolder>
 									<strategy>de.cau.cs.kieler.sccharts.statebased.lean.java.template.selective</strategy>
 								</stateMachine>
+								<stateMachine>
+									<fileName>${project.basedir}/src/main/resources/testLogging.sm</fileName>
+									<outputFolder>${project.build.directory}/generated-sources/statemachines/</outputFolder>
+									<strategy>de.cau.cs.kieler.sccharts.statebased.lean.java.template</strategy>
+								</stateMachine>
 							</stateMachines>
 						 </configuration>
 					</execution>
