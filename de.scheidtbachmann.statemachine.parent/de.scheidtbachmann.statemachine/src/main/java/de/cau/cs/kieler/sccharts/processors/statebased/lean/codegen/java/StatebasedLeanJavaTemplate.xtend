@@ -177,7 +177,9 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
               public static class « r.uniqueContextMemberName » {
                 ThreadStatus threadStatus;
                 « r.uniqueName »States activeState; 
-                boolean delayedEnabled; 
+                « IF r.states.exists[s | s.outgoingTransitions.exists[t | !t.immediate]] »
+                boolean delayedEnabled;
+                « ENDIF »
                 « FOR c : r.states.map[ regions ].flatten.filter(ControlflowRegion) »
                   « c.uniqueContextMemberName » « c.uniqueContextName » = new « c.uniqueContextMemberName »();
                 « ENDFOR »
@@ -283,7 +285,9 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
           « IF state !== rootState »
             « FOR r : state.regions.filter(ControlflowRegion) »
               context.« r.uniqueContextName ».activeState = « r.uniqueName »States.« r.states.filter[ initial ].head.uniqueEnumName »;
+              « IF r.states.exists[s | s.outgoingTransitions.exists[t | !t.immediate]] »
               context.« r.uniqueContextName ».delayedEnabled = false;
+              « ENDIF »
               context.« r.uniqueContextName ».threadStatus = ThreadStatus.READY;
             « ENDFOR »
           
@@ -354,7 +358,9 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
     protected def CharSequence addDelayedEnabledCode(State state) {
         return '''
           « FOR r : state.regions.filter(ControlflowRegion) »
+            « IF r.states.exists[s | s.outgoingTransitions.exists[t | !t.immediate]] »
             context.« r.uniqueName ».delayedEnabled = true;
+            « ENDIF »
           « ENDFOR » 
         '''
     }
@@ -402,7 +408,9 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
           « FOR e : transition.effects »
             « e.serializeHR »;
           « ENDFOR »
+          « IF transition.sourceState.parentRegion.states.exists[s | s.outgoingTransitions.exists[t | !t.immediate]] »
           context.delayedEnabled = false;
+          « ENDIF »
           « IF transition.sourceState != transition.targetState || transition.targetState.isHierarchical »
             context.activeState = « transition.targetState.parentRegion.uniqueName »States.« transition.targetState.uniqueEnumName »;
           « ENDIF »
