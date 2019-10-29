@@ -964,9 +964,11 @@ public final class PlacementUtil {
         final Display display = Display.getCurrent();
         // if a GC has been instantiated before or a display is available.
         if (gc != null || display != null) {
+        	System.out.println("Performing text estimation through SWT");
             return estimateTextSizeSWT(fontData, text, display);
         } else {
             // if no display is available fallback to awt metrics
+        	System.out.println("Performing text estimation through AWT");
             return estimateTextSizeAWT(fontData, text);
         }
     }
