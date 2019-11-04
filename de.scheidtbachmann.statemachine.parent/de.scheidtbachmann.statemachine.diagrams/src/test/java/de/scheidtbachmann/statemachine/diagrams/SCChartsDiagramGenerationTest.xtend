@@ -7,14 +7,14 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
 import org.eclipse.emf.common.util.URI
-import org.junit.Test
+// import org.junit.Test
 
 import static org.junit.Assert.*
 
 class SCChartsDiagramGenerationTest {
 	
 	
-	@Test
+	// @Test
 	def generationTest01() {
 	    val sm = '''
         scchart ABRO {
