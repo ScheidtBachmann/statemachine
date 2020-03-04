@@ -25,6 +25,7 @@ class SCChartsProcessorProvider implements IProcessorProvider {
             de.cau.cs.kieler.sccharts.processors.transformators.Connector,
             de.cau.cs.kieler.sccharts.processors.transformators.Const,
             de.cau.cs.kieler.sccharts.processors.transformators.CountDelay,
+            de.cau.cs.kieler.sccharts.processors.transformators.DebugAnnotations,
             de.cau.cs.kieler.sccharts.processors.transformators.Deferred,
             de.cau.cs.kieler.sccharts.processors.transformators.During,
             de.cau.cs.kieler.sccharts.processors.transformators.Entry,
