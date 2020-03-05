@@ -21,49 +21,6 @@
 				</configuration>
 			</plugin>
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>1.9.1</version>
-				<executions>
-					<execution>
-						<id>add-source</id>
-						<phase>initialize</phase>
-						<goals>
-							<goal>add-source</goal>
-						</goals>
-						<configuration>
-							<sources>
-								<source>${basedir}/src/main/elk-gen/</source>
-								<source>${basedir}/src/main/emf-gen</source>
-							</sources>
-							<resources>
-								<resource>
-									<directory>src/main/emf-gen</directory>
-									<excludes>
-										<exclude>**/*.java</exclude>
-									</excludes>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-clean-plugin</artifactId>
-				<configuration>
-					<filesets combine.children="append">
-						<fileset>
-							<directory>${basedir}/src/main/elk-gen/</directory>
-							<directory>${basedir}/src/main/emf-gen/</directory>
-							<includes>
-								<include>**/*</include>
-							</includes>
-						</fileset>
-					</filesets>
-				</configuration>
-			</plugin>
-			<plugin>
 				<groupId>org.eclipse.xtend</groupId>
 				<artifactId>xtend-maven-plugin</artifactId>
 			</plugin>
