@@ -11,8 +11,11 @@ import org.junit.Test
 
 import static org.junit.Assert.*
 
+import static extension de.scheidtbachmann.statemachine.diagrams.DiagramTests.*
+
 class SCChartsDiagramGenerationTest {
 	
+	public static val init = DiagramTests.init
 	
 	@Test
 	def generationTest01() {
@@ -57,7 +60,7 @@ class SCChartsDiagramGenerationTest {
 		val result = LightDiagramServices.renderOffScreen(model, 'svg', stream)
 		
 		assertNotNull('No diagram generated.', result)
-		assertTrue('Diagram generation failed: ' + result.message, result.isOK)
+		assertTrue('Diagram generation failed: ' + result.message + result.failureTrace, result.isOK)
 		
 		// TODO: wechselberg - Disabled for the moment. Different platforms use slightly 
 		// different fonts, leading to single pixel differences dependeing on platform.

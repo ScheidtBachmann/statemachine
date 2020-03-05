@@ -7,7 +7,11 @@ import org.junit.Test
 import static de.cau.cs.kieler.klighd.kgraph.util.KGraphUtil.*
 import static org.junit.Assert.*
 
+import static extension de.scheidtbachmann.statemachine.diagrams.DiagramTests.*
+
 class DiagramGenerationTest {
+	
+	public static val init = DiagramTests.init
 	
 	@Test
 	def generationTest01() {
@@ -26,7 +30,7 @@ class DiagramGenerationTest {
 		val result = LightDiagramServices.renderOffScreen(root, 'svg', stream)
 		
 		assertNotNull('No diagram generated.', result)
-		assertTrue('Diagram generation failed: ' + result.message, result.isOK)
+		assertTrue('Diagram generation failed: ' + result.message + result.failureTrace, result.isOK)
 		
 		// FIXME als: ordering of xml attributes may differ
 		stream.assertEquals('''
