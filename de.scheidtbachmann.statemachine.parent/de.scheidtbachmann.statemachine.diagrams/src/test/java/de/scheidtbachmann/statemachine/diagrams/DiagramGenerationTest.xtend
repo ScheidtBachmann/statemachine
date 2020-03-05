@@ -2,14 +2,14 @@ package de.scheidtbachmann.statemachine.diagrams
 
 import de.cau.cs.kieler.klighd.LightDiagramServices
 import java.io.ByteArrayOutputStream
-// import org.junit.Test
+import org.junit.Test
 
 import static de.cau.cs.kieler.klighd.kgraph.util.KGraphUtil.*
 import static org.junit.Assert.*
 
 class DiagramGenerationTest {
 	
-	// @Test
+	@Test
 	def generationTest01() {
 		val root = createInitializedNode
 		root.children += createInitializedNode => [
