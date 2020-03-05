@@ -18,16 +18,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.emf.ecore.EObject;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
 import de.cau.cs.kieler.klighd.Klighd;
-import de.cau.cs.kieler.klighd.StatusManager;
 import de.cau.cs.kieler.klighd.kgraph.KEdge;
 import de.cau.cs.kieler.klighd.kgraph.KGraphElement;
 import de.cau.cs.kieler.klighd.kgraph.KNode;
@@ -37,7 +33,6 @@ import de.cau.cs.kieler.sccharts.Region;
 import de.cau.cs.kieler.sccharts.Scope;
 import de.cau.cs.kieler.sccharts.State;
 import de.cau.cs.kieler.sccharts.Transition;
-import de.cau.cs.kieler.sccharts.ui.SCChartsUiModule;
 
 /**
  * This class provides new instances of all available hooks for the {@link SRTGSynthesis}.
@@ -86,27 +81,27 @@ public class SynthesisHooks implements ISynthesisHooks {
      */
     static {
         if (Klighd.IS_PLATFORM_RUNNING) {
-            final IConfigurationElement[] extensions =
-                    Klighd.getExtensions(EXTP_ID_HOOKS);
-    
-            registeredHooks = new ArrayList<Class<? extends SynthesisHook>>(extensions.length);
-    
-            for (final IConfigurationElement element : extensions) {
-                if (ELEMENT_HOOK.equals(element.getName())) {
-                    try {
-                        @SuppressWarnings("unchecked")
-    					Class<? extends SynthesisHook> hookClass = (Class<? extends SynthesisHook>) element
-    							.createExecutableExtension(ATTRIBUTE_CLASS).getClass();
-                        registeredHooks.add(hookClass);
-                    } catch (final Exception exception) {
-                        StatusManager.getManager().handle(
-                                new Status(IStatus.ERROR, SCChartsUiModule.PLUGIN_ID,
-                                        SynthesisHooks.class.getName()
-                                                + ": Error while parsing hook extension point",
-                                        exception));
-                    }
-                }
-            }
+//            final IConfigurationElement[] extensions =
+//                    Klighd.getExtensions(EXTP_ID_HOOKS);
+//    
+            registeredHooks = new ArrayList<Class<? extends SynthesisHook>>(/*extensions.length*/);
+//    
+//            for (final IConfigurationElement element : extensions) {
+//                if (ELEMENT_HOOK.equals(element.getName())) {
+//                    try {
+//                        @SuppressWarnings("unchecked")
+//    					Class<? extends SynthesisHook> hookClass = (Class<? extends SynthesisHook>) element
+//    							.createExecutableExtension(ATTRIBUTE_CLASS).getClass();
+//                        registeredHooks.add(hookClass);
+//                    } catch (final Exception exception) {
+//                        StatusManager.getManager().handle(
+//                                new Status(IStatus.ERROR, SCChartsUiModule.PLUGIN_ID,
+//                                        SynthesisHooks.class.getName()
+//                                                + ": Error while parsing hook extension point",
+//                                        exception));
+//                    }
+//                }
+//            }
         } else {
             // Hardcoded registration
             registeredHooks = new ArrayList<Class<? extends SynthesisHook>>(Arrays.asList(
