@@ -16,7 +16,8 @@
 		<xcoreVersion>[1.3.1]</xcoreVersion>
 		<xcoreLibVersion>[1.1.100]</xcoreLibVersion>
 		<xtextVersion>2.15.0</xtextVersion>
-		<elkVersion>0.4.1</elkVersion>
+		<elkVersion>0.7.0-SNAPSHOT</elkVersion>
+		<klighdVersion>1.0.1-SNAPSHOT</klighdVersion>
 		<picoCliVersion>3.7.0</picoCliVersion>
 
 		<org.eclipse.emf.common-version>[2.12.0]</org.eclipse.emf.common-version>
@@ -52,9 +53,24 @@
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
+				<groupId>de.cau.cs.kieler.klighd</groupId>
+				<artifactId>de.cau.cs.kieler.klighd.standalone</artifactId>
+				<version>${klighdVersion}</version>
+			</dependency>
+			<dependency>
 				<groupId>org.freehep</groupId>
 				<artifactId>freehep-graphicsio-svg</artifactId>
 				<version>2.3</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.elk</groupId>
+				<artifactId>org.eclipse.elk.core</artifactId>
+				<version>${elkVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.elk</groupId>
+				<artifactId>org.eclipse.elk.core.service</artifactId>
+				<version>${elkVersion}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.elk</groupId>
@@ -84,8 +100,23 @@
 			<dependency>
 				<groupId>org.eclipse.platform</groupId>
 				<artifactId>org.eclipse.equinox.common</artifactId>
-				<version>3.8.0</version>
+				<version>3.9.0</version>
 			</dependency>
+			<dependency>
+				<groupId>org.eclipse.platform</groupId>
+				<artifactId>org.eclipse.core.runtime</artifactId>
+				<version>3.13.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.platform</groupId>
+				<artifactId>org.eclipse.jface</artifactId>
+				<version>3.13.0</version>
+			</dependency>
+			<!-- dependency>
+				<groupId>org.eclipse.platform</groupId>
+				<artifactId>org.eclipse.ui.workbench</artifactId>
+				<version>3.11.0</version>
+			</dependency -->
 			<dependency>
 				<!-- is required by KLighD, defines 'org.eclipse.core.runtime.IExecutableExtension', for example. -->
 				<!-- don't alter versions of this and '...equinox.common' arbitrarily,
@@ -94,6 +125,105 @@
 				<groupId>org.eclipse.platform</groupId>
 				<artifactId>org.eclipse.equinox.registry</artifactId>
 				<version>3.6.100</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.platform</groupId>
+				<artifactId>org.eclipse.ui.workbench</artifactId>
+				<version>3.110.0</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.eclipse.platform</groupId>
+						<artifactId>org.eclipse.core.databinding.property</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.eclipse.platform</groupId>
+						<artifactId>org.eclipse.jface.databinding</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.eclipse.platform</groupId>
+						<artifactId>org.eclipse.e4.ui.workbench.addons.swt</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.eclipse.platform</groupId>
+						<artifactId>org.eclipse.jface</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.eclipse.platform</groupId>
+						<artifactId>org.eclipse.e4.ui.css.core</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.eclipse.platform</groupId>
+						<artifactId>org.eclipse.e4.ui.services</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.eclipse.platform</groupId>
+						<artifactId>org.eclipse.e4.ui.di</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.eclipse.platform</groupId>
+						<artifactId>org.eclipse.e4.ui.workbench.swt</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.eclipse.platform</groupId>
+						<artifactId>org.eclipse.help</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.eclipse.emf</groupId>
+						<artifactId>org.eclipse.emf.ecore.xmi</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.eclipse.platform</groupId>
+						<artifactId>org.eclipse.swt</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.eclipse.platform</groupId>
+						<artifactId>org.eclipse.core.databinding.observable</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.eclipse.platform</groupId>
+						<artifactId>org.eclipse.e4.core.services</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.eclipse.platform</groupId>
+						<artifactId>org.eclipse.e4.core.di.extensions</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.eclipse.emf</groupId>
+						<artifactId>org.eclipse.emf.ecore</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.eclipse.platform</groupId>
+						<artifactId>org.eclipse.e4.ui.model.workbench</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.eclipse.platform</groupId>
+						<artifactId>org.eclipse.e4.ui.workbench3</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.eclipse.platform</groupId>
+						<artifactId>org.eclipse.e4.core.di</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.eclipse.platform</groupId>
+						<artifactId>org.eclipse.e4.ui.css.swt</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.eclipse.platform</groupId>
+						<artifactId>org.eclipse.e4.core.contexts</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.eclipse.platform</groupId>
+						<artifactId>org.eclipse.core.runtime</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.eclipse.platform</groupId>
+						<artifactId>org.eclipse.e4.ui.css.swt.theme</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.eclipse.platform</groupId>
+						<artifactId>org.eclipse.e4.ui.bindings</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

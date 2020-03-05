@@ -63,108 +63,6 @@
 					</filesets>
 				</configuration>
 			</plugin>
-			<!-- run the xtext-maven-plugin to compile the .xcore and .melk files. -->
-			<plugin>
-				<groupId>org.eclipse.xtext</groupId>
-				<artifactId>xtext-maven-plugin</artifactId>
-				<version>${xtextVersion}</version>
-				<executions>
-					<execution>
-						<id>generate-xcore-and-melk</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<languages>
-						<language>
-							<setup>org.eclipse.xtext.ecore.EcoreSupport</setup>
-						</language>
-						<language>
-							<setup>org.eclipse.emf.codegen.ecore.xtext.GenModelSupport</setup>
-						</language>
-						<language>
-							<setup>org.eclipse.emf.ecore.xcore.XcoreStandaloneSetup</setup>
-							<outputConfigurations>
-								<outputConfiguration>
-									<outputDirectory>${project.basedir}/src/main/emf-gen</outputDirectory>
-								</outputConfiguration>
-							</outputConfigurations>
-						</language>
-						<language>
-							<setup>org.eclipse.elk.core.meta.MetaDataStandaloneSetup</setup>
-							<outputConfigurations>
-								<outputConfiguration>
-									<outputDirectory>${project.basedir}/src/main/elk-gen/</outputDirectory>
-								</outputConfiguration>
-							</outputConfigurations>
-						</language>
-					</languages>
-					<sourceRoots>
-						<root>${basedir}/model/</root>
-						<root>${basedir}/src/main/java</root>
-					</sourceRoots>
-				</configuration>
-				<dependencies>
-					<dependency>
-						<groupId>org.eclipse.emf</groupId>
-						<artifactId>org.eclipse.emf.common</artifactId>
-						<version>${org.eclipse.emf.ecore-version}</version>
-					</dependency>
-					<dependency>
-						<groupId>org.eclipse.emf</groupId>
-						<artifactId>org.eclipse.emf.ecore</artifactId>
-						<version>${org.eclipse.emf.ecore-version}</version>
-					</dependency>
-					<dependency>
-						<groupId>org.eclipse.emf</groupId>
-						<artifactId>org.eclipse.emf.ecore.change</artifactId>
-						<version>${org.eclipse.emf.ecore.change-version}</version>
-					</dependency>
-					<dependency>
-						<groupId>org.eclipse.emf</groupId>
-						<artifactId>org.eclipse.emf.ecore.xmi</artifactId>
-						<version>${org.eclipse.emf.ecore-version}</version>
-					</dependency>
-					<dependency>
-						<groupId>org.eclipse.emf</groupId>
-						<artifactId>org.eclipse.emf.codegen</artifactId>
-						<version>${org.eclipse.emf.codegen-version}</version>
-					</dependency>
-					<dependency>
-						<groupId>org.eclipse.emf</groupId>
-						<artifactId>org.eclipse.emf.codegen.ecore</artifactId>
-						<version>${org.eclipse.emf.codegen.ecore-version}</version>
-					</dependency>
-					<dependency>
-						<groupId>org.eclipse.emf</groupId>
-						<artifactId>org.eclipse.emf.codegen.ecore.xtext</artifactId>
-						<version>${org.eclipse.emf.codegen.ecore.xtext-version}</version>
-					</dependency>
-					<dependency>
-						<groupId>org.eclipse.emf</groupId>
-						<artifactId>org.eclipse.emf.ecore.xcore</artifactId>
-						<version>${xcoreVersion}</version>
-					</dependency>
-					<dependency>
-						<groupId>org.eclipse.emf</groupId>
-						<artifactId>org.eclipse.emf.ecore.xcore.lib</artifactId>
-						<version>${xcoreLibVersion}</version>
-					</dependency>
-					<dependency>
-						<groupId>org.eclipse.elk</groupId>
-						<artifactId>org.eclipse.elk.core.meta</artifactId>
-						<version>${elkVersion}</version>
-					</dependency>
-					<dependency>
-						<groupId>org.eclipse.xtext</groupId>
-						<artifactId>org.eclipse.xtext.xbase</artifactId>
-						<version>${xtextVersion}</version>
-					</dependency>
-				</dependencies>
-			</plugin>
 			<plugin>
 				<groupId>org.eclipse.xtend</groupId>
 				<artifactId>xtend-maven-plugin</artifactId>
@@ -186,6 +84,11 @@
 		<dependency>
 			<groupId>org.freehep</groupId>
 			<artifactId>freehep-graphicsio-svg</artifactId>
+			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
+		</dependency>
+		<dependency>
+			<groupId>de.cau.cs.kieler.klighd</groupId>
+			<artifactId>de.cau.cs.kieler.klighd.standalone</artifactId>
 			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
 		</dependency>
 		<dependency>
@@ -223,7 +126,7 @@
 			      dont't propagate them to dependent artifacts or put them in any fat jars! -->
 			<groupId>org.eclipse.platform</groupId>
 			<artifactId>org.eclipse.core.runtime</artifactId>
-			<version>3.13.0</version>
+			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
 			<scope>provided</scope>
 			<exclusions>
 				<exclusion>
@@ -235,7 +138,6 @@
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
 			<artifactId>org.eclipse.jface</artifactId>
-			<version>3.13.0</version>
 			<scope>provided</scope>
 			<exclusions>
 				<exclusion>

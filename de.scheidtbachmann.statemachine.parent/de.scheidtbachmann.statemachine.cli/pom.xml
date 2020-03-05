@@ -71,6 +71,55 @@
 									<outputDirectory>${project.build.outputDirectory}/swt/org.eclipse.swt.win32.win32.x86</outputDirectory>
 								</artifactItem>
 								<artifactItem>
+									<groupId>de.cau.cs.kieler.klighd</groupId>
+									<artifactId>de.cau.cs.kieler.klighd</artifactId>
+									<version>${klighdVersion}</version>
+									<overWrite>false</overWrite>
+									<outputDirectory>${project.build.outputDirectory}/diagramming</outputDirectory>
+								</artifactItem>
+								<artifactItem>
+									<groupId>de.cau.cs.kieler.klighd</groupId>
+									<artifactId>de.cau.cs.kieler.klighd.kgraph</artifactId>
+									<version>${klighdVersion}</version>
+									<overWrite>false</overWrite>
+									<outputDirectory>${project.build.outputDirectory}/diagramming</outputDirectory>
+								</artifactItem>
+								<artifactItem>
+									<groupId>de.cau.cs.kieler.klighd</groupId>
+									<artifactId>de.cau.cs.kieler.klighd.krendering</artifactId>
+									<version>${klighdVersion}</version>
+									<overWrite>false</overWrite>
+									<outputDirectory>${project.build.outputDirectory}/diagramming</outputDirectory>
+								</artifactItem>
+								<artifactItem>
+									<groupId>de.cau.cs.kieler.klighd</groupId>
+									<artifactId>de.cau.cs.kieler.klighd.krendering.extensions</artifactId>
+									<version>${klighdVersion}</version>
+									<overWrite>false</overWrite>
+									<outputDirectory>${project.build.outputDirectory}/diagramming</outputDirectory>
+								</artifactItem>
+								<artifactItem>
+									<groupId>de.cau.cs.kieler.klighd</groupId>
+									<artifactId>de.cau.cs.kieler.klighd.piccolo</artifactId>
+									<version>${klighdVersion}</version>
+									<overWrite>false</overWrite>
+									<outputDirectory>${project.build.outputDirectory}/diagramming</outputDirectory>
+								</artifactItem>
+								<artifactItem>
+									<groupId>de.cau.cs.kieler.klighd</groupId>
+									<artifactId>de.cau.cs.kieler.klighd.piccolo.freehep</artifactId>
+									<version>${klighdVersion}</version>
+									<overWrite>false</overWrite>
+									<outputDirectory>${project.build.outputDirectory}/diagramming</outputDirectory>
+								</artifactItem>
+								<artifactItem>
+									<groupId>de.cau.cs.kieler.klighd</groupId>
+									<artifactId>de.cau.cs.kieler.klighd.standalone</artifactId>
+									<version>${klighdVersion}</version>
+									<overWrite>false</overWrite>
+									<outputDirectory>${project.build.outputDirectory}/diagramming</outputDirectory>
+								</artifactItem>
+								<artifactItem>
 									<groupId>${project.groupId}</groupId>
 									<artifactId>de.scheidtbachmann.statemachine.diagrams</artifactId>
 									<version>${project.version}</version>
@@ -366,6 +415,11 @@
 			<groupId>info.picocli</groupId>
 			<artifactId>picocli</artifactId>
 			<version>${picoCliVersion}</version>
+		</dependency>
+		<dependency>
+		  <groupId>de.cau.cs.kieler.klighd</groupId>
+		  <artifactId>edu.umd.cs.piccolo</artifactId>
+		  <version>1.3.4-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>

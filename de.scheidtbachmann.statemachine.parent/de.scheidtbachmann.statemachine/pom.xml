@@ -84,10 +84,12 @@
 						</goals>
 						<configuration>
 							<sources>
+								<source>src/test/xtend-gen</source>
 								<source>src/test/xtext-gen</source>
 							</sources>
 							<resources>
 								<resource>
+									<directory>src/test/xtend-gen</directory>
 									<directory>src/test/xtext-gen</directory>
 									<excludes>
 										<exclude>**/*.java</exclude>
