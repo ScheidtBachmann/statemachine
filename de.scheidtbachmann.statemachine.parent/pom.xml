@@ -97,36 +97,47 @@
 				<artifactId>org.eclipse.elk.alg.radial</artifactId>
 				<version>${elkVersion}</version>
 			</dependency>
+			<!-- don't alter versions of the following bundles arbitrarily,
+			      as most of them contribute classes in the same package, and thus, their signatures must match each other.
+			      Otherwise, the JVM will terminate with an exception! -->
 			<dependency>
+				<!-- is required by KLighD, defines 'org.eclipse.core.runtime.IStatus', for example. -->
 				<groupId>org.eclipse.platform</groupId>
 				<artifactId>org.eclipse.equinox.common</artifactId>
 				<version>3.9.0</version>
 			</dependency>
 			<dependency>
+				<!-- is required by KLighD, defines 'org.eclipse.core.runtime.AbstractPreferenceInitializer', for example. -->
+				<groupId>org.eclipse.platform</groupId>
+				<artifactId>org.eclipse.equinox.preferences</artifactId>
+				<version>3.7.0</version>
+			</dependency>
+			<dependency>
+				<!-- is required by KLighD, defines 'org.eclipse.core.runtime.IExecutableExtension', for example. -->
+				<groupId>org.eclipse.platform</groupId>
+				<artifactId>org.eclipse.equinox.registry</artifactId>
+				<version>3.7.0</version>
+			</dependency>
+			<dependency>
+				<!-- is required by KLighD, defines 'org.eclipse.core.runtime.Platform', for example. -->
 				<groupId>org.eclipse.platform</groupId>
 				<artifactId>org.eclipse.core.runtime</artifactId>
 				<version>3.13.0</version>
 			</dependency>
 			<dependency>
+				<!-- is required by KLighD, defines 'org.eclipse.core.runtime.jobs.Job'. -->
+				<groupId>org.eclipse.platform</groupId>
+				<artifactId>org.eclipse.core.jobs</artifactId>
+				<version>3.9.0</version>
+			</dependency>
+			<dependency>
+				<!-- is required by KLighD, defines 'org.eclipse.jface.viewers.ISelection', for example. -->
 				<groupId>org.eclipse.platform</groupId>
 				<artifactId>org.eclipse.jface</artifactId>
 				<version>3.13.0</version>
 			</dependency>
-			<!-- dependency>
-				<groupId>org.eclipse.platform</groupId>
-				<artifactId>org.eclipse.ui.workbench</artifactId>
-				<version>3.11.0</version>
-			</dependency -->
 			<dependency>
-				<!-- is required by KLighD, defines 'org.eclipse.core.runtime.IExecutableExtension', for example. -->
-				<!-- don't alter versions of this and '...equinox.common' arbitrarily,
-				      as both artifacts contribute classes in the same package, and thus, their signatures must match each other.
-				      Otherwise, the JVM will terminate with an exception! -->
-				<groupId>org.eclipse.platform</groupId>
-				<artifactId>org.eclipse.equinox.registry</artifactId>
-				<version>3.6.100</version>
-			</dependency>
-			<dependency>
+				<!-- is required by KLighD, defines 'org.eclipse.ui.IWorkbenchPart', for example. -->
 				<groupId>org.eclipse.platform</groupId>
 				<artifactId>org.eclipse.ui.workbench</artifactId>
 				<version>3.110.0</version>
@@ -143,10 +154,10 @@
 						<groupId>org.eclipse.platform</groupId>
 						<artifactId>org.eclipse.e4.ui.workbench.addons.swt</artifactId>
 					</exclusion>
-					<exclusion>
+					<!-- exclusion>
 						<groupId>org.eclipse.platform</groupId>
 						<artifactId>org.eclipse.jface</artifactId>
-					</exclusion>
+					</exclusion -->
 					<exclusion>
 						<groupId>org.eclipse.platform</groupId>
 						<artifactId>org.eclipse.e4.ui.css.core</artifactId>
