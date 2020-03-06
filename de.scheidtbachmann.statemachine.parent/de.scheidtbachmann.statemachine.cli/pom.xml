@@ -251,6 +251,8 @@
 			<activation>
 				<os>
 					<family>unix</family>
+					<!-- unfortunatly 'family==unix' matches for linux & mac, and there is no family identifier for linux; hence: -->
+					<name>!Mac OS X</name>
 				</os>
 			</activation>
 			
