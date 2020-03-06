@@ -28,6 +28,16 @@
 				<groupId>org.eclipse.xtend</groupId>
 				<artifactId>xtend-maven-plugin</artifactId>
 			</plugin>
+			<!-- skip installing the artifacts of this module,
+			      is helpful as (most of) the required artifacts must be installed for this modules build to work -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-install-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
 			<!-- fetch the SWT runtime dependencies and extract the artifacts into dedicated subfolders being; they are included into the uber jar below -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
