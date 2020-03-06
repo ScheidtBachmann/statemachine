@@ -557,6 +557,8 @@ class Generator implements Runnable {
     System.setOut(new PrintStream(altSysout))
     System.setErr(new PrintStream(altSyserr))
 
+    val result = new Wrapper<Pair<IStatus, Object>>
+
     // Load the correct SWT implementation, depending on the operating system
     try {
       val parentLoader = this.class.classLoader
@@ -578,8 +580,6 @@ class Generator implements Runnable {
         }
       }
 
-      val result = new Wrapper<Pair<IStatus, Object>>
-
       // In order to use the chosen SWT runtime lib, a new class loader is instantiated.
       // For security reason, only classes loaded by that loader or child loaders
       // can refer to classes loaded by this loader.
@@ -591,6 +591,7 @@ class Generator implements Runnable {
         // All .statemachine.diagrams code is placed in diagramming folder during mvn build
         parentLoader.getResource('diagramming/')
       ], parentLoader)
+
       // Load the actual renderer and prime it with the current data
       drawingLoader.loadClass('de.scheidtbachmann.statemachine.diagrams.DiagramRenderer')?.
         newInstance() as Function<Map<String, Object>, IStatus> => [
@@ -599,6 +600,7 @@ class Generator implements Runnable {
           'param-format' -> format,
           'param-outlet' -> outlet
         ])
+        
         // Apply the rendering and grab the output folder name
         result.set(apply(args) -> args.get('result-written-folders'))
       ]
@@ -606,6 +608,14 @@ class Generator implements Runnable {
       // Something broken here. Quite a lot can go wrong here.
       t.printStackTrace()
     } finally {
+
+      if (result.get?.key !== null && !result.get.key.isOK) {
+        // In case the diagram generation return some non-OK status, print them
+        sysoutOri.println
+        sysoutOri.println(result.get.key.toString)
+        result.get.key.exception?.printStackTrace(sysoutOri)
+      }
+
       // Restore the original stdout/stderr streams
       System.setErr(syserrOri)
       System.setOut(sysoutOri)
@@ -619,7 +629,7 @@ class Generator implements Runnable {
     }
     if (altSysout.size !== 0) {
       System.out.printf('%nFurther notes occured:%n')
-      System.out.write(altSyserr.toByteArray)
+      System.out.write(altSysout.toByteArray)
     }
   }
 

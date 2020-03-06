@@ -1,12 +1,14 @@
 package de.scheidtbachmann.statemachine.diagrams
 
 import de.cau.cs.kieler.klighd.LightDiagramServices
+import de.cau.cs.kieler.klighd.standalone.KlighdStandaloneSetup
 import de.cau.cs.kieler.sccharts.SCCharts
 import de.cau.cs.kieler.sccharts.State
 import java.nio.file.Path
 import java.util.Map
 import java.util.function.Function
 import org.eclipse.core.runtime.IStatus
+import org.eclipse.core.runtime.MultiStatus
 import org.eclipse.core.runtime.Status
 import org.eclipse.swt.widgets.Display
 
@@ -15,6 +17,8 @@ import static java.nio.file.StandardOpenOption.*
 import static extension java.nio.file.Files.*
 
 class DiagramRenderer implements Function<Map<Object, Object>, IStatus> {
+	
+	static val PLUGIN_ID = 'de.scheidtbachmann.statemachine.diagrams'
 	
 	static val PARAM_INPUT = "param-input"
 	static val PARAM_FORMAT = "param-format"
@@ -43,6 +47,7 @@ class DiagramRenderer implements Function<Map<Object, Object>, IStatus> {
 		
 		Display.getDefault()
 		
+		val result = new MultiStatus(PLUGIN_ID, 0, '', null)
 		for (input : inputs) {
 			if (input instanceof SCCharts) {
 				val name = switch head:input.rootStates.head {
@@ -54,15 +59,29 @@ class DiagramRenderer implements Function<Map<Object, Object>, IStatus> {
 						outlet.createDirectories()
 					pageFolders.add(outlet)
 					
-					outlet.resolve(name + '.' + format).newOutputStream(CREATE, WRITE) => [
-						LightDiagramServices.renderOffScreen(input, format, it)
-						close()
+					KlighdStandaloneSetup.initialize()
+					
+					val stream = outlet.resolve(name + '.' + format).newOutputStream(CREATE, WRITE)
+					val status = LightDiagramServices.renderOffScreen(input, format, stream) => [
+						stream.close()
 					]
+					
+					if (status.severity === IStatus.ERROR)
+						return status
+					else if (!status.isOK)
+						result.add(status)
+					
 				} catch (Throwable t) {
-					return new Status(IStatus.ERROR, '', 'Diagram rendering failed for ' + name + ' with the following exception', t)
+					return new Status(IStatus.ERROR, PLUGIN_ID, 'Diagram rendering failed for ' + name + ' with the following exception', t)
 				}
 			}
 		}
-		return Status.OK_STATUS
+		
+		if (result.children.length === 0)
+			return Status.OK_STATUS
+		else if (result.children.length === 1)
+			return result.children.get(0)
+		else
+			return result
 	}
 }
