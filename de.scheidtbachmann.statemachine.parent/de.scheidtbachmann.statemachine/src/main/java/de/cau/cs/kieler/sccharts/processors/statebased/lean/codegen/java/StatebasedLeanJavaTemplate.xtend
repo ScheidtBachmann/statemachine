@@ -176,8 +176,8 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
                */
               public enum « r.uniqueName »States {
                 « FOR s : r.states.indexed SEPARATOR ', ' 
-                  »« s.value.uniqueEnumName »("« (s.value.getAnnotation("SourceState") as StringAnnotation).values.tail »")«
-                   IF s.value.isHierarchical », « s.value.uniqueEnumName»RUNNING("« s.value.getStringAnnotationValue("SourceState") »")« ENDIF 
+                  »« s.value.uniqueEnumName »("« (s.value.getAnnotations("SourceState").last as StringAnnotation).values.head »")«
+                   IF s.value.isHierarchical », « s.value.uniqueEnumName»RUNNING("« (s.value.getAnnotations("SourceState").last as StringAnnotation).values.head »")« ENDIF 
                   »« ENDFOR »;
 
                 private String origin;
