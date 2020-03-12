@@ -216,7 +216,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
                       ).flatMap(i -> i);
                   « ENDFOR »
                   default:
-                    return Stream.of(activeState.getOrigin());
+                    return Stream.of(activeState.getOrigin().replaceAll("^State (.+) \\(-?[0-9]+\\)$", "$1"));
                   }
                 }
               }
