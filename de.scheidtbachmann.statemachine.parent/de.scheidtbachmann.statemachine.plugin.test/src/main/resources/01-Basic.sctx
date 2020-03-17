@@ -1,0 +1,10 @@
+/*
+ * A very basic SCChart to test the general process of the compiler infrastructure.
+ */
+scchart BasicChart {
+
+  initial state x
+  go to y
+
+  state y
+}

@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>de.scheidtbachmann.statemachine</groupId>
 		<artifactId>de.scheidtbachmann.statemachine.parent</artifactId>
-		<version>0.1.0-SNAPSHOT</version>
+		<version>0.2.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>de.scheidtbachmann.statemachine.cli</artifactId>
 	<packaging>jar</packaging>
@@ -18,8 +18,8 @@
 		<executable-osx>${selfContainedExecutableName}-osx</executable-osx>
 		<executableJ8-win>${selfContainedExecutableName}Java8-win.bat</executableJ8-win>
 		<executable-win>${selfContainedExecutableName}-win.bat</executable-win>
-		<appjar>${project.build.directory}/de.scheidtbachmann.statemachine.cli-0.1.0-SNAPSHOT-app.jar</appjar>
-		<appjar-win>${project.build.directory}\de.scheidtbachmann.statemachine.cli-0.1.0-SNAPSHOT-app.jar</appjar-win>
+		<appjar>${project.build.directory}/de.scheidtbachmann.statemachine.cli-0.2.0-SNAPSHOT-app.jar</appjar>
+		<appjar-win>${project.build.directory}\de.scheidtbachmann.statemachine.cli-0.2.0-SNAPSHOT-app.jar</appjar-win>
 	</properties>
 	
 	<build>
@@ -155,7 +155,8 @@
 							implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
 							<resource>plugin.properties</resource>
 						</transformer>
-					</transformers>
+            <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+          </transformers>
 					<filters>
 						<filter>
 							<artifact>*:*</artifact>
@@ -451,16 +452,72 @@
 	</profiles>
 	
 	<dependencies>
+  <dependency>
+      <groupId>de.cau.cs.kieler</groupId>
+      <artifactId>de.cau.cs.kieler.core</artifactId>
+      <version>${kielerVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>de.cau.cs.kieler</groupId>
+      <artifactId>de.cau.cs.kieler.annotations</artifactId>
+      <version>${kielerVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>de.cau.cs.kieler</groupId>
+      <artifactId>de.cau.cs.kieler.kexpressions</artifactId>
+      <version>${kielerVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>de.cau.cs.kieler</groupId>
+      <artifactId>de.cau.cs.kieler.sccharts</artifactId>
+      <version>${kielerVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>de.cau.cs.kieler</groupId>
+      <artifactId>de.cau.cs.kieler.scl</artifactId>
+      <version>${kielerVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>de.cau.cs.kieler</groupId>
+      <artifactId>de.cau.cs.kieler.scg</artifactId>
+      <version>${kielerVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>de.cau.cs.kieler</groupId>
+      <artifactId>de.cau.cs.kieler.sccharts.scg</artifactId>
+      <version>${kielerVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>de.cau.cs.kieler</groupId>
+      <artifactId>de.cau.cs.kieler.verification</artifactId>
+      <version>0.14.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>de.cau.cs.kieler</groupId>
+      <artifactId>de.cau.cs.kieler.kicool</artifactId>
+      <version>${kielerVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.xtext</groupId>
+      <artifactId>org.eclipse.xtext</artifactId>
+      <version>${xtextVersion}</version>
+    </dependency>
 		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>de.scheidtbachmann.statemachine</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
+
 			<groupId>info.picocli</groupId>
 			<artifactId>picocli</artifactId>
 			<version>${picoCliVersion}</version>
 		</dependency>
+    <dependency>
+      <groupId>org.eclipse.platform</groupId>
+      <artifactId>org.eclipse.core.resources</artifactId>
+      <version>3.13.0</version>
+    </dependency>
+    <dependency>
+        <groupId>org.freemarker</groupId>
+        <artifactId>freemarker</artifactId>
+        <version>2.3.28</version>
+    </dependency>
 		<dependency>
 		  <groupId>de.cau.cs.kieler.klighd</groupId>
 		  <artifactId>edu.umd.cs.piccolo</artifactId>
@@ -481,7 +538,6 @@
 			      but that is flagged as 'optional'; thus, we have to repeat it! -->
 			<groupId>org.eclipse.platform</groupId>
 			<artifactId>org.eclipse.equinox.registry</artifactId>
-			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
@@ -496,40 +552,39 @@
 		<dependency>
 			<groupId>org.freehep</groupId>
 			<artifactId>freehep-graphicsio-svg</artifactId>
-			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.elk</groupId>
 			<artifactId>org.eclipse.elk.alg.force</artifactId>
-			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.elk</groupId>
 			<artifactId>org.eclipse.elk.alg.graphviz.layouter</artifactId>
-			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.elk</groupId>
 			<artifactId>org.eclipse.elk.alg.layered</artifactId>
-			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.elk</groupId>
 			<artifactId>org.eclipse.elk.alg.mrtree</artifactId>
-			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.elk</groupId>
 			<artifactId>org.eclipse.elk.alg.radial</artifactId>
-			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
 		</dependency>
 		
 		<!-- some 'test' dependencies for earsier testing and debugging -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>de.scheidtbachmann.statemachine.diagrams</artifactId>
 			<version>${project.version}</version>
-			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>
+				de.scheidtbachmann.statemachine.codegen
+			</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
 </project>

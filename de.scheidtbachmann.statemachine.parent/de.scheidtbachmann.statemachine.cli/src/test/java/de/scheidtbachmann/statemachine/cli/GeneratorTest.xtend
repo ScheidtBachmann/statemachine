@@ -1,6 +1,6 @@
 package de.scheidtbachmann.statemachine.cli
 
-import de.scheidtbachmann.statemachine.StateMachineStandaloneSetup
+import de.cau.cs.kieler.sccharts.text.SCTXStandaloneSetup
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -28,7 +28,7 @@ import static extension java.nio.file.Files.*
 class GeneratorTest {
   
   static val UTF8 = StandardCharsets.UTF_8.name
-  static val injector = new StateMachineStandaloneSetup().createInjectorAndDoEMFRegistration()
+  static val injector = new SCTXStandaloneSetup().createInjectorAndDoEMFRegistration()
   
   static class TestableGenerator extends Generator {
     
@@ -106,7 +106,7 @@ class GeneratorTest {
   @Test
   def void testValidateFile() {
     basePath = Files.createTempDirectory('stateChartGenTesting')
-    val fileName = 'foo.sm'
+    val fileName = 'foo.sctx'
     basePath.resolve(fileName).write(#[ 'scchart foo { state }' ], CREATE, WRITE)
     
     runValidate(basePath, fileName)
@@ -115,7 +115,7 @@ class GeneratorTest {
       Validation discovered the following errors:
       Line 1, column 21 (syntax error): missing RULE_ID at '}'
       Line 1, column 15 : Every region must have an initial state.
-      
+      	
       Validation discovered the following warnings:
       Line 1, column 15: The state is not reachable.
     ''')
@@ -209,7 +209,8 @@ class GeneratorTest {
 //	
 //	@Test
 //	def void testDrawFile() {
-//		val fileName = 'foo.sm'
+
+//		val fileName = 'foo.sctx'
 //		val basePath = Files.createTempDirectory('stateChartGenTesting')
 //		basePath.resolve(fileName).write(#[ 'scchart foo { initial state foo }' ], CREATE, WRITE)
 //		
@@ -218,7 +219,8 @@ class GeneratorTest {
 //		val diagramModelFile = basePath.resolve('diagrams/foo').resolve(DiagramModelGenerator.DIAGRAM_MODEL_FILE_NAME)
 //		
 //		assertSysOutEquals('''
-//			Creating diagram model for foo.sm...done.
+
+//			Creating diagram model for foo.sctx...done.
 //		''')
 //		
 //		assertFileEquals(diagramModelFile, '''
@@ -269,8 +271,6 @@ class GeneratorTest {
     
     assertSysOutEquals('''
       Generate executable code corresponding to the given input file.
-      Usage: scc generate [--stdin] [--stdout] [--select <model>] [-o <path>] [-s
-                          <strategy>] [<sourceFile>]
       
       Parameters:
             [<sourceFile>]     The input state chart file.
@@ -279,39 +279,95 @@ class GeneratorTest {
             --stdin            Forces the generator to read input from stdIn.
         -o, --output <path>    The destination folder of the generated artifacts.
                                Default is: gen.
-            --stdout           Forces the generator to write generated content to stdOut.
+            --stdout           Forces the generator to write generated content to
+                                 stdOut.
         -s, --strategy <strategy>
                                The generation strategy to apply.
                                Candidates are:
+                                 de.cau.cs.kieler.c.sccharts.dataflow,
+                                 de.cau.cs.kieler.kicool.identity,
+                                 de.cau.cs.kieler.kicool.identity.dynamic,
+                                 de.cau.cs.kieler.sccharts.causalView,
                                  de.cau.cs.kieler.sccharts.core,
                                  de.cau.cs.kieler.sccharts.core.core,
+                                 de.cau.cs.kieler.sccharts.csv,
                                  de.cau.cs.kieler.sccharts.dataflow,
                                  de.cau.cs.kieler.sccharts.dataflow.lustre,
+                                 de.cau.cs.kieler.sccharts.expansion.only,
                                  de.cau.cs.kieler.sccharts.extended,
                                  de.cau.cs.kieler.sccharts.extended.core,
+                                 de.cau.cs.kieler.sccharts.interactiveScheduling,
                                  de.cau.cs.kieler.sccharts.netlist,
+                                 de.cau.cs.kieler.sccharts.netlist.arduino.deploy,
+                                 de.cau.cs.kieler.sccharts.netlist.guardOpt,
                                  de.cau.cs.kieler.sccharts.netlist.java,
-                                 de.cau.cs.kieler.sccharts.netlist.java.tts,
+                                 de.cau.cs.kieler.sccharts.netlist.nxj.deploy,
+                                 de.cau.cs.kieler.sccharts.netlist.nxj.deploy.
+                                 rconsole,
+                                 de.cau.cs.kieler.sccharts.netlist.promela,
+                                 de.cau.cs.kieler.sccharts.netlist.references,
                                  de.cau.cs.kieler.sccharts.netlist.sccp,
                                  de.cau.cs.kieler.sccharts.netlist.simple,
-                                 de.cau.cs.kieler.sccharts.netlist.tts,
+                                 de.cau.cs.kieler.sccharts.netlist.smv,
+                                 de.cau.cs.kieler.sccharts.netlist.vhdl,
                                  de.cau.cs.kieler.sccharts.priority,
                                  de.cau.cs.kieler.sccharts.priority.java,
-                                 de.cau.cs.kieler.sccharts.priority.java.tts,
+                                 de.cau.cs.kieler.sccharts.priority.java.legacy,
+                                 de.cau.cs.kieler.sccharts.priority.legacy,
                                  de.cau.cs.kieler.sccharts.scssa,
+                                 de.cau.cs.kieler.sccharts.simulation.netlist.c,
+                                 de.cau.cs.kieler.sccharts.simulation.netlist.java,
+                                 de.cau.cs.kieler.sccharts.simulation.priority.c,
+                                 de.cau.cs.kieler.sccharts.simulation.priority.c.
+                                 legacy,
+                                 de.cau.cs.kieler.sccharts.simulation.priority.java,
+                                 de.cau.cs.kieler.sccharts.simulation.priority.java.
+                                 legacy,
+                                 de.cau.cs.kieler.sccharts.simulation.statebased.c,
+                                 de.cau.cs.kieler.sccharts.simulation.statebased.lean.
+                                 c,
+                                 de.cau.cs.kieler.sccharts.simulation.tts.netlist.c,
+                                 de.cau.cs.kieler.sccharts.simulation.tts.netlist.
+                                 java,
+                                 de.cau.cs.kieler.sccharts.simulation.tts.priority.c,
+                                 de.cau.cs.kieler.sccharts.simulation.tts.priority.c.
+                                 legacy,
+                                 de.cau.cs.kieler.sccharts.simulation.tts.priority.
+                                 java,
+                                 de.cau.cs.kieler.sccharts.simulation.tts.priority.
+                                 java.legacy,
+                                 de.cau.cs.kieler.sccharts.simulation.tts.statebased.
+                                 c,
+                                 de.cau.cs.kieler.sccharts.simulation.tts.statebased.
+                                 lean.c,
                                  de.cau.cs.kieler.sccharts.statebased,
-                                 de.cau.cs.kieler.sccharts.statebased.lean.c.template,
-                                 de.cau.cs.kieler.sccharts.statebased.lean.cpp.template,
-                                 de.cau.cs.kieler.sccharts.statebased.lean.java.template,
-                                 de.cau.cs.kieler.sccharts.statebased.lean.java.template.
-                                 selective,
                                  de.cau.cs.kieler.scg.netlist,
                                  de.cau.cs.kieler.scg.priority,
+                                 de.cau.cs.kieler.scl.netlist.c,
+                                 de.cau.cs.kieler.scl.netlist.java,
+                                 de.cau.cs.kieler.scl.priority.c,
+                                 de.cau.cs.kieler.scl.priority.java,
+                                 de.cau.cs.kieler.scl.scc,
+                                 de.cau.cs.kieler.scl.simulation.netlist.c,
+                                 de.cau.cs.kieler.scl.simulation.netlist.java,
+                                 de.cau.cs.kieler.scl.simulation.priority.c,
+                                 de.cau.cs.kieler.scl.simulation.priority.java,
+                                 de.cau.cs.kieler.scl.ssa.scssa,
+                                 de.cau.cs.kieler.scl.ssa.scssa.sccp,
+                                 de.cau.cs.kieler.scl.ssa.scssa.simple,
+                                 de.cau.cs.kieler.scl.ssa.seq,
+                                 de.scheidtbachmann.statemachine.codegen.statebased.
+                                 lean.cpp.template,
+                                 de.scheidtbachmann.statemachine.codegen.statebased.
+                                 lean.java.template,
+                                 de.scheidtbachmann.statemachine.codegen.statebased.
+                                 lean.java.template.selective,
                                  or a path to a custom <.kico> file.
                                Default is:
                                  de.cau.cs.kieler.sccharts.statebased.
-            --select <model>   The parts of the model that should be taken from the input
-                                 file
+
+            --select <model>   The parts of the model that should be taken from the
+                                 input file
     ''')
   }
   
@@ -351,7 +407,8 @@ class GeneratorTest {
   @Test
   def void testGenerateEmptyInput() {
     basePath = Files.createTempDirectory('stateChartGenTesting')
-    val fileName = 'foo.sm'
+
+    val fileName = 'foo.sctx'
     basePath.resolve(fileName).write(#[ '' ], CREATE, WRITE)
     
     runGenerate(basePath, fileName)
@@ -364,13 +421,15 @@ class GeneratorTest {
   @Test
   def void testGenerateOutputStdOut() {
     basePath = Files.createTempDirectory('stateChartGenTesting')
-    val fileName = 'foo.sm'
+
+    val fileName = 'foo.sctx'
     basePath.resolve(fileName).write(#[ 'scchart foo { initial state foo }' ], CREATE, WRITE)
     
     runGenerate(basePath, '--stdout', fileName)
     
     assertSysOutStartsWith('''
-      Compiling foo.sm using strategy 'de.cau.cs.kieler.sccharts.statebased'...done.
+
+      Compiling foo.sctx using strategy 'de.cau.cs.kieler.sccharts.statebased'...done.
       foo.c:
     ''')
   }
@@ -380,7 +439,8 @@ class GeneratorTest {
     Assume.assumeTrue(!isWindows)
     
     basePath = Files.createTempDirectory('stateChartGenTesting')
-    val fileName = 'foo.sm'
+
+    val fileName = 'foo.sctx'
     basePath.resolve(fileName).write(#[ 'scchart foo { initial state foo }' ], CREATE, WRITE)
     
     Files.createDirectory(basePath.resolve('gen')).toFile.setWritable(false, false)
@@ -397,7 +457,8 @@ class GeneratorTest {
     Assume.assumeTrue(!isWindows)
     
     basePath = Files.createTempDirectory('stateChartGenTesting')
-    val fileName = 'foo.sm'
+
+    val fileName = 'foo.sctx'
     basePath.resolve(fileName).write(#[ 'scchart foo { initial state foo }' ], CREATE, WRITE)
     
     Files.createDirectory(basePath.resolve('gen')).toFile.setWritable(false, false)
@@ -413,13 +474,15 @@ class GeneratorTest {
   @Test
   def void testGenerateOutputStrategy() {
     basePath = Files.createTempDirectory('stateChartGenTesting')
-    val fileName = 'foo.sm'
+
+    val fileName = 'foo.sctx'
     basePath.resolve(fileName).write(#[ 'scchart foo { initial state foo }' ], CREATE, WRITE)
     
     runGenerate(basePath, '--stdout', '-s de.cau.cs.kieler.sccharts.priority', fileName)
     
     assertSysOutStartsWith('''
-      Compiling foo.sm using strategy 'de.cau.cs.kieler.sccharts.priority'...done.
+
+      Compiling foo.sctx using strategy 'de.cau.cs.kieler.sccharts.priority'...done.
       foo.c:
     ''')
   }
@@ -427,7 +490,8 @@ class GeneratorTest {
   @Test
   def void testGenerateOutputCustomStrategy() {
     basePath = Files.createTempDirectory('stateChartGenTesting')
-    val fileName = 'foo.sm'
+
+    val fileName = 'foo.sctx'
     basePath.resolve(fileName).write(#[ 'scchart foo { initial state foo }' ], CREATE, WRITE)
     
     val strategyFileName = 'bar.kico'
@@ -439,7 +503,8 @@ class GeneratorTest {
     
     assertSysOutStartsWith('''
       Did load bar.kico without errors.
-      Compiling foo.sm using strategy 'my.java'...done.
+
+      Compiling foo.sctx using strategy 'my.java'...done.
       foo.java:
     ''')
   }
@@ -447,7 +512,8 @@ class GeneratorTest {
   @Test
   def void testGenerateOutputCustomStrategyMissing() {
     basePath = Files.createTempDirectory('stateChartGenTesting')
-    val fileName = 'foo.sm'
+
+    val fileName = 'foo.sctx'
     basePath.resolve(fileName).write(#[ 'scchart foo { initial state foo }' ], CREATE, WRITE)
     
     val strategyFileName = 'bar.kico'
@@ -462,7 +528,8 @@ class GeneratorTest {
   @Test
   def void testGenerateOutputCustomStrategyWrongExtenstion() {
     basePath = Files.createTempDirectory('stateChartGenTesting')
-    val fileName = 'foo.sm'
+
+    val fileName = 'foo.sctx'
     basePath.resolve(fileName).write(#[ 'scchart foo { initial state foo }' ], CREATE, WRITE)
     
     val strategyFileName = 'bar.kic'
@@ -478,7 +545,8 @@ class GeneratorTest {
   @Test
   def void testGenerateOutputCustomStrategyIsDirectory() {
     basePath = Files.createTempDirectory('stateChartGenTesting')
-    val fileName = 'foo.sm'
+
+    val fileName = 'foo.sctx'
     basePath.resolve(fileName).write(#[ 'scchart foo { initial state foo }' ], CREATE, WRITE)
     
     val strategyFileName = 'bar.kico'
@@ -496,7 +564,8 @@ class GeneratorTest {
     Assume.assumeTrue(!isWindows)
     
     basePath = Files.createTempDirectory('stateChartGenTesting')
-    val fileName = 'foo.sm'
+
+    val fileName = 'foo.sctx'
     basePath.resolve(fileName).write(#[ 'scchart foo { initial state foo }' ], CREATE, WRITE)
     
     val strategyFileName = 'bar.kico'
@@ -514,7 +583,8 @@ class GeneratorTest {
   @Test
   def void testGenerateOutputCustomStrategyEmpty() {
     basePath = Files.createTempDirectory('stateChartGenTesting')
-    val fileName = 'foo.sm'
+
+    val fileName = 'foo.sctx'
     basePath.resolve(fileName).write(#[ 'scchart foo { initial state foo }' ], CREATE, WRITE)
     
     val strategyFileName = 'bar.kico'
@@ -532,26 +602,30 @@ class GeneratorTest {
   @Test
   def void testGenerateOutputCustomStrategyErroneous() {
     basePath = Files.createTempDirectory('stateChartGenTesting')
-    val fileName = 'foo.sm'
+
+    val fileName = 'foo.sctx'
     basePath.resolve(fileName).write(#[ 'scchart foo { initial state foo }' ], CREATE, WRITE)
     
     val strategyFileName = 'bar.kico'
     basePath.resolve(strategyFileName).write(
-      #[ 'public system my.java /* label "foo" */ system de.cau.cs.kieler.sccharts.priority.java' ], CREATE, WRITE
+
+      #[ 'public system myerror.java /* label "foo" */ system de.cau.cs.kieler.sccharts.priority.java' ], CREATE, WRITE
     )
     
     runGenerate(basePath, '--stdout', '-s', strategyFileName, fileName)
     
     assertSysOutEquals('''
       Did load bar.kico with errors:
-      Line 1, column 41: mismatched input 'system' expecting 'label'
+
+      Line 1, column 46: mismatched input 'system' expecting 'label'
     ''')
   }
   
   // ----------------------------------------------------------------------------------------------
   
   @After
-  public def void removeBaseDir() {
+
+  def void removeBaseDir() {
     basePath?.deleteDirRecursively
     basePath = null
   }
@@ -559,7 +633,10 @@ class GeneratorTest {
   // ----------------------------------------------------------------------------------------------
 
   private def commandLineRun(Path basePath, String... args) {
-    CommandLine.run(new TestableGenerator(basePath), System.out, CommandLine.Help.Ansi.OFF, args)
+
+    val CommandLine cmd = new CommandLine(new TestableGenerator(basePath)) // 
+                            .setColorScheme(CommandLine.Help.defaultColorScheme(CommandLine.Help.Ansi.OFF))
+    cmd.execute(args)
   }
   
   private def runValidate(Path basePath, String... args) {
@@ -578,13 +655,13 @@ class GeneratorTest {
     System.getProperty('os.name').toLowerCase.contains('win')
   }
   
-  private def assertFileEquals(Path file, String expected) {
-    Assert.assertTrue("Diagram model doesn't exist at the expected location.", file.exists)
-    
-    val diagramModel = new String(file.readAllBytes, StandardCharsets.UTF_8)
-    Assert.assertEquals(expected, diagramModel)
-  }
-  
+//  private def assertFileEquals(Path file, String expected) {
+//    Assert.assertTrue("Diagram model doesn't exist at the expected location.", file.exists)
+//    
+//    val diagramModel = new String(file.readAllBytes, StandardCharsets.UTF_8)
+//    Assert.assertEquals(expected, diagramModel)
+//  }
+		val diagramModel = new String(file.readAllBytes, StandardCharsets.UTF_8)
   private def assertSysOutEquals(String expected) {
     Assert.assertEquals('Found outputs in stdErr:', '', syserr.toString)
     Assert.assertEquals(expected, sysout.toString(UTF8))
@@ -592,7 +669,7 @@ class GeneratorTest {
   
   private def assertSysOutStartsWith(String expected) {
     Assert.assertEquals('Found outputs in stdErr:', '', syserr.toString)
-    switch actual: sysout.toString(UTF8) {
+	switch actual: sysout.toString(UTF8) {
       String:
         if (!actual.startsWith(expected.trim))
           throw new ComparisonFailure('', expected, actual)

@@ -1,0 +1,15 @@
+/*
+ * A slightly more advanced SCCharts, using the package declaration as well as external method calling.
+ */
+#package "de.scheidtbachmann.statemachine.foo"
+
+scchart PackageChart {
+
+  @Context extern "foo" foo
+
+  initial state x
+  do foo()
+  go to y
+
+  state y
+}

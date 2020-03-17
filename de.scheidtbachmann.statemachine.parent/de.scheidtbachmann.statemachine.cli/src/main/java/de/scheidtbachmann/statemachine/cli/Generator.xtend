@@ -1,12 +1,15 @@
 package de.scheidtbachmann.statemachine.cli
 
 import com.google.inject.Inject
+import com.google.inject.Injector
 import com.google.inject.Provider
 import de.cau.cs.kieler.kicool.compilation.CodeContainer
 import de.cau.cs.kieler.kicool.compilation.Compile
 import de.cau.cs.kieler.kicool.registration.KiCoolRegistration
 import de.cau.cs.kieler.sccharts.processors.statebased.codegen.StatebasedCCodeGenerator
-import de.scheidtbachmann.statemachine.StateMachineStandaloneSetup
+import de.cau.cs.kieler.sccharts.text.SCTXStandaloneSetup
+import de.cau.cs.kieler.scg.ScgPackage
+import de.scheidtbachmann.statemachine.transformators.ModelSelect
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.PrintStream
@@ -35,7 +38,7 @@ import picocli.CommandLine.Spec
 import static extension java.nio.file.Files.*
 import de.cau.cs.kieler.sccharts.processors.transformators.ModelSelect
 
-@Command(name='scc', header="Scheidt & Bachmann StateChart Compiler", version="0.1.0", mixinStandardHelpOptions=true)
+@Command(name='scc', header="Scheidt & Bachmann StateChart Compiler", version="0.2.0", mixinStandardHelpOptions=true)
 class Generator implements Runnable {
 
   static val CMD_VALIDATE = 'validate'
@@ -67,10 +70,11 @@ class Generator implements Runnable {
    */
   def static void main(String[] args) {
     // Trigger injection before the tool runs
-    CommandLine.run(
-      new StateMachineStandaloneSetup().createInjectorAndDoEMFRegistration().getInstance(Generator),
-      args
-    )
+    val Injector injector = new SCTXStandaloneSetup().createInjectorAndDoEMFRegistration
+    ScgPackage.eINSTANCE.eClass
+    val CommandLine cmd = new CommandLine(injector.getInstance(Generator))
+    val exitCode = cmd.execute(args)
+    System.exit(exitCode)
   }
 
   override void run() {
@@ -93,7 +97,7 @@ class Generator implements Runnable {
     } else if (useStdIn) {
       // Load resource from stdin. Simulate a file resource by calling the 'file' stdIn.sm
       resource = resourceSetProvider.get().createResource(
-        URI::createFileURI('stdIn.sm')
+        URI::createFileURI('stdIn.sctx')
       )
       resource.load(System.in, emptyMap)
       return resource
@@ -390,7 +394,7 @@ class Generator implements Runnable {
    */
   def loadStrategy(String strategy) {
     // Check if the given strategy id is already known
-    if (KiCoolRegistration.availableSystemsIDs.exists[it == strategy]) {
+    if (KiCoolRegistration.systemModels.map[id].exists[it == strategy]) {
       // It is known. Just keep it that way.
       return strategy
     } else if (!strategy.endsWith('.kico')) {
@@ -433,9 +437,9 @@ class Generator implements Runnable {
       val strategyData = strategyResource.contents.head
       if (strategyData instanceof de.cau.cs.kieler.kicool.System) {
         // We got a compilation system. Make sure it doesn't collide with an existing strategy id.
-        if (KiCoolRegistration.availableSystemsIDs.exists[it == strategyData.id]) {
+        if (KiCoolRegistration.systemModels.map[id].exists[it == strategyData.id]) {
           // We got conflicting IDs
-          println('''Did load «strategy» without errors, but the strategy's «strategyData.id» is already used.''')
+          println('''Did load «strategy», but the strategy's id «strategyData.id» is already used.''')
           return null
         } else if (issuesText === null) {
           // Strategy is fine and we can register it in KiCool
@@ -638,7 +642,7 @@ class Generator implements Runnable {
    */
   static class StrategyCandidates implements Iterable<String> {
     // Request all known compilation systems from KiCool and store in a nice sorted list
-    val sortedIds = KiCoolRegistration.availableSystemsIDs.toIterable.sort
+    val sortedIds = KiCoolRegistration.systemModels.map[id].sort
 
     // Use the iterator to detect the end and append the "bring your own strategy" help text
     override iterator() {
