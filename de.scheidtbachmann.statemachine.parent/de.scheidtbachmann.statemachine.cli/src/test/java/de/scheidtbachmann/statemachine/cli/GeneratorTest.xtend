@@ -661,7 +661,7 @@ class GeneratorTest {
 //    val diagramModel = new String(file.readAllBytes, StandardCharsets.UTF_8)
 //    Assert.assertEquals(expected, diagramModel)
 //  }
-		val diagramModel = new String(file.readAllBytes, StandardCharsets.UTF_8)
+		
   private def assertSysOutEquals(String expected) {
     Assert.assertEquals('Found outputs in stdErr:', '', syserr.toString)
     Assert.assertEquals(expected, sysout.toString(UTF8))

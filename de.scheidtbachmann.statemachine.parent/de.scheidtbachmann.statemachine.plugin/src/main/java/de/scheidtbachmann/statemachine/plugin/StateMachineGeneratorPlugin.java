@@ -33,6 +33,7 @@ import de.cau.cs.kieler.kicool.compilation.CompilationContext;
 import de.cau.cs.kieler.kicool.compilation.Compile;
 import de.cau.cs.kieler.kicool.registration.KiCoolRegistration;
 import de.cau.cs.kieler.sccharts.processors.statebased.codegen.StatebasedCCodeGenerator;
+import de.cau.cs.kieler.sccharts.text.SCTXStandaloneSetup;
 import de.scheidtbachmann.statemachine.transformators.ModelSelect;
 /**
  * Maven plugin to run the StateMachine code generator.
@@ -45,7 +46,6 @@ public class StateMachineGeneratorPlugin extends AbstractMojo {
 	public StateMachineGeneratorPlugin() {
 		super();
 		new SCTXStandaloneSetup().createInjectorAndDoEMFRegistration().injectMembers(this);
-		;
 	}
 
 	/**

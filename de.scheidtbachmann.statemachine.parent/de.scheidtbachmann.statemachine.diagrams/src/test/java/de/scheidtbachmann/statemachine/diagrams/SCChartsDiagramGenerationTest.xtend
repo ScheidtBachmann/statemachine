@@ -2,7 +2,6 @@ package de.scheidtbachmann.statemachine.diagrams
 
 import de.cau.cs.kieler.klighd.LightDiagramServices
 import de.cau.cs.kieler.sccharts.text.SCTXResource
-import de.scheidtbachmann.statemachine.StateMachineStandaloneSetup
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
@@ -12,6 +11,7 @@ import org.junit.Test
 import static org.junit.Assert.*
 
 import static extension de.scheidtbachmann.statemachine.diagrams.DiagramTests.*
+import de.cau.cs.kieler.sccharts.text.SCTXStandaloneSetup
 
 class SCChartsDiagramGenerationTest {
 	
@@ -50,7 +50,7 @@ class SCChartsDiagramGenerationTest {
             abort to ABO if R
         }
 	    '''
-	    val smInjector = new StateMachineStandaloneSetup().createInjectorAndDoEMFRegistration()
+	    val smInjector = new SCTXStandaloneSetup().createInjectorAndDoEMFRegistration()
 	    val res = smInjector.getInstance(SCTXResource)
 	    res.URI = URI.createURI("test://" + System.currentTimeMillis + ".sctx")
 	    res.load(new ByteArrayInputStream(sm.getBytes(StandardCharsets.UTF_8)), emptyMap)
