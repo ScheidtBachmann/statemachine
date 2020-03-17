@@ -368,11 +368,15 @@
 		</repository>
 		<repository>
 			<id>klighd-localSnapshot</id>
-			<url>http://services.typefox.io/open-source/jenkins/job/KLighD/job/master/lastSuccessfulBuild/artifact/klighd-snapshots</url>
+			<url>http://services.typefox.io/open-source/jenkins/job/KLighD/job/cs-standalone-rebased/lastSuccessfulBuild/artifact/klighd-snapshots</url>
 		</repository>
 		<repository>
 			<id>klighd-piccolo2d</id>
 			<url>http://services.typefox.io/open-source/jenkins/job/KLighD.Piccolo2d/lastSuccessfulBuild/artifact/klighd-piccolo2d</url>
+		</repository>
+		<repository>
+			<id>elk-snapshots</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
 		</repository>
 		<repository>
 			<id>codehaus-snapshots</id>
