@@ -137,6 +137,24 @@
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${project.build.outputDirectory}/diagramming</outputDirectory>
                                 </artifactItem>
+                                <artifactItem>
+                                    <groupId>de.cau.cs.kieler</groupId>
+                                    <artifactId>de.cau.cs.kieler.sccharts.ui</artifactId>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${project.build.outputDirectory}/diagramming</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>de.cau.cs.kieler</groupId>
+                                    <artifactId>de.cau.cs.kieler.sccharts.ide</artifactId>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${project.build.outputDirectory}/diagramming</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>de.cau.cs.kieler</groupId>
+                                    <artifactId>de.cau.cs.kieler.kicool.ui</artifactId>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${project.build.outputDirectory}/diagramming</outputDirectory>
+                                </artifactItem>
                             </artifactItems>
                         </configuration>
                     </execution>
