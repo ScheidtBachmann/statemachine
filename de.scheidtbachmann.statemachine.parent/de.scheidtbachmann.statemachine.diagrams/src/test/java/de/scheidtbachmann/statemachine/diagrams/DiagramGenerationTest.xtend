@@ -8,6 +8,8 @@ import static de.cau.cs.kieler.klighd.kgraph.util.KGraphUtil.*
 import static org.junit.Assert.*
 
 import static extension de.scheidtbachmann.statemachine.diagrams.DiagramTests.*
+import javax.xml.parsers.DocumentBuilderFactory
+import java.io.ByteArrayInputStream
 
 class DiagramGenerationTest {
 	
@@ -32,8 +34,7 @@ class DiagramGenerationTest {
 		assertNotNull('No diagram generated.', result)
 		assertTrue('Diagram generation failed: ' + result.message + result.failureTrace, result.isOK)
 		
-		// FIXME als: ordering of xml attributes may differ
-		stream.assertEquals('''
+		stream.assertXMLEquals('''
 		<?xml version="1.0" standalone="no"?>
 		
 		<svg 
@@ -74,12 +75,19 @@ class DiagramGenerationTest {
 		''')
 	}
 	
-	def assertEquals(ByteArrayOutputStream actual, CharSequence expected) {
+	def assertXMLEquals(ByteArrayOutputStream actual, CharSequence expected) {
 		val output = actual.toString
 		val descStart = output.indexOf('<desc>')
 		val descEnd = output.indexOf('</desc>')
 		val masked = output.substring(0, descStart + 6) + '...' + output.substring(descEnd, output.length)
 		
-		assertEquals(expected.toString.replaceAll("\r\n", "\n"), masked.replaceAll("\r\n", "\n"))
+		val dbf = DocumentBuilderFactory.newInstance();
+		val db = dbf.newDocumentBuilder();
+
+		val doc1 = db.parse(new ByteArrayInputStream(masked.getBytes("UTF-8")))
+		val doc2 = db.parse(new ByteArrayInputStream(expected.toString.getBytes("UTF-8")))
+
+		assertTrue(doc1.isEqualNode(doc2));
+		
 	}
 }

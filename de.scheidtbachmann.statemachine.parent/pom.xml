@@ -381,7 +381,8 @@
         </repository>
         <repository>
             <id>klighd-localSnapshot</id>
-            <url>http://services.typefox.io/open-source/jenkins/job/KLighD/job/cs-standalone-rebased/lastSuccessfulBuild/artifact/klighd-snapshots</url>
+            <url>http://services.typefox.io/open-source/jenkins/job/KLighD/job/cs-standalone-march-24/lastSuccessfulBuild/artifact/klighd-snapshots/</url>
+            <!--<url>http://services.typefox.io/open-source/jenkins/job/KLighD/job/cs-standalone-rebased/lastSuccessfulBuild/artifact/klighd-snapshots</url>-->
         </repository>
         <repository>
             <id>klighd-piccolo2d</id>

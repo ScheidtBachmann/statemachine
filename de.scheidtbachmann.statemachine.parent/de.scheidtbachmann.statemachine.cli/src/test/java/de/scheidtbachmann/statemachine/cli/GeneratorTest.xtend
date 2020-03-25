@@ -115,7 +115,7 @@ class GeneratorTest {
       Validation discovered the following errors:
       Line 1, column 21 (syntax error): missing RULE_ID at '}'
       Line 1, column 15 : Every region must have an initial state.
-      	
+      
       Validation discovered the following warnings:
       Line 1, column 15: The state is not reachable.
     ''')
@@ -271,10 +271,12 @@ class GeneratorTest {
     
     assertSysOutEquals('''
       Generate executable code corresponding to the given input file.
-      
+      Usage: scc generate [--stdin] [--stdout] [-o <path>] [-s <strategy>] [--select
+                          <model>] [<sourceFile>]
+
       Parameters:
             [<sourceFile>]     The input state chart file.
-      
+
       Options:
             --stdin            Forces the generator to read input from stdIn.
         -o, --output <path>    The destination folder of the generated artifacts.
@@ -299,6 +301,7 @@ class GeneratorTest {
                                  de.cau.cs.kieler.sccharts.interactiveScheduling,
                                  de.cau.cs.kieler.sccharts.netlist,
                                  de.cau.cs.kieler.sccharts.netlist.arduino.deploy,
+                                 de.cau.cs.kieler.sccharts.netlist.dataflow,
                                  de.cau.cs.kieler.sccharts.netlist.guardOpt,
                                  de.cau.cs.kieler.sccharts.netlist.java,
                                  de.cau.cs.kieler.sccharts.netlist.nxj.deploy,
@@ -326,6 +329,8 @@ class GeneratorTest {
                                  de.cau.cs.kieler.sccharts.simulation.statebased.c,
                                  de.cau.cs.kieler.sccharts.simulation.statebased.lean.
                                  c,
+                                 de.cau.cs.kieler.sccharts.simulation.statebased.lean.
+                                 cs.c,
                                  de.cau.cs.kieler.sccharts.simulation.tts.netlist.c,
                                  de.cau.cs.kieler.sccharts.simulation.tts.netlist.
                                  java,
@@ -340,7 +345,22 @@ class GeneratorTest {
                                  c,
                                  de.cau.cs.kieler.sccharts.simulation.tts.statebased.
                                  lean.c,
+                                 de.cau.cs.kieler.sccharts.simulation.tts.statebased.
+                                 lean.cs.c,
                                  de.cau.cs.kieler.sccharts.statebased,
+                                 de.cau.cs.kieler.sccharts.statebased.lean,
+                                 de.cau.cs.kieler.sccharts.statebased.lean.arduino.
+                                 deploy,
+                                 de.cau.cs.kieler.sccharts.statebased.lean.c.
+                                 template,
+                                 de.cau.cs.kieler.sccharts.statebased.lean.cs.c.
+                                 template,
+                                 de.cau.cs.kieler.sccharts.statebased.lean.java.
+                                 template.kico,
+                                 de.cau.cs.kieler.sccharts.statebased.woComments,
+                                 de.cau.cs.kieler.sccharts.verification.nusmv,
+                                 de.cau.cs.kieler.sccharts.verification.nuxmv,
+                                 de.cau.cs.kieler.sccharts.verification.spin,
                                  de.cau.cs.kieler.scg.netlist,
                                  de.cau.cs.kieler.scg.priority,
                                  de.cau.cs.kieler.scl.netlist.c,
@@ -356,6 +376,7 @@ class GeneratorTest {
                                  de.cau.cs.kieler.scl.ssa.scssa.sccp,
                                  de.cau.cs.kieler.scl.ssa.scssa.simple,
                                  de.cau.cs.kieler.scl.ssa.seq,
+                                 de.cau.cs.kieler.slic.schedule,
                                  de.scheidtbachmann.statemachine.codegen.statebased.
                                  lean.cpp.template,
                                  de.scheidtbachmann.statemachine.codegen.statebased.
@@ -365,7 +386,6 @@ class GeneratorTest {
                                  or a path to a custom <.kico> file.
                                Default is:
                                  de.cau.cs.kieler.sccharts.statebased.
-
             --select <model>   The parts of the model that should be taken from the
                                  input file
     ''')
@@ -503,7 +523,6 @@ class GeneratorTest {
     
     assertSysOutStartsWith('''
       Did load bar.kico without errors.
-
       Compiling foo.sctx using strategy 'my.java'...done.
       foo.java:
     ''')
@@ -616,7 +635,6 @@ class GeneratorTest {
     
     assertSysOutEquals('''
       Did load bar.kico with errors:
-
       Line 1, column 46: mismatched input 'system' expecting 'label'
     ''')
   }

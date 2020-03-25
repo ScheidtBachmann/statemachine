@@ -186,17 +186,17 @@ class Generator implements Runnable {
 				«ENDIF»
 				«IF !warnings.isEmpty»
 					
-						  Validation discovered the following warnings:
-						  «FOR it : warnings»
-						  	Line «lineNumber», column «column»: «message»
-						  «ENDFOR»
+					Validation discovered the following warnings:
+					«FOR it : warnings»
+						Line «lineNumber», column «column»: «message»
+					«ENDFOR»
 				«ENDIF»
 				«IF !infos.isEmpty»
 					
-						  Further infos/remarks:
-						  «FOR it : infos»
-						  	Line «lineNumber», column «column»: «message»
-						  «ENDFOR»
+					Further infos/remarks:
+					«FOR it : infos»
+						Line «lineNumber», column «column»: «message»
+					«ENDFOR»
 				«ENDIF»
 			''')
 		}
