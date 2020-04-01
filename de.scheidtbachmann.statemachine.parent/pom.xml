@@ -28,6 +28,11 @@
 		<org.eclipse.emf.codegen.ecore.xtext-version>[1.2.0]</org.eclipse.emf.codegen.ecore.xtext-version>
 	</properties>
 
+	<scm>
+		<connection>scm:git:https://github.com/ScheidtBachmann/statemachine.git</connection>
+	</scm>
+
+
 	<distributionManagement>
 		<snapshotRepository>
 			<id>snapshots</id>
