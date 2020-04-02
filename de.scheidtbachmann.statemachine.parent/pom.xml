@@ -41,8 +41,8 @@
 		</snapshotRepository>
 		<repository>
 			<id>releases</id>
-			<name>Statemachine Releases</name>
-			<url>http://ki-vl-arch-repo.ki.lan/nexus/content/repositories/statemachine/</url>
+			<name>Nexus Releases Repository</name>
+			<url>http://ki-vl-arch-repo.ki.lan/nexus/content/repositories/releases/</url>
 		</repository>
 	</distributionManagement>
 
