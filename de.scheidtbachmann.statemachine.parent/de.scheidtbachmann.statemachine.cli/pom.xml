@@ -148,7 +148,7 @@
 						</goals>
 						<configuration>
 							<artifacts>
-								<!-- <artifact>
+								<artifact>
 									<file>${executableJ8-nix}</file>
 									<type>sh</type>
 									<classifier>sccJava8-linux</classifier>
@@ -157,7 +157,7 @@
 									<file>${executable-nix}</file>
 									<type>sh</type>
 									<classifier>scc-linux</classifier>
-								</artifact> -->
+								</artifact>
 								<artifact>
 									<file>${executableJ8-win}</file>
 									<type>bat</type>
@@ -168,7 +168,7 @@
 									<type>bat</type>
 									<classifier>scc-win</classifier>
 								</artifact>
-								<!-- <artifact>
+								<artifact>
 									<file>${executableJ8-osx}</file>
 									<type>sh</type>
 									<classifier>sccJava8-osx</classifier>
@@ -177,7 +177,7 @@
 									<file>${executable-osx}</file>
 									<type>sh</type>
 									<classifier>scc-osx</classifier>
-								</artifact> -->
+								</artifact>
 							</artifacts>
 						</configuration>
 					</execution>

@@ -52,7 +52,7 @@
 		<module>de.scheidtbachmann.statemachine.cli</module>
 		<module>de.scheidtbachmann.statemachine.ide</module>
 		<module>de.scheidtbachmann.statemachine.plugin</module>
-		<module>de.scheidtbachmann.statemachine.plugin.test</module>
+		<!-- <module>de.scheidtbachmann.statemachine.plugin.test</module> -->
 	</modules>
 
 	<!-- Dependency management for dependencies in downstream modules -->
