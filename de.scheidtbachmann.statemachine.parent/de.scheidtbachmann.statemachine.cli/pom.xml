@@ -148,7 +148,7 @@
 						</goals>
 						<configuration>
 							<artifacts>
-								<artifact>
+								<!-- <artifact>
 									<file>${executableJ8-nix}</file>
 									<type>sh</type>
 									<classifier>sccJava8-linux</classifier>
@@ -157,7 +157,7 @@
 									<file>${executable-nix}</file>
 									<type>sh</type>
 									<classifier>scc-linux</classifier>
-								</artifact>
+								</artifact> -->
 								<artifact>
 									<file>${executableJ8-win}</file>
 									<type>bat</type>
@@ -168,7 +168,7 @@
 									<type>bat</type>
 									<classifier>scc-win</classifier>
 								</artifact>
-								<artifact>
+								<!-- <artifact>
 									<file>${executableJ8-osx}</file>
 									<type>sh</type>
 									<classifier>sccJava8-osx</classifier>
@@ -177,7 +177,7 @@
 									<file>${executable-osx}</file>
 									<type>sh</type>
 									<classifier>scc-osx</classifier>
-								</artifact>
+								</artifact> -->
 							</artifacts>
 						</configuration>
 					</execution>
@@ -209,7 +209,7 @@
 								</goals>
 								<configuration>
 									<executable>bash</executable>
-									<commandlineArgs>-c 'echo exec java -Xmx512m -jar \$0 \"\$@\" > ${executableJ8-nix}; echo  >> ${executableJ8-nix}; cat \"${appjar}\" >> ${executableJ8-nix}; chmod u+x ${executableJ8-nix}'</commandlineArgs>
+									<commandlineArgs>-c 'echo exec java -Xmx512m -jar \$0 \"\$@\" > ${executableJ8-nix}; echo  >> ${executableJ8-nix}; cat ${appjar} >> ${executableJ8-nix}; chmod u+x ${executableJ8-nix}'</commandlineArgs>
 								</configuration>
 							</execution>
 							<execution>
@@ -220,7 +220,7 @@
 								</goals>
 								<configuration>
 									<executable>bash</executable>
-									<commandlineArgs>-c 'echo exec java -Xmx512m --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/jdk.internal.loader=ALL-UNNAMED -jar \$0 \"\$@\" > ${executable-nix}; echo  >> ${executable-nix}; cat \"${appjar}\" >> ${executable-nix}; chmod u+x ${executable-nix}'</commandlineArgs>
+									<commandlineArgs>-c 'echo exec java -Xmx512m --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/jdk.internal.loader=ALL-UNNAMED -jar \$0 \"\$@\" > ${executable-nix}; echo  >> ${executable-nix}; cat ${appjar} >> ${executable-nix}; chmod u+x ${executable-nix}'</commandlineArgs>
 								</configuration>
 							</execution>
 							<execution>
@@ -231,7 +231,7 @@
 								</goals>
 								<configuration>
 									<executable>bash</executable>
-									<commandlineArgs>-c 'echo -ne @java -Xmx512m -jar \%0 \%* \\r\\n > ${executableJ8-win}; echo -ne @exit /b \\r\\n >> ${executableJ8-win}; cat \"${appjar}\" >> ${executableJ8-win}'</commandlineArgs>
+									<commandlineArgs>-c 'echo -ne @java -Xmx512m -jar \%0 \%* \\r\\n > ${executableJ8-win}; echo -ne @exit /b \\r\\n >> ${executableJ8-win}; cat ${appjar} >> ${executableJ8-win}'</commandlineArgs>
 								</configuration>
 							</execution>
 							<execution>
@@ -242,7 +242,7 @@
 								</goals>
 								<configuration>
 									<executable>bash</executable>
-									<commandlineArgs>-c 'echo -ne @java -Xmx512m --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/jdk.internal.loader=ALL-UNNAMED -jar %0 %* \\r\\n > ${executable-win}; echo -ne @exit /b \\r\\n >> ${executable-win}; cat \"${appjar}\" >> ${executable-win}'</commandlineArgs>
+									<commandlineArgs>-c 'echo -ne @java -Xmx512m --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/jdk.internal.loader=ALL-UNNAMED -jar %0 %* \\r\\n > ${executable-win}; echo -ne @exit /b \\r\\n >> ${executable-win}; cat ${appjar} >> ${executable-win}'</commandlineArgs>
 								</configuration>
 							</execution>
 							<execution>
@@ -253,7 +253,7 @@
 								</goals>
 								<configuration>
 									<executable>bash</executable>
-									<commandlineArgs>-c 'echo exec java -XstartOnFirstThread -Xmx512m -jar \$0 \"\$@\" > ${executableJ8-osx}; echo  >> ${executableJ8-osx}; cat \"${appjar}\" >> ${executableJ8-osx}; chmod u+x ${executableJ8-osx}'</commandlineArgs>
+									<commandlineArgs>-c 'echo exec java -XstartOnFirstThread -Xmx512m -jar \$0 \"\$@\" > ${executableJ8-osx}; echo  >> ${executableJ8-osx}; cat ${appjar} >> ${executableJ8-osx}; chmod u+x ${executableJ8-osx}'</commandlineArgs>
 								</configuration>
 							</execution>
 							<execution>
@@ -264,7 +264,7 @@
 								</goals>
 								<configuration>
 									<executable>bash</executable>
-									<commandlineArgs>-c 'echo exec java -XstartOnFirstThread -Xmx512m --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/jdk.internal.loader=ALL-UNNAMED -jar \$0 \"\$@\" > ${executable-osx}; echo  >> ${executable-osx}; cat \"${appjar}\" >> ${executable-osx}; chmod u+x ${executable-osx}'</commandlineArgs>
+									<commandlineArgs>-c 'echo exec java -XstartOnFirstThread -Xmx512m --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/jdk.internal.loader=ALL-UNNAMED -jar \$0 \"\$@\" > ${executable-osx}; echo  >> ${executable-osx}; cat ${appjar} >> ${executable-osx}; chmod u+x ${executable-osx}'</commandlineArgs>
 								</configuration>
 							</execution>
 						</executions>
@@ -294,7 +294,7 @@
 								</goals>
 								<configuration>
 									<executable>bash</executable>
-									<commandlineArgs>-c 'echo exec java -XstartOnFirstThread -Xmx512m -jar \$0 \"\$@\" > ${executableJ8-osx}; echo  >> ${executableJ8-osx}; cat \"${appjar}\" >> ${executableJ8-osx}; chmod u+x ${executableJ8-osx}'</commandlineArgs>
+									<commandlineArgs>-c 'echo exec java -XstartOnFirstThread -Xmx512m -jar \$0 \"\$@\" > ${executableJ8-osx}; echo  >> ${executableJ8-osx}; cat ${appjar} >> ${executableJ8-osx}; chmod u+x ${executableJ8-osx}'</commandlineArgs>
 								</configuration>
 							</execution>
 							<execution>
@@ -305,7 +305,7 @@
 								</goals>
 								<configuration>
 									<executable>bash</executable>
-									<commandlineArgs>-c 'echo exec java -XstartOnFirstThread -Xmx512m --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/jdk.internal.loader=ALL-UNNAMED -jar \$0 \"\$@\" > ${executable-osx}; echo  >> ${executable-osx}; cat \"${appjar}\" >> ${executable-osx}; chmod u+x ${executable-osx}'</commandlineArgs>
+									<commandlineArgs>-c 'echo exec java -XstartOnFirstThread -Xmx512m --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/jdk.internal.loader=ALL-UNNAMED -jar \$0 \"\$@\" > ${executable-osx}; echo  >> ${executable-osx}; cat ${appjar} >> ${executable-osx}; chmod u+x ${executable-osx}'</commandlineArgs>
 								</configuration>
 							</execution>
 						</executions>
