@@ -1,0 +1,5 @@
+scchart SpaceChart {
+ initial state x
+ go to y
+ state y
+}
