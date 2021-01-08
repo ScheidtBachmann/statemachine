@@ -19,8 +19,8 @@
         <executable-osx>${selfContainedExecutableName}-osx</executable-osx>
         <executableJ8-win>${selfContainedExecutableName}Java8-win.bat</executableJ8-win>
         <executable-win>${selfContainedExecutableName}-win.bat</executable-win>
-        <appjar>${project.build.directory}/de.scheidtbachmann.statemachine.cli-0.2.0-SNAPSHOT-app.jar</appjar>
-        <appjar-win>${project.build.directory}\de.scheidtbachmann.statemachine.cli-0.2.0-SNAPSHOT-app.jar</appjar-win>
+        <appjar>${project.build.directory}/de.scheidtbachmann.statemachine.cli-${project.version}-app.jar</appjar>
+        <appjar-win>${project.build.directory}\de.scheidtbachmann.statemachine.cli-${project.version}-app.jar</appjar-win>
     </properties>
 
     <build>
