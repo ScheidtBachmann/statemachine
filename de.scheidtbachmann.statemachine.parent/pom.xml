@@ -15,11 +15,11 @@
         <jUnitVersion>4.12</jUnitVersion>
         <xcoreVersion>[1.3.1]</xcoreVersion>
         <xcoreLibVersion>[1.1.100]</xcoreLibVersion>
-        <xtextVersion>2.16.0</xtextVersion>
-        <elkVersion>0.7.0-SNAPSHOT</elkVersion>
-        <klighdVersion>1.0.1-SNAPSHOT</klighdVersion>
+        <xtextVersion>2.22.0</xtextVersion>
+        <elkVersion>0.7.0</elkVersion>
+        <klighdVersion>2.0.0.v20200930</klighdVersion>
         <picoCliVersion>4.0.1</picoCliVersion>
-        <kielerVersion>1.1.0-SNAPSHOT</kielerVersion>
+        <kielerVersion>1.2.0-SNAPSHOT</kielerVersion>
         <swtGroupId>org.eclipse.swt</swtGroupId>
         <swtVersion>4.3</swtVersion>
 
@@ -60,6 +60,16 @@
                 <version>${klighdVersion}</version>
             </dependency>
             <dependency>
+                <groupId>de.cau.cs.kieler.klighd</groupId>
+                <artifactId>de.cau.cs.kieler.klighd.ide</artifactId>
+                <version>${klighdVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>de.cau.cs.kieler.klighd</groupId>
+                <artifactId>de.cau.cs.kieler.kgraph.text</artifactId>
+                <version>${klighdVersion}</version>
+            </dependency>
+            <dependency>
                 <groupId>de.cau.cs.kieler</groupId>
                 <artifactId>de.cau.cs.kieler.sccharts.ui</artifactId>
                 <version>${kielerVersion}</version>
@@ -72,6 +82,11 @@
             <dependency>
                 <groupId>de.cau.cs.kieler</groupId>
                 <artifactId>de.cau.cs.kieler.kicool.ui</artifactId>
+                <version>${kielerVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>de.cau.cs.kieler</groupId>
+                <artifactId>de.cau.cs.kieler.kicool.ide</artifactId>
                 <version>${kielerVersion}</version>
             </dependency>
             <dependency>
@@ -117,6 +132,11 @@
             <dependency>
                 <groupId>org.eclipse.elk</groupId>
                 <artifactId>org.eclipse.elk.alg.radial</artifactId>
+                <version>${elkVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.elk</groupId>
+                <artifactId>org.eclipse.elk.alg.rectpacking</artifactId>
                 <version>${elkVersion}</version>
             </dependency>
             <!-- don't alter versions of the following bundles arbitrarily,
@@ -380,18 +400,17 @@
             </snapshots>
         </repository>
         <repository>
-            <id>klighd-localSnapshot</id>
-            <url>http://services.typefox.io/open-source/jenkins/job/KLighD/job/cs-standalone-march-24/lastSuccessfulBuild/artifact/klighd-snapshots/</url>
-            <!--<url>http://services.typefox.io/open-source/jenkins/job/KLighD/job/cs-standalone-rebased/lastSuccessfulBuild/artifact/klighd-snapshots</url>-->
+            <id>klighd-localRelease</id>
+            <url>http://ki-vl-arch-repo.ki.lan/nexus/content/repositories/releases/</url>
         </repository>
         <repository>
             <id>klighd-piccolo2d</id>
             <url>http://services.typefox.io/open-source/jenkins/job/KLighD.Piccolo2d/lastSuccessfulBuild/artifact/klighd-piccolo2d</url>
         </repository>
-        <repository>
-            <id>elk-snapshots</id>
+        <!-- <repository>
+            <id>elk</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-        </repository>
+        </repository> -->
         <repository>
             <id>codehaus-snapshots</id>
             <name>disable dead 'Codehaus Snapshots' repository, see https://bugs.eclipse.org/bugs/show_bug.cgi?id=481478</name>

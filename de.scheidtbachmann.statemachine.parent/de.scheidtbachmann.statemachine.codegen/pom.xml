@@ -33,6 +33,11 @@
         </dependency>
         <dependency>
             <groupId>de.cau.cs.kieler</groupId>
+            <artifactId>de.cau.cs.kieler.annotations.ide</artifactId>
+            <version>${kielerVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.cau.cs.kieler</groupId>
             <artifactId>de.cau.cs.kieler.kexpressions</artifactId>
             <version>${kielerVersion}</version>
         </dependency>

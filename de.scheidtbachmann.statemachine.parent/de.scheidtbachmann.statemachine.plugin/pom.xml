@@ -24,7 +24,7 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>de.scheidtbachmann.statemachine.cli</artifactId>
+            <artifactId>de.scheidtbachmann.statemachine.codegen</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

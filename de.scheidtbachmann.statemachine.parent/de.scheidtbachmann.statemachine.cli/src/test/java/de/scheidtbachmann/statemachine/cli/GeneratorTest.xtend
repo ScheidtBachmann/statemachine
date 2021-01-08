@@ -311,6 +311,7 @@ class GeneratorTest {
                                  de.cau.cs.kieler.sccharts.netlist.references,
                                  de.cau.cs.kieler.sccharts.netlist.sccp,
                                  de.cau.cs.kieler.sccharts.netlist.simple,
+                                 de.cau.cs.kieler.sccharts.netlist.simulink,
                                  de.cau.cs.kieler.sccharts.netlist.smv,
                                  de.cau.cs.kieler.sccharts.netlist.vhdl,
                                  de.cau.cs.kieler.sccharts.priority,
@@ -331,6 +332,8 @@ class GeneratorTest {
                                  c,
                                  de.cau.cs.kieler.sccharts.simulation.statebased.lean.
                                  cs.c,
+                                 de.cau.cs.kieler.sccharts.simulation.statebased.lean.
+                                 java,
                                  de.cau.cs.kieler.sccharts.simulation.tts.netlist.c,
                                  de.cau.cs.kieler.sccharts.simulation.tts.netlist.
                                  java,
@@ -347,6 +350,8 @@ class GeneratorTest {
                                  lean.c,
                                  de.cau.cs.kieler.sccharts.simulation.tts.statebased.
                                  lean.cs.c,
+                                 de.cau.cs.kieler.sccharts.simulation.tts.statebased.
+                                 lean.java,
                                  de.cau.cs.kieler.sccharts.statebased,
                                  de.cau.cs.kieler.sccharts.statebased.lean,
                                  de.cau.cs.kieler.sccharts.statebased.lean.arduino.
@@ -356,7 +361,7 @@ class GeneratorTest {
                                  de.cau.cs.kieler.sccharts.statebased.lean.cs.c.
                                  template,
                                  de.cau.cs.kieler.sccharts.statebased.lean.java.
-                                 template.kico,
+                                 template,
                                  de.cau.cs.kieler.sccharts.statebased.woComments,
                                  de.cau.cs.kieler.sccharts.verification.nusmv,
                                  de.cau.cs.kieler.sccharts.verification.nuxmv,
