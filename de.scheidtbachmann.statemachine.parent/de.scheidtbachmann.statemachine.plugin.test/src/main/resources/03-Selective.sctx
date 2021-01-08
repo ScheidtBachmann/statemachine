@@ -1,0 +1,18 @@
+/*
+ * Two SCCharts defined in the same file to test the selective compilation option.
+ */
+scchart FirstSelectiveChart {
+
+  initial state x
+  go to y
+
+  state y
+}
+
+scchart SecondSelectiveChart {
+
+  initial state x
+  go to y
+
+  state y
+}

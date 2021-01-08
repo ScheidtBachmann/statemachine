@@ -1,0 +1,69 @@
+/*
+ * Multiple SCCharts with different options on triggers and immediate/delayed.
+ * Used to determine the exact cases where the "delayedEnabled" flag is not needed.
+ */
+
+scchart DelayedChart1 {
+  initial state S1
+  go to S2
+  
+  state S2
+}
+
+scchart DelayedChart2 {
+  initial state S1
+  immediate go to S2
+  
+  state S2
+}
+
+scchart DelayedChart3 {
+  initial state S1
+  go to S2
+  
+  final state S2
+}
+
+scchart DelayedChart4 {
+  initial state S1
+  immediate go to S2
+  
+  final state S2
+}
+
+scchart DelayedChart5 {
+  initial state S1
+  go to S2
+  
+  state S2 {
+    initial state T1
+    go to T2
+    
+    state T2
+  }
+}
+
+scchart DelayedChart6 {
+  initial state S1
+  go to S2
+  
+  state S2 {
+    initial state T1
+    immediate go to T2
+    
+    state T2
+  }
+}
+
+scchart DelayedChart7 {
+  initial state S1
+  immediate go to S2
+  
+  state S2 {
+    initial state T1
+    immediate go to T2
+    
+    state T2
+  }
+}
+

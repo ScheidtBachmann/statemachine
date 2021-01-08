@@ -1,306 +1,205 @@
 <?xml version="1.0"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>de.scheidtbachmann.statemachine</groupId>
-		<artifactId>de.scheidtbachmann.statemachine.parent</artifactId>
-		<version>0.1.1-SNAPSHOT</version>
-	</parent>
-	<artifactId>de.scheidtbachmann.statemachine.diagrams</artifactId>
-	<packaging>jar</packaging>
-	
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.12.4</version>
-				<configuration>
-					<trimStackTrace>false</trimStackTrace>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>1.9.1</version>
-				<executions>
-					<execution>
-						<id>add-source</id>
-						<phase>initialize</phase>
-						<goals>
-							<goal>add-source</goal>
-						</goals>
-						<configuration>
-							<sources>
-								<source>${basedir}/src/main/elk-gen/</source>
-								<source>${basedir}/src/main/emf-gen</source>
-							</sources>
-							<resources>
-								<resource>
-									<directory>src/main/emf-gen</directory>
-									<excludes>
-										<exclude>**/*.java</exclude>
-									</excludes>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-clean-plugin</artifactId>
-				<configuration>
-					<filesets combine.children="append">
-						<fileset>
-							<directory>${basedir}/src/main/elk-gen/</directory>
-							<directory>${basedir}/src/main/emf-gen/</directory>
-							<includes>
-								<include>**/*</include>
-							</includes>
-						</fileset>
-					</filesets>
-				</configuration>
-			</plugin>
-			<!-- run the xtext-maven-plugin to compile the .xcore and .melk files. -->
-			<plugin>
-				<groupId>org.eclipse.xtext</groupId>
-				<artifactId>xtext-maven-plugin</artifactId>
-				<version>${xtextVersion}</version>
-				<executions>
-					<execution>
-						<id>generate-xcore-and-melk</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<languages>
-						<language>
-							<setup>org.eclipse.xtext.ecore.EcoreSupport</setup>
-						</language>
-						<language>
-							<setup>org.eclipse.emf.codegen.ecore.xtext.GenModelSupport</setup>
-						</language>
-						<language>
-							<setup>org.eclipse.emf.ecore.xcore.XcoreStandaloneSetup</setup>
-							<outputConfigurations>
-								<outputConfiguration>
-									<outputDirectory>${project.basedir}/src/main/emf-gen</outputDirectory>
-								</outputConfiguration>
-							</outputConfigurations>
-						</language>
-						<language>
-							<setup>org.eclipse.elk.core.meta.MetaDataStandaloneSetup</setup>
-							<outputConfigurations>
-								<outputConfiguration>
-									<outputDirectory>${project.basedir}/src/main/elk-gen/</outputDirectory>
-								</outputConfiguration>
-							</outputConfigurations>
-						</language>
-					</languages>
-					<sourceRoots>
-						<root>${basedir}/model/</root>
-						<root>${basedir}/src/main/java</root>
-					</sourceRoots>
-				</configuration>
-				<dependencies>
-					<dependency>
-						<groupId>org.eclipse.emf</groupId>
-						<artifactId>org.eclipse.emf.common</artifactId>
-						<version>${org.eclipse.emf.ecore-version}</version>
-					</dependency>
-					<dependency>
-						<groupId>org.eclipse.emf</groupId>
-						<artifactId>org.eclipse.emf.ecore</artifactId>
-						<version>${org.eclipse.emf.ecore-version}</version>
-					</dependency>
-					<dependency>
-						<groupId>org.eclipse.emf</groupId>
-						<artifactId>org.eclipse.emf.ecore.change</artifactId>
-						<version>${org.eclipse.emf.ecore.change-version}</version>
-					</dependency>
-					<dependency>
-						<groupId>org.eclipse.emf</groupId>
-						<artifactId>org.eclipse.emf.ecore.xmi</artifactId>
-						<version>${org.eclipse.emf.ecore-version}</version>
-					</dependency>
-					<dependency>
-						<groupId>org.eclipse.emf</groupId>
-						<artifactId>org.eclipse.emf.codegen</artifactId>
-						<version>${org.eclipse.emf.codegen-version}</version>
-					</dependency>
-					<dependency>
-						<groupId>org.eclipse.emf</groupId>
-						<artifactId>org.eclipse.emf.codegen.ecore</artifactId>
-						<version>${org.eclipse.emf.codegen.ecore-version}</version>
-					</dependency>
-					<dependency>
-						<groupId>org.eclipse.emf</groupId>
-						<artifactId>org.eclipse.emf.codegen.ecore.xtext</artifactId>
-						<version>${org.eclipse.emf.codegen.ecore.xtext-version}</version>
-					</dependency>
-					<dependency>
-						<groupId>org.eclipse.emf</groupId>
-						<artifactId>org.eclipse.emf.ecore.xcore</artifactId>
-						<version>${xcoreVersion}</version>
-					</dependency>
-					<dependency>
-						<groupId>org.eclipse.emf</groupId>
-						<artifactId>org.eclipse.emf.ecore.xcore.lib</artifactId>
-						<version>${xcoreLibVersion}</version>
-					</dependency>
-					<dependency>
-						<groupId>org.eclipse.elk</groupId>
-						<artifactId>org.eclipse.elk.core.meta</artifactId>
-						<version>${elkVersion}</version>
-					</dependency>
-					<dependency>
-						<groupId>org.eclipse.xtext</groupId>
-						<artifactId>org.eclipse.xtext.xbase</artifactId>
-						<version>${xtextVersion}</version>
-					</dependency>
-				</dependencies>
-			</plugin>
-			<plugin>
-				<groupId>org.eclipse.xtend</groupId>
-				<artifactId>xtend-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
-	
-	<dependencies>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>de.scheidtbachmann.statemachine</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.code.gson</groupId>
-			<artifactId>gson</artifactId>
-			<version>2.8.5</version>
-		</dependency>
-		<dependency>
-			<groupId>org.freehep</groupId>
-			<artifactId>freehep-graphicsio-svg</artifactId>
-			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.elk</groupId>
-			<artifactId>org.eclipse.elk.alg.force</artifactId>
-			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.elk</groupId>
-			<artifactId>org.eclipse.elk.alg.graphviz.layouter</artifactId>
-			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.elk</groupId>
-			<artifactId>org.eclipse.elk.alg.layered</artifactId>
-			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.elk</groupId>
-			<artifactId>org.eclipse.elk.alg.mrtree</artifactId>
-			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.elk</groupId>
-			<artifactId>org.eclipse.elk.alg.radial</artifactId>
-			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.platform</groupId>
-			<artifactId>org.eclipse.equinox.registry</artifactId>
-			<!-- the version is defined in the parent artifact in 'dependencyManagement' -->
-		</dependency>
-		<dependency>
-			<!-- Use the following deps as a compile-only non-runtime dependencies, 
-			      dont't propagate them to dependent artifacts or put them in any fat jars! -->
-			<groupId>org.eclipse.platform</groupId>
-			<artifactId>org.eclipse.core.runtime</artifactId>
-			<version>3.13.0</version>
-			<scope>provided</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>org.eclipse.platform</groupId>
-					<artifactId>org.eclipse.osgi</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.platform</groupId>
-			<artifactId>org.eclipse.jface</artifactId>
-			<version>3.13.0</version>
-			<scope>provided</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>org.eclipse.platform</groupId>
-					<artifactId>org.eclipse.swt</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" 
+    xmlns="http://maven.apache.org/POM/4.0.0" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>de.scheidtbachmann.statemachine</groupId>
+        <artifactId>de.scheidtbachmann.statemachine.parent</artifactId>
+        <version>0.2.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>de.scheidtbachmann.statemachine.diagrams</artifactId>
+    <packaging>jar</packaging>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.12.4</version>
+                <configuration>
+                    <trimStackTrace>false</trimStackTrace>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.eclipse.xtend</groupId>
+                <artifactId>xtend-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>de.scheidtbachmann.statemachine.codegen</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.cau.cs.kieler</groupId>
+            <artifactId>de.cau.cs.kieler.sccharts.ui</artifactId>
+            <!-- the version is defined in the parent artifact in 'dependencyManagement' -->
+        </dependency>
+        <dependency>
+            <groupId>de.cau.cs.kieler</groupId>
+            <artifactId>de.cau.cs.kieler.kicool.ui</artifactId>
+            <!-- the version is defined in the parent artifact in 'dependencyManagement' -->
+        </dependency>
+        <dependency>
+            <groupId>de.cau.cs.kieler</groupId>
+            <artifactId>de.cau.cs.kieler.kicool.ide</artifactId>
+            <!-- the version is defined in the parent artifact in 'dependencyManagement' -->
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.8.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.freehep</groupId>
+            <artifactId>freehep-graphicsio-svg</artifactId>
+            <!-- the version is defined in the parent artifact in 'dependencyManagement' -->
+        </dependency>
+        <dependency>
+            <groupId>de.cau.cs.kieler.klighd</groupId>
+            <artifactId>de.cau.cs.kieler.klighd.standalone</artifactId>
+            <!-- the version is defined in the parent artifact in 'dependencyManagement' -->
+        </dependency>
+        <dependency>
+            <groupId>de.cau.cs.kieler.klighd</groupId>
+            <artifactId>de.cau.cs.kieler.klighd.ide</artifactId>
+            <!-- the version is defined in the parent artifact in 'dependencyManagement' -->
+        </dependency>
+        <dependency>
+            <groupId>de.cau.cs.kieler.klighd</groupId>
+            <artifactId>de.cau.cs.kieler.kgraph.text</artifactId>
+            <!-- the version is defined in the parent artifact in 'dependencyManagement' -->
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.elk</groupId>
+            <artifactId>org.eclipse.elk.alg.force</artifactId>
+            <!-- the version is defined in the parent artifact in 'dependencyManagement' -->
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.elk</groupId>
+            <artifactId>org.eclipse.elk.alg.graphviz.layouter</artifactId>
+            <!-- the version is defined in the parent artifact in 'dependencyManagement' -->
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.elk</groupId>
+            <artifactId>org.eclipse.elk.alg.layered</artifactId>
+            <!-- the version is defined in the parent artifact in 'dependencyManagement' -->
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.elk</groupId>
+            <artifactId>org.eclipse.elk.alg.mrtree</artifactId>
+            <!-- the version is defined in the parent artifact in 'dependencyManagement' -->
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.elk</groupId>
+            <artifactId>org.eclipse.elk.alg.radial</artifactId>
+            <!-- the version is defined in the parent artifact in 'dependencyManagement' -->
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.elk</groupId>
+            <artifactId>org.eclipse.elk.alg.rectpacking</artifactId>
+            <!-- the version is defined in the parent artifact in 'dependencyManagement' -->
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.platform</groupId>
+            <artifactId>org.eclipse.equinox.registry</artifactId>
+            <!-- the version is defined in the parent artifact in 'dependencyManagement' -->
+        </dependency>
+        <dependency>
+            <!-- Use the following deps as a compile-only non-runtime dependencies, 
+                 dont't propagate them to dependent artifacts or put them in any fat jars! -->
+            <groupId>org.eclipse.platform</groupId>
+            <artifactId>org.eclipse.core.runtime</artifactId>
+            <!-- the version is defined in the parent artifact in 'dependencyManagement' -->
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse.platform</groupId>
+                    <artifactId>org.eclipse.osgi</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.platform</groupId>
+            <artifactId>org.eclipse.jface</artifactId>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse.platform</groupId>
+                    <artifactId>org.eclipse.swt</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
         <dependency>
             <groupId>org.eclipse.xtext</groupId>
             <artifactId>org.eclipse.xtext.testing</artifactId>
             <version>${xtextVersion}</version>
             <scope>test</scope>
         </dependency>
-	</dependencies>
-	
-	<profiles>
-		<profile>
-			<id>swt-osx</id>
-			<activation>
-				<os>
-					<family>mac</family>
-				</os>
-			</activation>
-			<dependencies>
-				<dependency>
-					<groupId>org.eclipse.swt</groupId>
-					<artifactId>org.eclipse.swt.cocoa.macosx.x86_64</artifactId>
-					<version>4.3</version>
-					<scope>provided</scope><!-- do not propagate this dependency to the cli artifact, SWT artifacts are included "manually". -->
-				</dependency>
-			</dependencies>
-		</profile>
-		<profile>
-			<id>swt-linux</id>
-			<activation>
-				<os>
-					<family>linux</family>
-				</os>
-			</activation>
-			<dependencies>
-				<dependency>
-					<groupId>org.eclipse.swt</groupId>
-					<artifactId>org.eclipse.swt.gtk.linux.x86_64</artifactId>
-					<version>4.3</version>
-					<scope>provided</scope><!-- do not propagate this dependency to the cli artifact, SWT artifacts are included "manually". -->
-				</dependency>
-			</dependencies>
-		</profile>
-		<profile>
-			<id>swt-win</id>
-			<activation>
-				<os>
-					<family>windows</family>
-				</os>
-			</activation>
-			<dependencies>
-				<dependency>
-					<groupId>org.eclipse.swt</groupId>
-					<artifactId>org.eclipse.swt.win32.win32.x86_64</artifactId>
-					<version>4.3</version>
-					<scope>provided</scope><!-- do not propagate this dependency to the cli artifact, SWT artifacts are included "manually". -->
-				</dependency>
-			</dependencies>
-		</profile>
-	</profiles>
-	
+    </dependencies>
+
+    <profiles>
+        <profile>
+            <id>swt-osx</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                </os>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>${swtGroupId}</groupId>
+                    <artifactId>org.eclipse.swt.cocoa.macosx.x86_64</artifactId>
+                    <version>${swtVersion}</version>
+                    <!-- do not propagate this dependency to the cli artifact, SWT artifacts are included "manually". -->
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>swt-linux</id>
+            <activation>
+                <os>
+                    <family>unix</family>
+                    <!-- unfortunatly 'family==unix' matches for linux & mac, and there is no family identifier for linux; hence: -->
+                    <name>!Mac OS X</name>
+                </os>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>${swtGroupId}</groupId>
+                    <artifactId>org.eclipse.swt.gtk.linux.x86_64</artifactId>
+                    <version>${swtVersion}</version>
+                    <!-- do not propagate this dependency to the cli artifact, SWT artifacts are included "manually". -->
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>swt-win</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                </os>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>${swtGroupId}</groupId>
+                    <artifactId>org.eclipse.swt.win32.win32.x86_64</artifactId>
+                    <version>${swtVersion}</version>
+                    <!-- do not propagate this dependency to the cli artifact, SWT artifacts are included "manually". -->
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+
 </project>

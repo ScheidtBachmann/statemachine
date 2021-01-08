@@ -2,19 +2,22 @@ package de.scheidtbachmann.statemachine.diagrams
 
 import de.cau.cs.kieler.klighd.LightDiagramServices
 import de.cau.cs.kieler.sccharts.text.SCTXResource
-import de.scheidtbachmann.statemachine.StateMachineStandaloneSetup
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
 import org.eclipse.emf.common.util.URI
-// import org.junit.Test
+import org.junit.Test
 
 import static org.junit.Assert.*
 
+import static extension de.scheidtbachmann.statemachine.diagrams.DiagramTests.*
+import de.cau.cs.kieler.sccharts.text.SCTXStandaloneSetup
+
 class SCChartsDiagramGenerationTest {
 	
+	public static val init = DiagramTests.init
 	
-	// @Test
+	@Test
 	def generationTest01() {
 	    val sm = '''
         scchart ABRO {
@@ -47,7 +50,7 @@ class SCChartsDiagramGenerationTest {
             abort to ABO if R
         }
 	    '''
-	    val smInjector = new StateMachineStandaloneSetup().createInjectorAndDoEMFRegistration()
+	    val smInjector = new SCTXStandaloneSetup().createInjectorAndDoEMFRegistration()
 	    val res = smInjector.getInstance(SCTXResource)
 	    res.URI = URI.createURI("test://" + System.currentTimeMillis + ".sctx")
 	    res.load(new ByteArrayInputStream(sm.getBytes(StandardCharsets.UTF_8)), emptyMap)
@@ -57,7 +60,7 @@ class SCChartsDiagramGenerationTest {
 		val result = LightDiagramServices.renderOffScreen(model, 'svg', stream)
 		
 		assertNotNull('No diagram generated.', result)
-		assertTrue('Diagram generation failed: ' + result.message, result.isOK)
+		assertTrue('Diagram generation failed: ' + result.message + result.failureTrace, result.isOK)
 		
 		// TODO: wechselberg - Disabled for the moment. Different platforms use slightly 
 		// different fonts, leading to single pixel differences dependeing on platform.

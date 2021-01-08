@@ -1,8 +1,0 @@
-system de.cau.cs.kieler.sccharts.statebased.lean.java.template.selective
-	label "State-based Compilation (Java) lean-mode (Template, Selective)"
-  config {
-    "de.cau.cs.kieler.kicool.kitt.tracingActive": true
-  }
-  
-de.cau.cs.kieler.sccharts.processors.modelselect
-system de.cau.cs.kieler.sccharts.statebased.lean.java.template

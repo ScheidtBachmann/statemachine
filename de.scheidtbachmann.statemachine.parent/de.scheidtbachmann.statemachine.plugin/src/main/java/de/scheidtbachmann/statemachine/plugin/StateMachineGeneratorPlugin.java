@@ -24,7 +24,6 @@ import org.eclipse.xtext.validation.IResourceValidator;
 import org.eclipse.xtext.validation.Issue;
 
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Iterators;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
@@ -34,9 +33,8 @@ import de.cau.cs.kieler.kicool.compilation.CompilationContext;
 import de.cau.cs.kieler.kicool.compilation.Compile;
 import de.cau.cs.kieler.kicool.registration.KiCoolRegistration;
 import de.cau.cs.kieler.sccharts.processors.statebased.codegen.StatebasedCCodeGenerator;
-import de.cau.cs.kieler.sccharts.processors.transformators.ModelSelect;
-import de.scheidtbachmann.statemachine.StateMachineStandaloneSetup;
-
+import de.cau.cs.kieler.sccharts.text.SCTXStandaloneSetup;
+import de.scheidtbachmann.statemachine.transformators.ModelSelect;
 /**
  * Maven plugin to run the StateMachine code generator.
  * 
@@ -47,8 +45,7 @@ public class StateMachineGeneratorPlugin extends AbstractMojo {
 
 	public StateMachineGeneratorPlugin() {
 		super();
-		new StateMachineStandaloneSetup().createInjectorAndDoEMFRegistration().injectMembers(this);
-		;
+		new SCTXStandaloneSetup().createInjectorAndDoEMFRegistration().injectMembers(this);
 	}
 
 	/**
@@ -56,6 +53,7 @@ public class StateMachineGeneratorPlugin extends AbstractMojo {
 	 */
 	@Parameter(property = "stateMachines", required = true)
 	private List<StateMachine> stateMachines;
+
 
 	@Inject
 	private Provider<IResourceValidator> validatorProvider;
@@ -85,10 +83,15 @@ public class StateMachineGeneratorPlugin extends AbstractMojo {
 				throw new MojoFailureException("Output paths is not writable.");
 			}
 			// Load input data
+
 			Resource resource = loadResource(machine.getFileName());
+			if (resource != null) {
 			doValidate(resource);
-			doGenerate(resource, machine, outputPath);
+				doGenerate(resource, machine, outputPath);
+			} else {
+				throw new MojoExecutionException("Loading resource yielded null.");
 		}
+	}
 	}
 
 	/**
@@ -209,7 +212,7 @@ public class StateMachineGeneratorPlugin extends AbstractMojo {
 	 * @throws MojoFailureException
 	 */
 	private String loadCustomStrategy(final String strategy) throws MojoFailureException {
-		if (Iterators.contains(KiCoolRegistration.getAvailableSystemsIDs(), strategy)) {
+		if (KiCoolRegistration.getSystemModels().stream().map(system -> system.getId()).anyMatch(id -> id.equals(strategy))) {
 			return strategy;
 		} else if (!strategy.endsWith(".kico")) {
 			throw new MojoFailureException("The extension of the provided strategy file is invalid.");
@@ -236,7 +239,7 @@ public class StateMachineGeneratorPlugin extends AbstractMojo {
 
 			if (root instanceof de.cau.cs.kieler.kicool.System) {
 				de.cau.cs.kieler.kicool.System sys = (de.cau.cs.kieler.kicool.System) root;
-				if (Iterators.contains(KiCoolRegistration.getAvailableSystemsIDs(), strategy)) {
+				if (KiCoolRegistration.getSystemModels().stream().map(system -> system.getId()).anyMatch(id -> id.equals(strategy))) {
 					throw new MojoFailureException("Did load strategy without errors, but the strategy's id "
 							+ sys.getId() + "is already used.");
 				} else if (issuesText.length() == 0) {
