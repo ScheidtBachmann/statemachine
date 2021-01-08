@@ -597,8 +597,8 @@ class Generator implements Runnable {
 			], parentLoader)
 
 			// Load the actual renderer and prime it with the current data
-			drawingLoader.loadClass('de.scheidtbachmann.statemachine.diagrams.DiagramRenderer')?.
-				newInstance() as Function<Map<String, Object>, IStatus> => [
+			drawingLoader.loadClass('de.scheidtbachmann.statemachine.diagrams.DiagramRenderer')
+				?.getDeclaredConstructor().newInstance() as Function<Map<String, Object>, IStatus> => [
 				val args = newHashMap(#[ // need a writable map here!
 					'param-input' -> resource.contents,
 					'param-format' -> format,
