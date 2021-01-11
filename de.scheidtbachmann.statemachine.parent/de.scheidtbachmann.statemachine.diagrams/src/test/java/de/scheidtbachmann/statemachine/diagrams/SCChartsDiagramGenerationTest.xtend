@@ -12,7 +12,9 @@ import static org.junit.Assert.*
 
 import static extension de.scheidtbachmann.statemachine.diagrams.DiagramTests.*
 import de.cau.cs.kieler.sccharts.text.SCTXStandaloneSetup
+import org.junit.Ignore
 
+@Ignore
 class SCChartsDiagramGenerationTest {
 	
 	public static val init = DiagramTests.init

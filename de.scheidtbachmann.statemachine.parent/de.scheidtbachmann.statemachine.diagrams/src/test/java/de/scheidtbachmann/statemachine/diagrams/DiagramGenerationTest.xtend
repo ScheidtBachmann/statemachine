@@ -10,7 +10,9 @@ import static org.junit.Assert.*
 import static extension de.scheidtbachmann.statemachine.diagrams.DiagramTests.*
 import javax.xml.parsers.DocumentBuilderFactory
 import java.io.ByteArrayInputStream
+import org.junit.Ignore
 
+@Ignore
 class DiagramGenerationTest {
 	
 	public static val init = DiagramTests.init
