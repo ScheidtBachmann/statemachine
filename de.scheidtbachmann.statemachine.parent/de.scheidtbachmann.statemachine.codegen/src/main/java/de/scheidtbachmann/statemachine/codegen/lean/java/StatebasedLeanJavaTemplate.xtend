@@ -15,6 +15,7 @@ package de.scheidtbachmann.statemachine.codegen.lean.java
 import com.google.common.collect.HashMultimap
 import com.google.common.collect.Multimap
 import com.google.inject.Inject
+import de.cau.cs.kieler.annotations.Annotatable
 import de.cau.cs.kieler.annotations.CommentAnnotation
 import de.cau.cs.kieler.annotations.StringAnnotation
 import de.cau.cs.kieler.annotations.extensions.AnnotationsExtensions
@@ -35,6 +36,7 @@ import de.cau.cs.kieler.sccharts.State
 import de.cau.cs.kieler.sccharts.Transition
 import de.cau.cs.kieler.sccharts.extensions.SCChartsActionExtensions
 import de.cau.cs.kieler.sccharts.extensions.SCChartsStateExtensions
+import de.cau.cs.kieler.sccharts.processors.statebased.DebugAnnotations
 import de.cau.cs.kieler.sccharts.processors.statebased.lean.codegen.AbstractStatebasedLeanTemplate
 import java.util.List
 import org.eclipse.xtend.lib.annotations.Accessors
@@ -56,7 +58,9 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
    
     @Accessors var boolean needsContextInterface = false
     protected Iterable<VariableDeclaration> inputEventDeclarations
-    @Accessors var String superClass = null  
+    @Accessors var String superClass = null
+
+    @Accessors var boolean enableLogging = false
 
     static val INTERFACE_PARAM_NAME = "arg"
 
@@ -72,6 +76,10 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
         }
         modifications.put("imports", "java.util.stream.Stream")
         modifications.put("imports", "java.util.stream.Collectors")
+        if (enableLogging) {
+            modifications.put("imports", "org.slf4j.Logger")
+            modifications.put("imports", "org.slf4j.LoggerFactory")
+        }
 
 
         scopes = <Scope>newLinkedList
@@ -88,8 +96,12 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
 
     protected def void createCode() {
         source.append('''
-          @SuppressWarnings("unused")
+          @SuppressWarnings("all")
           public class « rootState.uniqueName »« IF superClass !== null » extends « superClass »« ENDIF » {
+          	« IF enableLogging »
+
+          	  private static final Logger LOG = LoggerFactory.getLogger(«rootState.uniqueName».class);
+          	« ENDIF »
 
             « IF rootState.declarations.filter(VariableDeclaration).map[it.valuedObjects].flatten.size > 0 »
             public Iface iface;
@@ -97,7 +109,21 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             private TickData rootContext;
             « IF needsContextInterface »
               private final «rootState.uniqueName»Context externalContext; // Auto-Created context interface
-            « ENDIF »      
+            « ENDIF »
+
+            « IF rootState.hasAnnotation("ORIGINAL_SCCHART") »
+              public static final String ORIGINAL_SCCHART = "« rootState.getAnnotation("ORIGINAL_SCCHART").asStringAnnotation.values.head »";
+            « ENDIF »
+              « IF DebugAnnotations.USE_ANNOTATIONS »
+
+              /**
+               * Annotation for debugging
+               */
+              private static @interface SCChartsDebug {
+                 public String originalName() default "";
+                 public int originalStateHash() default 0;
+              }
+              « ENDIF »
             « IF inputEventDeclarations.size > 0 »
 
               public enum InputEvent {
@@ -149,8 +175,8 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
                */
               public enum « r.uniqueName »States {
                 « FOR s : r.states.indexed SEPARATOR ', ' 
-                  »« s.value.uniqueEnumName »("« s.value.getStringAnnotationValue("SourceState") »")«
-                   IF s.value.isHierarchical », « s.value.uniqueEnumName»RUNNING("« s.value.getStringAnnotationValue("SourceState") »")« ENDIF 
+                  »« s.value.uniqueEnumName »("« (s.value.getAnnotations("SourceState").last as StringAnnotation).values.head »")«
+                   IF s.value.isHierarchical », « s.value.uniqueEnumName»RUNNING("« (s.value.getAnnotations("SourceState").last as StringAnnotation).values.head »")« ENDIF 
                   »« ENDFOR »;
 
                 private String origin;
@@ -189,7 +215,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
                       ).flatMap(i -> i);
                   « ENDFOR »
                   default:
-                    return Stream.of(activeState.getOrigin());
+                    return Stream.of(activeState.getOrigin().replaceAll("^State (.+) \\(-?[0-9]+\\)$", "$1"));
                   }
                 }
               }
@@ -206,11 +232,17 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             « ENDFOR »
 
             public void init() {
+              « IF enableLogging »
+                LOG.trace("Initializing StateMachine");
+              « ENDIF »
               reset();
               tick();
             }
 
             public void reset() {
+              « IF enableLogging »
+                LOG.trace("Resetting StateMachine");
+              « ENDIF »
               « FOR r : rootState.regions.filter(ControlflowRegion) »
                 rootContext.« r.uniqueContextName ».activeState = « r.uniqueName »States.« r.states.filter[ initial ].head.uniqueEnumName »;
                 rootContext.« r.uniqueContextName ».threadStatus = ThreadStatus.READY;
@@ -220,6 +252,9 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             }
 
             public void tick() {
+              « IF enableLogging »
+                LOG.trace("Performing tick on StateMachine");
+              « ENDIF »
               if (rootContext.threadStatus == ThreadStatus.TERMINATED) return;
 
               « rootState.uniqueName »_root(rootContext);
@@ -227,6 +262,9 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             « IF inputEventDeclarations.size > 0 »
 
             public void apply(InputEvent... events) {
+              « IF enableLogging »
+                LOG.trace("Performing action on input events {}", Arrays.toString(events));
+              « ENDIF »
               « FOR decl : inputEventDeclarations »
               « FOR vo: decl.valuedObjects »
               iface.«vo.name» = Arrays.stream(events).anyMatch(it -> it == InputEvent.«vo.name»);
@@ -259,8 +297,16 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
     }
 
     protected def CharSequence createCodeState(State state) {
+        val originalName = state.getAnnotation("OriginalState")?.asStringAnnotation?.values?.head
+        val originalStateHashCode = state.getAnnotation("OriginalNameHash")?.asIntAnnotation?.value
+
         return '''
+          « state.generateJavaDocFromCommentAnnotations »
+          « IF originalName !== null »@SCChartsDebug(originalName = "« originalName »", originalStateHash = « originalStateHashCode »)«ENDIF»
           private void « state.uniqueName »« IF (state == rootState) »_root« ENDIF »(« state.uniqueContextMemberName » context) {
+            « IF enableLogging »
+              LOG.trace("Activating state « state.getStringAnnotationValue("SourceState") »");
+            « ENDIF »
           « IF state.isHierarchical »
           « IF state !== rootState »
             « FOR r : state.regions.filter(ControlflowRegion) »
@@ -274,7 +320,10 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             context.activeState = « state.parentRegion.uniqueName »States.« state.uniqueEnumName »RUNNING;
           }
 
+          « state.generateJavaDocFromCommentAnnotations »
+          « IF originalName !== null »@SCChartsDebug(originalName = "« originalName »", originalStateHash = « originalStateHashCode »)«ENDIF»
           private void « state.uniqueName »_running(« state.uniqueContextMemberName » context) {
+          	« IF enableLogging »LOG.trace("Activating state « state.getStringAnnotationValue("SourceState") »");« ENDIF »
           « ENDIF »
             « createCodeSuperstate(state) »
           « ENDIF »
@@ -309,7 +358,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
                  state.outgoingTransitions.head.delay == DelayType.IMMEDIATE && 
                  state.outgoingTransitions.head.trigger === null &&
                  state.outgoingTransitions.head.preemption != PreemptionType.TERMINATION »
-              « addTransitionEffectCode(state.outgoingTransitions.head) »
+              « addTransitionEffectCode(state.outgoingTransitions.head) » « addTransitionComment(state.outgoingTransitions.head) »
             «ELSE»
               « FOR t : state.outgoingTransitions.indexed »
                 « addTransitionConditionCode(t.key, state.outgoingTransitions.size, t.value, hasDefaultTransition) »
@@ -370,9 +419,9 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
 
         return '''
           « IF index == 0 »
-            if (« condition ») {
+            if (« condition ») { « addTransitionComment(transition) »
           « ELSE »
-            } else « IF !(defaultTransition) »if (« condition ») « ENDIF »{
+            } else « IF !(defaultTransition) »if (« condition ») « ENDIF »{ « addTransitionComment(transition) »
           « ENDIF » 
             « addTransitionEffectCode(transition) »
           « IF index == count-1 && hasDefaultTransition »
@@ -446,7 +495,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             }
 
         return '''
-            «voType» «vo.name»«voCardinals»;«IF vo.input » // Input«ENDIF»«IF vo.output » // Output«ENDIF»
+            «voType» «vo.name»«IF vo.isArray»[] = new «voType»«ENDIF»«voCardinals»;«IF vo.input » // Input«ENDIF»«IF vo.output » // Output«ENDIF»
         '''
     }
 
@@ -563,5 +612,30 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
 
     protected def findModifications() {
         return modifications
+    }
+    
+    protected def generateJavaDocFromCommentAnnotations(Annotatable annotatable) {
+        val comments = annotatable.annotations.filter(CommentAnnotation);
+        return '''
+            « IF comments !== null && !comments.empty »
+                /**
+                 « FOR commentAnnotation : comments»
+                    « FOR comment : commentAnnotation.values »
+                        « FOR line : comment.split("\n") »
+                            * « line »
+                        « ENDFOR » 
+                    « ENDFOR »
+                 « ENDFOR »
+                 */
+            « ENDIF »
+        '''
+    }
+    
+    protected def addTransitionComment(Transition transition) {
+        val commentString = transition.annotations?.filter(CommentAnnotation).last?.values?.last
+        if (commentString !== null && !commentString.equals("")) {
+            return ''' // « commentString »'''
+        }
+         
     }
 }
