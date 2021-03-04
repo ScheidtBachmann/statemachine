@@ -114,7 +114,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             « IF rootState.hasAnnotation("ORIGINAL_SCCHART") »
               public static final String ORIGINAL_SCCHART = "« rootState.getAnnotation("ORIGINAL_SCCHART").asStringAnnotation.values.head »";
             « ENDIF »
-              « IF DebugAnnotations.USE_ANNOTATIONS »
+            « IF DebugAnnotations.USE_ANNOTATIONS »
 
               /**
                * Annotation for debugging
@@ -123,7 +123,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
                  public String originalName() default "";
                  public int originalStateHash() default 0;
               }
-              « ENDIF »
+            « ENDIF »
             « IF inputEventDeclarations.size > 0 »
 
               public enum InputEvent {
@@ -421,7 +421,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
           « IF index == 0 »
             if (« condition ») { « addTransitionComment(transition) »
           « ELSE »
-            } else « IF !(defaultTransition) »if (« condition ») « ENDIF »{ « addTransitionComment(transition) »
+            } else « IF !(defaultTransition) »if (« condition ») « ENDIF »{« addTransitionComment(transition) »
           « ENDIF » 
             « addTransitionEffectCode(transition) »
           « IF index == count-1 && hasDefaultTransition »
