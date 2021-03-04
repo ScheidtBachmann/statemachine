@@ -61,6 +61,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
     @Accessors var String superClass = null
 
     @Accessors var boolean enableLogging = false
+    @Accessors var boolean enableExecutor = false
 
     static val INTERFACE_PARAM_NAME = "arg"
 
@@ -80,6 +81,13 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             modifications.put("imports", "org.slf4j.Logger")
             modifications.put("imports", "org.slf4j.LoggerFactory")
         }
+        if (enableExecutor) {
+            modifications.put("imports", "java.util.concurrent.Executors")
+            modifications.put("imports", "java.util.concurrent.ScheduledExecutorService")
+            modifications.put("imports", "java.util.concurrent.ScheduledFuture")
+            modifications.put("imports", "java.util.concurrent.TimeUnit")
+        }
+
 
 
         scopes = <Scope>newLinkedList
@@ -98,10 +106,14 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
         source.append('''
           @SuppressWarnings("all")
           public class « rootState.uniqueName »« IF superClass !== null » extends « superClass »« ENDIF » {
-          	« IF enableLogging »
+            « IF enableLogging »
 
-          	  private static final Logger LOG = LoggerFactory.getLogger(«rootState.uniqueName».class);
-          	« ENDIF »
+              private static final Logger LOG = LoggerFactory.getLogger(«rootState.uniqueName».class);
+            « ENDIF »
+            « IF enableExecutor »
+
+              private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+            « ENDIF »
 
             « IF rootState.declarations.filter(VariableDeclaration).map[it.valuedObjects].flatten.size > 0 »
             public Iface iface;
@@ -288,6 +300,16 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
               « ENDIF »
               this.rootContext = new TickData();
             }
+            « IF enableExecutor »
+
+            public void execute(final Runnable task) {
+              executor.execute(task);
+            }
+
+            public ScheduledFuture<?> schedule(final Runnable command, final long delay, final TimeUnit unit) {
+              return executor.schedule(command, delay, unit);
+            }
+            « ENDIF »
 
             « FOR globalObject : modifications.get(EnhancedStatebasedJavaCodeSerializeHRExtensions.GLOBAL_OBJECTS) »
               « globalObject »

@@ -33,6 +33,7 @@ class StatebasedLeanJavaCodeGenerator extends ExogenousProcessor<SCCharts, CodeC
     protected static val INCLUDE = PragmaRegistry.register("include", StringPragma, "Additional things that should be imported")
     protected static val SUPERCLASS = PragmaRegistry.register("superclass", StringPragma, "Superclass to use for the generated class file.")
     protected static val LOGGING = PragmaRegistry.register("logging", StringPragma, "Flag to enable integrated logging in the generated code.")
+    protected static val EXECUTOR = PragmaRegistry.register("executor", StringPragma, "Flag to enable embedded executor generation in the generated code.")
 
     public static val JAVA_EXTENSION = ".java"
     public static val IMPORTS = "imports"
@@ -56,6 +57,9 @@ class StatebasedLeanJavaCodeGenerator extends ExogenousProcessor<SCCharts, CodeC
         }
         if (model.getPragma(LOGGING) !== null) {
 	      	template.enableLogging = true;
+        }        
+        if (model.getPragma(EXECUTOR) !== null) {
+	      	template.enableExecutor = true;
         }        
 
         template.create(model.rootStates.head)
