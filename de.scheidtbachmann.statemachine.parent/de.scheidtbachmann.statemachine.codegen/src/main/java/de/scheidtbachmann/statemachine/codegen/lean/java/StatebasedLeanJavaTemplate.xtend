@@ -112,7 +112,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             « ENDIF »
             « IF enableExecutor »
 
-              private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+              protected final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
             « ENDIF »
 
             « IF rootState.declarations.filter(VariableDeclaration).map[it.valuedObjects].flatten.size > 0 »
@@ -308,6 +308,11 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
 
             public ScheduledFuture<?> schedule(final Runnable command, final long delay, final TimeUnit unit) {
               return executor.schedule(command, delay, unit);
+            }
+
+            public ScheduledFuture<?> scheduleAtFixedRate(final Runnable command, final long initialDelay, final long period,
+              final TimeUnit unit) {
+              return executor.scheduleAtFixedRate(command, initialDelay, period, unit);
             }
             « ENDIF »
 
