@@ -1,0 +1,10 @@
+#package "de.scheidtbachmann.statemachine.foo"
+
+#executor yes
+
+scchart ExecutorTest {
+	initial state S1
+	go to S2
+	
+	final state S2
+}

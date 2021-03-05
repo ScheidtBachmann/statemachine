@@ -102,6 +102,11 @@
                                     <outputFolder>${project.build.directory}/generated-sources/statemachines/</outputFolder>
                                     <strategy>de.scheidtbachmann.statemachine.codegen.statebased.lean.java.template</strategy>
                                 </stateMachine>
+                                <stateMachine>
+                                    <fileName>${project.basedir}/src/main/resources/06-Executor.sctx</fileName>
+                                    <outputFolder>${project.build.directory}/generated-sources/statemachines/</outputFolder>
+                                    <strategy>de.scheidtbachmann.statemachine.codegen.statebased.lean.java.template</strategy>
+                                </stateMachine>                                
                             </stateMachines>
                         </configuration>
                     </execution>
