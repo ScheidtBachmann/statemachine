@@ -31,6 +31,7 @@ import de.cau.cs.kieler.kicool.compilation.CodeContainer;
 import de.cau.cs.kieler.kicool.compilation.CodeFile;
 import de.cau.cs.kieler.kicool.compilation.CompilationContext;
 import de.cau.cs.kieler.kicool.compilation.Compile;
+import de.cau.cs.kieler.kicool.environments.Environment;
 import de.cau.cs.kieler.kicool.registration.KiCoolRegistration;
 import de.cau.cs.kieler.sccharts.processors.statebased.codegen.StatebasedCCodeGenerator;
 import de.cau.cs.kieler.sccharts.text.SCTXStandaloneSetup;
@@ -86,7 +87,7 @@ public class StateMachineGeneratorPlugin extends AbstractMojo {
 
 			Resource resource = loadResource(machine.getFileName());
 			if (resource != null) {
-			doValidate(resource);
+			    doValidate(resource);
 				doGenerate(resource, machine, outputPath);
 			} else {
 				throw new MojoExecutionException("Loading resource yielded null.");
@@ -178,7 +179,16 @@ public class StateMachineGeneratorPlugin extends AbstractMojo {
 			if (machine.getSelectedModel() != null && !machine.getSelectedModel().isEmpty()) {
 	          ctx.getStartEnvironment().setProperty(ModelSelect.SELECTED_MODEL, machine.getSelectedModel());
 	        }
-			return ctx.compile().getModel();
+
+			ctx.setStopOnError(true);
+			Environment compiled = ctx.compile();
+			compiled.getErrors().forEach((obj, list) -> {
+				list.forEach(link -> {
+			        getLog().error(link.getMessage());
+				});
+			});
+
+			return compiled.getModel();
 
 		} catch (Throwable t) {
 			t.printStackTrace();
