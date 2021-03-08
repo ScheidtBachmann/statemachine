@@ -62,6 +62,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
 
     @Accessors var boolean enableLogging = false
     @Accessors var boolean enableExecutor = false
+    @Accessors var boolean enableStringContainer = false
 
     static val INTERFACE_PARAM_NAME = "arg"
 
@@ -87,8 +88,6 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             modifications.put("imports", "java.util.concurrent.ScheduledFuture")
             modifications.put("imports", "java.util.concurrent.TimeUnit")
         }
-
-
 
         scopes = <Scope>newLinkedList
         scopeNames = <Scope, String>newHashMap
@@ -286,10 +285,28 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
               tick();
             }
             « ENDIF»
-            
-            public String getCurrentState() {
-              return rootContext.getCurrentState().distinct().collect(Collectors.joining(","));
-            }
+
+            « IF enableStringContainer »
+              public CurrentStateContainer getCurrentState() {
+                return new CurrentStateContainer(rootContext);
+              }
+
+              static class CurrentStateContainer {
+                private final TickData rootContext;
+
+                private CurrentStateContainer(TickData context) {
+                  rootContext = context;
+                }
+
+                public String toString() {
+                  return rootContext.getCurrentState().distinct().collect(Collectors.joining(","));
+                }
+              }
+            « ELSE »
+              public String getCurrentState() {
+                return rootContext.getCurrentState().distinct().collect(Collectors.joining(","));
+              }
+            « ENDIF »
 
             public «rootState.uniqueName»(« IF needsContextInterface»«rootState.uniqueName»Context externalContext« ENDIF ») {
               « IF needsContextInterface»
@@ -350,7 +367,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
           « state.generateJavaDocFromCommentAnnotations »
           « IF originalName !== null »@SCChartsDebug(originalName = "« originalName »", originalStateHash = « originalStateHashCode »)«ENDIF»
           private void « state.uniqueName »_running(« state.uniqueContextMemberName » context) {
-          	« IF enableLogging »LOG.trace("Activating state « state.getStringAnnotationValue("SourceState") »");« ENDIF »
+            « IF enableLogging »LOG.trace("Activating state « state.getStringAnnotationValue("SourceState") »");« ENDIF »
           « ENDIF »
             « createCodeSuperstate(state) »
           « ENDIF »
