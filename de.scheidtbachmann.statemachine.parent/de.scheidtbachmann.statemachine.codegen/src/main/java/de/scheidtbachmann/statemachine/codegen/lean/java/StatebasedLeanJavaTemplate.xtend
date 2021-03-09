@@ -83,9 +83,11 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             modifications.put("imports", "org.slf4j.LoggerFactory")
         }
         if (enableExecutor) {
+            modifications.put("imports", "java.util.UUID")
             modifications.put("imports", "java.util.concurrent.Executors")
             modifications.put("imports", "java.util.concurrent.ScheduledExecutorService")
             modifications.put("imports", "java.util.concurrent.ScheduledFuture")
+            modifications.put("imports", "java.util.concurrent.ThreadFactory")
             modifications.put("imports", "java.util.concurrent.TimeUnit")
         }
 
@@ -111,7 +113,8 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             « ENDIF »
             « IF enableExecutor »
 
-              protected final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+              private final ThreadFactory executorThreadFactory = r -> new Thread(r, "StateMachine-«rootState.uniqueName»-" + UUID.randomUUID());
+              protected final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(executorThreadFactory);
             « ENDIF »
 
             « IF rootState.declarations.filter(VariableDeclaration).map[it.valuedObjects].flatten.size > 0 »
