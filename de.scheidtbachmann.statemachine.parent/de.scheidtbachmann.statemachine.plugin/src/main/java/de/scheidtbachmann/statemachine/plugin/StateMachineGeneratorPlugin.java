@@ -41,9 +41,12 @@ import de.scheidtbachmann.statemachine.transformators.ModelSelect;
  * 
  * @author wechselberg
  */
-@Mojo(name = "SMGen", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
+@Mojo(name = "SMGen", defaultPhase = LifecyclePhase.GENERATE_SOURCES, threadSafe = true)
 public class StateMachineGeneratorPlugin extends AbstractMojo {
 
+	// Common lock to allow thread safety in parallel maven execution
+	private static final Object LOCK = new Object();
+	
 	public StateMachineGeneratorPlugin() {
 		super();
 		new SCTXStandaloneSetup().createInjectorAndDoEMFRegistration().injectMembers(this);
@@ -55,7 +58,6 @@ public class StateMachineGeneratorPlugin extends AbstractMojo {
 	@Parameter(property = "stateMachines", required = true)
 	private List<StateMachine> stateMachines;
 
-
 	@Inject
 	private Provider<IResourceValidator> validatorProvider;
 
@@ -65,34 +67,34 @@ public class StateMachineGeneratorPlugin extends AbstractMojo {
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-
-		for (StateMachine machine : stateMachines) {
-			// Make sure the output folder exists and is writable
-			Path basePath = Paths.get("");
-			Path outputPath = basePath.toAbsolutePath().resolve(machine.getOutputFolder());
-			if (!Files.exists(outputPath)) {
-				try {
-					Files.createDirectories(outputPath);
-				} catch (IOException e) {
-					throw new MojoFailureException("Couldn't create output path.");
+		synchronized (LOCK) {	
+			for (StateMachine machine : stateMachines) {
+				// Make sure the output folder exists and is writable
+				Path outputPath = basePath.toAbsolutePath().resolve(machine.getOutputFolder());
+				if (!Files.exists(outputPath)) {
+					try {
+						Files.createDirectories(outputPath);
+					} catch (IOException e) {
+						throw new MojoFailureException("Couldn't create output path.");
+					}
+				}
+				if (!Files.isDirectory(outputPath)) {
+					throw new MojoFailureException("Output path exists, but is no directory.");
+				}
+				if (!Files.isWritable(outputPath)) {
+					throw new MojoFailureException("Output paths is not writable.");
+				}
+				// Load input data
+	
+				Resource resource = loadResource(machine.getFileName());
+				if (resource != null) {
+				    doValidate(resource);
+					doGenerate(resource, machine, outputPath);
+				} else {
+					throw new MojoExecutionException("Loading resource yielded null.");
 				}
 			}
-			if (!Files.isDirectory(outputPath)) {
-				throw new MojoFailureException("Output path exists, but is no directory.");
-			}
-			if (!Files.isWritable(outputPath)) {
-				throw new MojoFailureException("Output paths is not writable.");
-			}
-			// Load input data
-
-			Resource resource = loadResource(machine.getFileName());
-			if (resource != null) {
-			    doValidate(resource);
-				doGenerate(resource, machine, outputPath);
-			} else {
-				throw new MojoExecutionException("Loading resource yielded null.");
 		}
-	}
 	}
 
 	/**
