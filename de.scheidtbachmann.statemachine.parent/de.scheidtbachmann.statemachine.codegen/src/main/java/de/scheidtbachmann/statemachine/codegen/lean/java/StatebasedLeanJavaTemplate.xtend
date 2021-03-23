@@ -61,7 +61,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
     @Accessors var String superClass = null
 
     @Accessors var boolean enableLogging = false
-    @Accessors var boolean enableExecutor = false
+    @Accessors var String enableExecutor = "off"
     @Accessors var boolean enableStringContainer = false
 
     static val INTERFACE_PARAM_NAME = "arg"
@@ -82,7 +82,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             modifications.put("imports", "org.slf4j.Logger")
             modifications.put("imports", "org.slf4j.LoggerFactory")
         }
-        if (enableExecutor) {
+        if (!enableExecutor.equals("off")) {
             modifications.put("imports", "java.util.UUID")
             modifications.put("imports", "java.util.concurrent.Executors")
             modifications.put("imports", "java.util.concurrent.ScheduledExecutorService")
@@ -111,7 +111,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
 
               private static final Logger LOG = LoggerFactory.getLogger(«rootState.uniqueName».class);
             « ENDIF »
-            « IF enableExecutor »
+            « IF !enableExecutor.equals("off") »
 
               private final ThreadFactory executorThreadFactory = r -> new Thread(r, "StateMachine-«rootState.uniqueName»-" + UUID.randomUUID());
               protected final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(executorThreadFactory);
@@ -320,19 +320,49 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
               « ENDIF »
               this.rootContext = new TickData();
             }
-            « IF enableExecutor »
+            « IF !enableExecutor.equals("off") »
 
             public void execute(final Runnable task) {
-              executor.execute(task);
+              « IF enableExecutor.equals("catch") »
+                executor.execute(() -> {
+                  try {
+                    task.run();
+                  } catch (Throwable t) {
+                    t.printStackTrace();
+                  }
+                });
+              « ELSE »
+                executor.execute(task);
+              « ENDIF »
             }
 
             public ScheduledFuture<?> schedule(final Runnable command, final long delay, final TimeUnit unit) {
-              return executor.schedule(command, delay, unit);
+              « IF enableExecutor.equals("catch") »
+                return executor.schedule(() -> {
+                  try {
+                    command.run();
+                  } catch (Throwable t) {
+                    t.printStackTrace();
+                  }
+                }, delay, unit);
+              « ELSE »
+                return executor.schedule(command, delay, unit);
+              « ENDIF »
             }
 
             public ScheduledFuture<?> scheduleAtFixedRate(final Runnable command, final long initialDelay, final long period,
               final TimeUnit unit) {
-              return executor.scheduleAtFixedRate(command, initialDelay, period, unit);
+              « IF enableExecutor.equals("catch") »
+                return executor.scheduleAtFixedRate(() -> {
+                  try {
+                    command.run();
+                  } catch (Throwable t) {
+                    t.printStackTrace();
+                  }
+                }, initialDelay, period, unit);
+              « ELSE »
+                return executor.scheduleAtFixedRate(command, initialDelay, period, unit);
+              « ENDIF »
             }
             « ENDIF »
 

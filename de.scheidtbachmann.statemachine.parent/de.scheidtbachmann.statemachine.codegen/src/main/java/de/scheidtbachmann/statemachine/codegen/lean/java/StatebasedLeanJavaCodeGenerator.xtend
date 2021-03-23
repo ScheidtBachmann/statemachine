@@ -60,7 +60,7 @@ class StatebasedLeanJavaCodeGenerator extends ExogenousProcessor<SCCharts, CodeC
             template.enableLogging = true;
         }        
         if (model.getPragma(EXECUTOR) !== null) {
-            template.enableExecutor = true;
+            template.enableExecutor = model.getStringPragmas(EXECUTOR).head.values.head;
         }
         if (model.getPragma(STRING_CONTAINER) !== null) {
             template.enableStringContainer = true;
