@@ -599,7 +599,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
 
             // Go through all different usages and serialize a method head for each
             context.append('''
-              @SuppressWarnings("unused")
+              @SuppressWarnings({"unused","javadoc"})
               public interface « rootState.uniqueName»«StatebasedLeanJavaCodeGenerator.CONTEXT_SUFFIX » {
                 « FOR usage : referenceUsages.entries.sortBy[key.extern.head.code] »
                   « generateMethod(usage.key, usage.value) »
