@@ -4,7 +4,7 @@
     <parent>
         <groupId>de.scheidtbachmann.statemachine</groupId>
         <artifactId>de.scheidtbachmann.statemachine.parent</artifactId>
-        <version>0.2.0</version>
+        <version>0.2.1-SNAPSHOT</version>
     </parent>
     <artifactId>de.scheidtbachmann.statemachine.plugin</artifactId>
     <packaging>maven-plugin</packaging>
