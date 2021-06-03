@@ -41,9 +41,6 @@ import de.cau.cs.kieler.sccharts.processors.statebased.lean.codegen.AbstractStat
 import java.util.List
 import org.eclipse.xtend.lib.annotations.Accessors
 
-/**
- * @author wechselberg
- */
 class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
 
     @Inject extension AnnotationsExtensions
@@ -56,16 +53,41 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
     @Accessors val source = new StringBuilder
     @Accessors val context = new StringBuilder
    
-    @Accessors var boolean needsContextInterface = false
     protected Iterable<VariableDeclaration> inputEventDeclarations
+    @Accessors var boolean needsContextInterface = false
     @Accessors var String superClass = null
 
-    @Accessors var boolean enableLogging = false
-    @Accessors var String enableExecutor = "off"
-    @Accessors var boolean enableStringContainer = false
+    @Accessors var List<StatebasedLeanJavaExtendedFeatures> enabledFeatures = newLinkedList()
 
     static val INTERFACE_PARAM_NAME = "arg"
 
+    def boolean isLoggingEnabled() {
+        return enabledFeatures.contains(StatebasedLeanJavaExtendedFeatures.LOGGER)
+    }
+    
+    def boolean isExecutorEnabled() {
+        return enabledFeatures.contains(StatebasedLeanJavaExtendedFeatures.EXECUTOR) 
+            || enabledFeatures.contains(StatebasedLeanJavaExtendedFeatures.EXECUTOR_AUTO_CATCH)
+    }
+    
+    def boolean isExecutorCatching() {
+        return enabledFeatures.contains(StatebasedLeanJavaExtendedFeatures.EXECUTOR_AUTO_CATCH)
+    }
+    
+    def boolean isStringContainerEnabled() {
+        return enabledFeatures.contains(StatebasedLeanJavaExtendedFeatures.STRING_CONTAINER)
+    }
+    
+    def boolean isUtilitiesEnabled() {
+        return enabledFeatures.contains(StatebasedLeanJavaExtendedFeatures.UTILITIES)
+    }
+    
+    def void addImports(String... newImports) {
+        newImports.forEach[newImport |
+            modifications.put("imports", newImport)
+        ]
+    }
+    
     def void create(State rootState) {
         this.rootState = rootState
 
@@ -73,22 +95,29 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
         inputEventDeclarations = rootState.declarations.filter(VariableDeclaration).filter [
             annotations.exists['InputEvent'.equalsIgnoreCase(name)]
         ]
+        
+        addImports("java.util.stream.Stream", "java.util.stream.Collectors")
+        
         if (inputEventDeclarations.size > 0) {
-            modifications.put("imports", "java.util.Arrays")
+            addImports("java.util.Arrays")
         }
-        modifications.put("imports", "java.util.stream.Stream")
-        modifications.put("imports", "java.util.stream.Collectors")
-        if (enableLogging) {
-            modifications.put("imports", "org.slf4j.Logger")
-            modifications.put("imports", "org.slf4j.LoggerFactory")
+        
+        if (isLoggingEnabled) {
+            addImports("org.slf4j.Logger", "org.slf4j.LoggerFactory")
         }
-        if (!enableExecutor.equals("off")) {
-            modifications.put("imports", "java.util.UUID")
-            modifications.put("imports", "java.util.concurrent.Executors")
-            modifications.put("imports", "java.util.concurrent.ScheduledExecutorService")
-            modifications.put("imports", "java.util.concurrent.ScheduledFuture")
-            modifications.put("imports", "java.util.concurrent.ThreadFactory")
-            modifications.put("imports", "java.util.concurrent.TimeUnit")
+
+        if (isExecutorEnabled) {
+            addImports("java.util.UUID", 
+                "java.util.concurrent.Executors", 
+                "java.util.concurrent.ScheduledExecutorService",
+                "java.util.concurrent.ScheduledFuture",
+                "java.util.concurrent.ThreadFactory",
+                "java.util.concurrent.TimeUnit")
+        }
+        
+        if (isUtilitiesEnabled) {
+            addImports("de.scheidtbachmann.statemachine.utilities.StateMachineRootContext",
+                "de.scheidtbachmann.statemachine.utilities.StateMachineStateContainer")
         }
 
         scopes = <Scope>newLinkedList
@@ -107,11 +136,11 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
         source.append('''
           @SuppressWarnings("all")
           public class « rootState.uniqueName »« IF superClass !== null » extends « superClass »« ENDIF » {
-            « IF enableLogging »
+            « IF isLoggingEnabled »
 
               private static final Logger LOG = LoggerFactory.getLogger(«rootState.uniqueName».class);
             « ENDIF »
-            « IF !enableExecutor.equals("off") »
+            « IF isExecutorEnabled »
 
               private final ThreadFactory executorThreadFactory = r -> new Thread(r, "StateMachine-«rootState.uniqueName»-" + UUID.randomUUID());
               protected final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(executorThreadFactory);
@@ -167,7 +196,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             /**
              * Runtime data for the root level program
              */
-            public static class TickData {
+            public static class TickData« IF isUtilitiesEnabled » implements StateMachineRootContext« ENDIF » {
               ThreadStatus threadStatus;
 
               « FOR r : rootState.regions.filter(ControlflowRegion) »
@@ -246,7 +275,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             « ENDFOR »
 
             public void init() {
-              « IF enableLogging »
+              « IF isLoggingEnabled »
                 LOG.trace("Initializing StateMachine");
               « ENDIF »
               reset();
@@ -254,7 +283,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             }
 
             public void reset() {
-              « IF enableLogging »
+              « IF isLoggingEnabled »
                 LOG.trace("Resetting StateMachine");
               « ENDIF »
               « FOR r : rootState.regions.filter(ControlflowRegion) »
@@ -266,7 +295,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             }
 
             public void tick() {
-              « IF enableLogging »
+              « IF isLoggingEnabled »
                 LOG.trace("Performing tick on StateMachine");
               « ENDIF »
               if (rootContext.threadStatus == ThreadStatus.TERMINATED) return;
@@ -276,7 +305,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             « IF inputEventDeclarations.size > 0 »
 
             public void apply(InputEvent... events) {
-              « IF enableLogging »
+              « IF isLoggingEnabled »
                 LOG.trace("Performing action on input events {}", Arrays.toString(events));
               « ENDIF »
               « FOR decl : inputEventDeclarations »
@@ -289,7 +318,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             }
             « ENDIF»
 
-            « IF enableStringContainer »
+            « IF isStringContainerEnabled »
               public CurrentStateContainer getCurrentState() {
                 return new CurrentStateContainer(rootContext);
               }
@@ -320,10 +349,10 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
               « ENDIF »
               this.rootContext = new TickData();
             }
-            « IF !enableExecutor.equals("off") »
+            « IF isExecutorEnabled »
 
             public void execute(final Runnable task) {
-              « IF enableExecutor.equals("catch") »
+              « IF isExecutorCatching »
                 executor.execute(() -> {
                   try {
                     task.run();
@@ -337,7 +366,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             }
 
             public ScheduledFuture<?> schedule(final Runnable command, final long delay, final TimeUnit unit) {
-              « IF enableExecutor.equals("catch") »
+              « IF isExecutorCatching »
                 return executor.schedule(() -> {
                   try {
                     command.run();
@@ -352,7 +381,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
 
             public ScheduledFuture<?> scheduleAtFixedRate(final Runnable command, final long initialDelay, final long period,
               final TimeUnit unit) {
-              « IF enableExecutor.equals("catch") »
+              « IF isExecutorCatching »
                 return executor.scheduleAtFixedRate(() -> {
                   try {
                     command.run();
@@ -375,13 +404,14 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
 
     protected def CharSequence createCodeState(State state) {
         val originalName = state.getAnnotation("OriginalState")?.asStringAnnotation?.values?.head
-        val originalStateHashCode = state.getAnnotation("OriginalNameHash")?.asIntAnnotation?.value
+        val originalNameHashAnnotation = state.getAnnotation("OriginalNameHash")?.asIntAnnotation 
+        val originalStateHashCode = if (originalNameHashAnnotation === null) 0 else originalNameHashAnnotation.value
 
         return '''
           « state.generateJavaDocFromCommentAnnotations »
           « IF originalName !== null »@SCChartsDebug(originalName = "« originalName »", originalStateHash = « originalStateHashCode »)«ENDIF»
           private void « state.uniqueName »« IF (state == rootState) »_root« ENDIF »(« state.uniqueContextMemberName » context) {
-            « IF enableLogging »
+            « IF isLoggingEnabled »
               LOG.trace("Activating state « state.getStringAnnotationValue("SourceState") »");
             « ENDIF »
           « IF state.isHierarchical »
@@ -400,7 +430,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
           « state.generateJavaDocFromCommentAnnotations »
           « IF originalName !== null »@SCChartsDebug(originalName = "« originalName »", originalStateHash = « originalStateHashCode »)«ENDIF»
           private void « state.uniqueName »_running(« state.uniqueContextMemberName » context) {
-            « IF enableLogging »LOG.trace("Activating state « state.getStringAnnotationValue("SourceState") »");« ENDIF »
+            « IF isLoggingEnabled »LOG.trace("Activating state « state.getStringAnnotationValue("SourceState") »");« ENDIF »
           « ENDIF »
             « createCodeSuperstate(state) »
           « ENDIF »

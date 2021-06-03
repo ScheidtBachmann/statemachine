@@ -692,11 +692,11 @@ class GeneratorTest {
   
   private def assertSysOutStartsWith(String expected) {
     Assert.assertEquals('Found outputs in stdErr:', '', syserr.toString)
-	switch actual: sysout.toString(UTF8) {
-      String:
-        if (!actual.startsWith(expected.trim))
-          throw new ComparisonFailure('', expected, actual)
-      default:
+    val actualOutputs = sysout.toString(UTF8)
+    if (actualOutputs !== null) {
+        if (!actualOutputs.startsWith(expected.trim))
+          throw new ComparisonFailure('', expected, actualOutputs)
+    } else {
         Assert.fail('Obtained result is not of type String.')
     }
   }

@@ -3,7 +3,6 @@ package de.scheidtbachmann.statemachine.diagrams
 import de.cau.cs.kieler.klighd.LightDiagramServices
 import de.cau.cs.kieler.klighd.standalone.KlighdStandaloneSetup
 import de.cau.cs.kieler.sccharts.SCCharts
-import de.cau.cs.kieler.sccharts.State
 import java.nio.file.Path
 import java.util.Map
 import java.util.function.Function
@@ -50,10 +49,8 @@ class DiagramRenderer implements Function<Map<Object, Object>, IStatus> {
 		val result = new MultiStatus(PLUGIN_ID, 0, '', null)
 		for (input : inputs) {
 			if (input instanceof SCCharts) {
-				val name = switch head:input.rootStates.head {
-					State: head.name
-					default: 'chart'
-				}
+			    val firstRootState = input.rootStates.head
+				val name = if (firstRootState !== null) firstRootState.name else 'chart'
 				try {
 					if (!outlet.exists())
 						outlet.createDirectories()

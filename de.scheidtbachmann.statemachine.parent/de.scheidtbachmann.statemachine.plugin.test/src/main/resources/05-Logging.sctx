@@ -1,5 +1,6 @@
 #package "de.scheidtbachmann.statemachine.foo"
-#logging yes
+
+#features logger
 
 scchart LoggingMachine {
 

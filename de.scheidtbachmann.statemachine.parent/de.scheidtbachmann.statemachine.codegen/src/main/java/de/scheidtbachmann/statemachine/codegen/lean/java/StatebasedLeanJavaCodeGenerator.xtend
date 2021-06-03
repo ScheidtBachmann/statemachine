@@ -7,16 +7,17 @@ import de.cau.cs.kieler.annotations.extensions.PragmaExtensions
 import de.cau.cs.kieler.annotations.registry.PragmaRegistry
 import de.cau.cs.kieler.kicool.compilation.CodeContainer
 import de.cau.cs.kieler.kicool.compilation.ExogenousProcessor
+import de.cau.cs.kieler.kicool.compilation.JavaCodeFile
 import de.cau.cs.kieler.kicool.compilation.codegen.CodeGeneratorNames
 import de.cau.cs.kieler.sccharts.SCCharts
 import java.util.Map
+import java.util.Set
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static de.cau.cs.kieler.kicool.compilation.codegen.AbstractCodeGenerator.*
 import static de.cau.cs.kieler.kicool.compilation.codegen.CodeGeneratorNames.*
 
 import static extension de.cau.cs.kieler.sccharts.processors.statebased.lean.codegen.AbstractStatebasedLeanTemplate.hostcodeSafeName
-import de.cau.cs.kieler.kicool.compilation.JavaCodeFile
 
 /**
  * Java Code Generator for the Statebased code generation using templates.
@@ -32,9 +33,8 @@ class StatebasedLeanJavaCodeGenerator extends ExogenousProcessor<SCCharts, CodeC
     protected static val PACKAGE = PragmaRegistry.register("package", StringPragma, "Package name for the generated file(s)")
     protected static val INCLUDE = PragmaRegistry.register("include", StringPragma, "Additional things that should be imported")
     protected static val SUPERCLASS = PragmaRegistry.register("superclass", StringPragma, "Superclass to use for the generated class file.")
-    protected static val LOGGING = PragmaRegistry.register("logging", StringPragma, "Flag to enable integrated logging in the generated code.")
-    protected static val EXECUTOR = PragmaRegistry.register("executor", StringPragma, "Flag to enable embedded executor generation in the generated code.")
-    protected static val STRING_CONTAINER = PragmaRegistry.register("stringContainer", StringPragma, "Flag to enable wrapping the current state in a container for lazy string evaluation.")
+
+    protected static val FEATURES = PragmaRegistry.register("features", StringPragma, "Comma-separated list of extension features to enable in the generated code")
 
     public static val JAVA_EXTENSION = ".java"
     public static val IMPORTS = "imports"
@@ -56,24 +56,27 @@ class StatebasedLeanJavaCodeGenerator extends ExogenousProcessor<SCCharts, CodeC
         if (model.getStringPragmas(SUPERCLASS).size > 0) {
             template.superClass = model.getStringPragmas(SUPERCLASS).head.values.head
         }
-        if (model.getPragma(LOGGING) !== null) {
-            template.enableLogging = true;
-        }        
-        if (model.getPragma(EXECUTOR) !== null) {
-            template.enableExecutor = model.getStringPragmas(EXECUTOR).head.values.head;
-        }
-        if (model.getPragma(STRING_CONTAINER) !== null) {
-            template.enableStringContainer = true;
+
+        val Set<StatebasedLeanJavaExtendedFeatures> activeFeatureSet = getFeatureSet()
+        var boolean featureSetIsConsistent = true;
+        if (activeFeatureSet !== null) {
+            featureSetIsConsistent = checkConsistencyOfFeatures(activeFeatureSet)
+            applyFeaturesToTemplate(activeFeatureSet, template)            
         }
 
-        template.create(model.rootStates.head)
-        
-        val cc = new CodeContainer
-        cc.writeToCodeContainer(template, model.rootStates.head.name.hostcodeSafeName, model)
-        
-        setModel(cc)
+        if (featureSetIsConsistent) {
+            template.create(model.rootStates.head)
+            
+            val cc = new CodeContainer
+            cc.writeToCodeContainer(template, model.rootStates.head.name.hostcodeSafeName, model)
+            
+            setModel(cc)
+        } else {
+            environment.errors.add("Features set is not consistent: " + activeFeatureSet)
+        }
     }
     
+
     protected def void writeToCodeContainer(CodeContainer codeContainer, StatebasedLeanJavaTemplate template, String codeFilename, SCCharts scc) {
         val javaFilename = codeFilename + JAVA_EXTENSION
         val javaFile = new StringBuilder
@@ -118,7 +121,7 @@ class StatebasedLeanJavaCodeGenerator extends ExogenousProcessor<SCCharts, CodeC
     }
 
     protected def void hostcodeAdditions(StringBuilder sb, SCCharts scc, StatebasedLeanJavaTemplate template, boolean allCodeImports) {
-        val includes = template.findModifications.get(IMPORTS)
+        val includes = template.findModifications.get(IMPORTS).sort
         if (allCodeImports) {
             for (include : includes)  {
                 sb.append("import " + include + ";\n")
@@ -144,6 +147,37 @@ class StatebasedLeanJavaCodeGenerator extends ExogenousProcessor<SCCharts, CodeC
         val packagePragma = scc.getStringPragmas(PACKAGE)
         if (packagePragma.size > 0) {
             sb.append("package ").append(packagePragma.head.values.head).append(";\n\n")
+        }
+    }
+    
+    def boolean checkConsistencyOfFeatures(Set<StatebasedLeanJavaExtendedFeatures> featureSet) {
+        val boolean atMaxOneExecutorFeature = !(featureSet.contains(StatebasedLeanJavaExtendedFeatures.EXECUTOR) 
+            && featureSet.contains(StatebasedLeanJavaExtendedFeatures.EXECUTOR_AUTO_CATCH))
+        val boolean onlyUtilitesOrExecutor = !((featureSet.contains(StatebasedLeanJavaExtendedFeatures.EXECUTOR) ||
+                featureSet.contains(StatebasedLeanJavaExtendedFeatures.EXECUTOR_AUTO_CATCH))  
+            && featureSet.contains(StatebasedLeanJavaExtendedFeatures.UTILITIES))
+        return atMaxOneExecutorFeature && onlyUtilitesOrExecutor
+    }
+
+    protected def void applyFeaturesToTemplate(Set<StatebasedLeanJavaExtendedFeatures> featureSet, StatebasedLeanJavaTemplate template) {
+        if (model.getPragma(FEATURES) !== null) {
+            model.getStringPragmas(FEATURES).head.values.forEach[
+                val enabledFeature = StatebasedLeanJavaExtendedFeatures.valueOf(it.toUpperCase())
+                if (enabledFeature !== null) {
+                    template.enabledFeatures.add(enabledFeature);
+                }
+            ]
+        }
+    }
+    
+    protected def Set<StatebasedLeanJavaExtendedFeatures> getFeatureSet() {
+        if (model.getPragma(FEATURES) !== null) {
+            return model.getStringPragmas(FEATURES).head?.values //
+                .map[it.toUpperCase] //
+                .map[StatebasedLeanJavaExtendedFeatures.valueOf(it)] //
+                .toSet            
+        } else {
+            return #{}
         }
     }
 }

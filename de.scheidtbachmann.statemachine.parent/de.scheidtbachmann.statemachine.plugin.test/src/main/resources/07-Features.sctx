@@ -1,8 +1,8 @@
 #package "de.scheidtbachmann.statemachine.foo"
 
-#features executor
+#features logger,utilities
 
-scchart ExecutorTest {
+scchart FeaturesTest {
 	initial state S1
 	go to S2
 	
