@@ -99,7 +99,10 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
         addImports("java.util.stream.Stream", "java.util.stream.Collectors")
         
         if (inputEventDeclarations.size > 0) {
-            addImports("java.util.Arrays")
+            addImports("java.util.Arrays",
+                "java.util.Collection",
+                "java.util.Collections"
+            )
         }
         
         if (isLoggingEnabled) {
@@ -279,6 +282,9 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
                 LOG.trace("Initializing StateMachine");
               « ENDIF »
               reset();
+              « IF inputEventDeclarations.size > 0 »
+                writeEventsToIfaceInputs(Collections.emptyList());
+              « ENDIF »
               tick();
             }
 
@@ -304,17 +310,24 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             }
             « IF inputEventDeclarations.size > 0 »
 
-            public void apply(InputEvent... events) {
-              « IF isLoggingEnabled »
-                LOG.trace("Performing action on input events {}", Arrays.toString(events));
-              « ENDIF »
+            private void writeEventsToIfaceInputs(Collection<InputEvent> events) {
               « FOR decl : inputEventDeclarations »
               « FOR vo: decl.valuedObjects »
-              iface.«vo.name» = Arrays.stream(events).anyMatch(it -> it == InputEvent.«vo.name»);
+              iface.«vo.name» = events.contains(InputEvent.«vo.name»);
               « ENDFOR »
               « ENDFOR »
+            }
 
+            public void apply(Collection<InputEvent> events) {
+              « IF isLoggingEnabled »
+                LOG.trace("Performing action on input events {}", events);
+              « ENDIF »
+              writeEventsToIfaceInputs(events);
               tick();
+            }
+
+            public void apply(InputEvent... events) {
+              apply(Arrays.asList(events));
             }
             « ENDIF»
 
@@ -333,6 +346,10 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
                 public String toString() {
                   return rootContext.getCurrentState().distinct().collect(Collectors.joining(","));
                 }
+              }
+            « ELSEIF isUtilitiesEnabled »
+              public StateMachineStateContainer getCurrentState() {
+                return new StaetMachineStateContainer(rootContext);
               }
             « ELSE »
               public String getCurrentState() {

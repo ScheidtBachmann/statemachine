@@ -153,10 +153,12 @@ class StatebasedLeanJavaCodeGenerator extends ExogenousProcessor<SCCharts, CodeC
     def boolean checkConsistencyOfFeatures(Set<StatebasedLeanJavaExtendedFeatures> featureSet) {
         val boolean atMaxOneExecutorFeature = !(featureSet.contains(StatebasedLeanJavaExtendedFeatures.EXECUTOR) 
             && featureSet.contains(StatebasedLeanJavaExtendedFeatures.EXECUTOR_AUTO_CATCH))
-        val boolean onlyUtilitesOrExecutor = !((featureSet.contains(StatebasedLeanJavaExtendedFeatures.EXECUTOR) ||
-                featureSet.contains(StatebasedLeanJavaExtendedFeatures.EXECUTOR_AUTO_CATCH))  
-            && featureSet.contains(StatebasedLeanJavaExtendedFeatures.UTILITIES))
-        return atMaxOneExecutorFeature && onlyUtilitesOrExecutor
+//        val boolean onlyUtilitesOrExecutor = !((featureSet.contains(StatebasedLeanJavaExtendedFeatures.EXECUTOR) ||
+//                featureSet.contains(StatebasedLeanJavaExtendedFeatures.EXECUTOR_AUTO_CATCH))
+//            && featureSet.contains(StatebasedLeanJavaExtendedFeatures.UTILITIES))
+        val boolean onlyUtilitesOrStringContainer = !(featureSet.contains(StatebasedLeanJavaExtendedFeatures.UTILITIES) 
+            && featureSet.contains(StatebasedLeanJavaExtendedFeatures.STRING_CONTAINER))
+        return atMaxOneExecutorFeature /* && onlyUtilitesOrExecutor*/ && onlyUtilitesOrStringContainer
     }
 
     protected def void applyFeaturesToTemplate(Set<StatebasedLeanJavaExtendedFeatures> featureSet, StatebasedLeanJavaTemplate template) {
