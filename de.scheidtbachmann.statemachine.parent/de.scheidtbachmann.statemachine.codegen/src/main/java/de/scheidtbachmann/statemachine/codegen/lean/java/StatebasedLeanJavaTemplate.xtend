@@ -349,7 +349,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
               }
             « ELSEIF isUtilitiesEnabled »
               public StateMachineStateContainer getCurrentState() {
-                return new StaetMachineStateContainer(rootContext);
+                return new StateMachineStateContainer(rootContext);
               }
             « ELSE »
               public String getCurrentState() {
