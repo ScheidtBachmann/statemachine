@@ -1,15 +1,14 @@
-/*
- * KIELER - Kiel Integrated Environment for Layout Eclipse RichClient
- * 
- * http://rtsys.informatik.uni-kiel.de/kieler
- * 
- * Copyright ${year} by
- * + Kiel University
- *   + Department of Computer Science
- *     + Real-Time and Embedded Systems Group
- * 
- * This code is provided under the terms of the Eclipse Public License (EPL).
- */
+// ******************************************************************************
+//
+// Copyright (c) 2021 by
+// Scheidt & Bachmann System Technik GmbH, 24109 Melsdorf
+//
+// This program and the accompanying materials are made available under the terms of the
+// Eclipse Public License v2.0 which accompanies this distribution, and is available at
+// https://www.eclipse.org/legal/epl-v20.html
+//
+// ******************************************************************************
+
 package de.scheidtbachmann.statemachine.codegen.lean.java
 
 import com.google.common.collect.HashMultimap
@@ -136,6 +135,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
     }
 
     protected def void createCode() {
+        //CHECKSTYLEOFF LineLength This is template code that can't be arbitrarily formatted
         source.append('''
           @SuppressWarnings("all")
           public class « rootState.uniqueName »« IF superClass !== null » extends « superClass »« ENDIF » {
@@ -356,7 +356,8 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
                 return rootContext.getCurrentState().distinct().collect(Collectors.joining(","));
               }
             « ENDIF »
-
+            
+            «  »
             public «rootState.uniqueName»(« IF needsContextInterface»«rootState.uniqueName»Context externalContext« ENDIF ») {
               « IF needsContextInterface»
                 this.externalContext = externalContext;
@@ -417,6 +418,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             « ENDFOR »
           }
         ''')
+        //CHECKSTYLEON LineLength
     }
 
     protected def CharSequence createCodeState(State state) {
@@ -424,6 +426,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
         val originalNameHashAnnotation = state.getAnnotation("OriginalNameHash")?.asIntAnnotation 
         val originalStateHashCode = if (originalNameHashAnnotation === null) 0 else originalNameHashAnnotation.value
 
+        //CHECKSTYLEOFF LineLength This is template code that can't be arbitrarily formatted
         return '''
           « state.generateJavaDocFromCommentAnnotations »
           « IF originalName !== null »@SCChartsDebug(originalName = "« originalName »", originalStateHash = « originalStateHashCode »)«ENDIF»
@@ -454,6 +457,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             « addSimpleStateCode(state) »
           }
         '''
+        //CHECKSTYLEON LineLength
     }
 
     protected def CharSequence createCodeSuperstate(State state) {
@@ -474,6 +478,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             trigger === null && delay == DelayType.IMMEDIATE && preemption != PreemptionType.TERMINATION
         ]
 
+        //CHECKSTYLEOFF LineLength This is template code that can't be arbitrarily formatted
         return '''
           « IF state.isFinal »
             context.threadStatus = ThreadStatus.TERMINATED;
@@ -505,6 +510,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             « ENDIF »
           « ENDIF »
         '''
+        //CHECKSTYLEON LineLength
     }
 
     protected def CharSequence addDelayedEnabledCode(State state) {
@@ -517,7 +523,8 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
         '''
     }
 
-    protected def CharSequence addTransitionConditionCode(int index, int count, Transition transition, boolean hasDefaultTransition) {
+    protected def CharSequence addTransitionConditionCode(int index, int count, Transition transition, 
+        boolean hasDefaultTransition) {
         valuedObjectPrefix = "iface."
         val defaultTransition = transition.trigger === null && transition.delay == DelayType.IMMEDIATE;
         var CharSequence condition = ""
@@ -556,6 +563,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
 
     protected def CharSequence addTransitionEffectCode(Transition transition) {
         valuedObjectPrefix = "iface."
+        //CHECKSTYLEOFF LineLength This is template code that can't be arbitrarily formatted
         val code = '''
           « FOR e : transition.effects »
             « e.serializeHR »;
@@ -567,6 +575,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             context.activeState = « transition.targetState.parentRegion.uniqueName »States.« transition.targetState.uniqueEnumName »;
           « ENDIF »
         '''
+        //CHECKSTYLEON LineLength        
         valuedObjectPrefix = ""
         return code
     }
@@ -724,9 +733,10 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
      * Checks the given declaration for annotations with the return type. 
      */
     protected def extractContextType(ReferenceDeclaration decl) {
-        val typeAnnotations = decl.annotations.filter(StringAnnotation).filter['Context'.equalsIgnoreCase(name)].filter [
-            !values.nullOrEmpty
-        ]
+        val typeAnnotations = decl.annotations
+            .filter(StringAnnotation)
+            .filter['Context'.equalsIgnoreCase(name)]
+            .filter [!values.nullOrEmpty]
         if (typeAnnotations.size == 0) {
             return "void"
         } else {

@@ -1,15 +1,14 @@
-/*
- * KIELER - Kiel Integrated Environment for Layout Eclipse RichClient
- *
- * http://rtsys.informatik.uni-kiel.de/kieler
- * 
- * Copyright ${year} by
- * + Kiel University
- *   + Department of Computer Science
- *     + Real-Time and Embedded Systems Group
- * 
- * This code is provided under the terms of the Eclipse Public License (EPL).
- */
+// ******************************************************************************
+//
+// Copyright (c) 2021 by
+// Scheidt & Bachmann System Technik GmbH, 24109 Melsdorf
+//
+// This program and the accompanying materials are made available under the terms of the
+// Eclipse Public License v2.0 which accompanies this distribution, and is available at
+// https://www.eclipse.org/legal/epl-v20.html
+//
+// ******************************************************************************
+
 package de.scheidtbachmann.statemachine.transformators
 
 import de.cau.cs.kieler.core.properties.IProperty
@@ -17,22 +16,21 @@ import de.cau.cs.kieler.core.properties.Property
 import de.cau.cs.kieler.sccharts.processors.SCChartsProcessor
 
 /**
- * @author Wechselberg
- *
+ * Processor to select one model from a file containing multiple models at the same time.
  */
 class ModelSelect extends SCChartsProcessor {
-    
+
     public static val IProperty<String> SELECTED_MODEL =
        new Property<String>("de.scheidtbachmann.statemachine.modelselect.name", "")
-    
+
     override getId() {
         "de.scheidtbachmann.statemachine.processors.modelselect"
     }
-    
+
     override getName() {
         "Model Selector"
     }
-    
+
     override process() {
         if (!environment.getProperty(SELECTED_MODEL).nullOrEmpty) {
             val allowedModels = environment.getProperty(SELECTED_MODEL).split(",");

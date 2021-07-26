@@ -1,9 +1,19 @@
+// ******************************************************************************
+//
+// Copyright (c) 2021 by
+// Scheidt & Bachmann System Technik GmbH, 24109 Melsdorf
+//
+// This program and the accompanying materials are made available under the terms of the
+// Eclipse Public License v2.0 which accompanies this distribution, and is available at
+// https://www.eclipse.org/legal/epl-v20.html
+//
+// ******************************************************************************
 
 package de.scheidtbachmann.statemachine.utilities.execution.impl;
 
 import de.scheidtbachmann.statemachine.utilities.execution.StateMachineExecutionFactory;
+import de.scheidtbachmann.statemachine.utilities.execution.StateMachineTimeout;
 import de.scheidtbachmann.statemachine.utilities.execution.StateMachineTimeoutManager;
-import de.scheidtbachmann.statemachine.utilities.execution.StateMachineTimeoutManager.Timeout;
 
 import org.osgi.service.component.annotations.Component;
 
@@ -33,7 +43,7 @@ public class StateMachineExecutionFactoryService implements StateMachineExecutio
 
     @Override
     public StateMachineTimeoutManager createTimeout(final ScheduledExecutorService executor, final long delay,
-        final TimeUnit timeUnit, final Consumer<Timeout> timeoutAction) {
-        return new StateMachineTimeoutManager(executor, delay, timeUnit, timeoutAction);
+        final TimeUnit timeUnit, final Consumer<StateMachineTimeout> timeoutAction) {
+        return new StateMachineTimeoutManagerImpl(executor, delay, timeUnit, timeoutAction);
     }
 }

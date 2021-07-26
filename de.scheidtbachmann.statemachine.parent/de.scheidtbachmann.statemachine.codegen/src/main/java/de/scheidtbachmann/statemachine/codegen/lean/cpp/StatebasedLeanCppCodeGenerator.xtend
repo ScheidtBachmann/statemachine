@@ -1,15 +1,14 @@
-/*
- * KIELER - Kiel Integrated Environment for Layout Eclipse RichClient
- * 
- * http://rtsys.informatik.uni-kiel.de/kieler
- * 
- * Copyright 2018 by
- * + Kiel University
- *   + Department of Computer Science
- *     + Real-Time and Embedded Systems Group
- * 
- * This code is provided under the terms of the Eclipse Public License (EPL).
- */
+// ******************************************************************************
+//
+// Copyright (c) 2021 by
+// Scheidt & Bachmann System Technik GmbH, 24109 Melsdorf
+//
+// This program and the accompanying materials are made available under the terms of the
+// Eclipse Public License v2.0 which accompanies this distribution, and is available at
+// https://www.eclipse.org/legal/epl-v20.html
+//
+// ******************************************************************************
+
 package de.scheidtbachmann.statemachine.codegen.lean.cpp
 
 import com.google.inject.Inject
@@ -30,18 +29,19 @@ import static de.cau.cs.kieler.kicool.compilation.codegen.CodeGeneratorNames.*
 import static extension de.cau.cs.kieler.sccharts.processors.statebased.lean.codegen.AbstractStatebasedLeanTemplate.hostcodeSafeName
 
 /**
- * C++ Code Generator for the Statebased code generation using templates.
- * 
- * @author wechselberg
+ * C++ Code Generator for the state-based code generation using templates.
  */
 class StatebasedLeanCppCodeGenerator extends ExogenousProcessor<SCCharts, CodeContainer> {
 
   @Inject extension PragmaExtensions
   @Inject protected Injector injector
 
-  protected static val HOSTCODE = PragmaRegistry.register("hostcode", StringPragma, "Allows additional hostcode to be included (e.g. includes).")
-  protected static val NAMESPACE = PragmaRegistry.register("namespace", StringPragma, "The namespace to use for the generated code.")
-  protected static val SUPERCLASS = PragmaRegistry.register("superclass", StringPragma, "Superclass to use for the generated class file.")
+  protected static val HOSTCODE = PragmaRegistry.register("hostcode", StringPragma, 
+      "Allows additional hostcode to be included (e.g. includes).")
+  protected static val NAMESPACE = PragmaRegistry.register("namespace", StringPragma,
+      "The namespace to use for the generated code.")
+  protected static val SUPERCLASS = PragmaRegistry.register("superclass", StringPragma,
+      "Superclass to use for the generated class file.")
 
   public static val C_EXTENSION = ".cpp"
   public static val H_EXTENSION = ".h"
@@ -87,37 +87,36 @@ class StatebasedLeanCppCodeGenerator extends ExogenousProcessor<SCCharts, CodeCo
     val headerMacro = ("_" + hFilename.replaceAll("\\.", "_") + "_").toUpperCase
 
     hFile.append('''
-			#ifndef « headerMacro »
-			#define « headerMacro »
-			/*
-			 * Automatically generated C code by
-			 * KIELER SCCharts - The Key to Efficient Modeling
-			 *
-			 * http://rtsys.informatik.uni-kiel.de/kieler
-			 */
-			« FOR include : template.findModifications.get(INCLUDES) »
-				#include « include »
-			« ENDFOR »
-			« FOR hostcode : scc.getStringPragmas(HOSTCODE) »
-				« hostcode.values.head »
-			« ENDFOR »
-			
-			« template.header »
-			#endif
-			
-		''')
+        #ifndef « headerMacro »
+        #define « headerMacro »
+        /*
+         * Automatically generated C code by
+         * KIELER SCCharts - The Key to Efficient Modeling
+         *
+         * http://rtsys.informatik.uni-kiel.de/kieler
+         */
+        « FOR include : template.findModifications.get(INCLUDES) »
+          #include « include »
+        « ENDFOR »
+        « FOR hostcode : scc.getStringPragmas(HOSTCODE) »
+          « hostcode.values.head »
+        « ENDFOR »
+        
+        « template.header »
+        #endif
+    ''')
 
     cFile.append('''
-			/*
-			 * Automatically generated C code by
-			 * KIELER SCCharts - The Key to Efficient Modeling
-			 *
-			 * http://rtsys.informatik.uni-kiel.de/kieler
-			 */
-			#include "« hFilename »"
-			
-			« template.source »
-		''')
+        /*
+         * Automatically generated C code by
+         * KIELER SCCharts - The Key to Efficient Modeling
+         *
+         * http://rtsys.informatik.uni-kiel.de/kieler
+         */
+        #include "« hFilename »"
+
+        « template.source »
+    ''')
 
     naming.put(TICK, environment.getProperty(TICK_FUNCTION_NAME))
     naming.put(RESET, environment.getProperty(RESET_FUNCTION_NAME))

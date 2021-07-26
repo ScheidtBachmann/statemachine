@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE suppressions PUBLIC "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN" "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+
+<suppressions>
+    <!-- Don't check stuff in the *-gen folder -->
+	<suppress files="[\\/][a-zA-Z0-9]*-gen[\\/]" checks="."/>
+</suppressions>

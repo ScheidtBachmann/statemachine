@@ -1,15 +1,14 @@
-/*
- * KIELER - Kiel Integrated Environment for Layout Eclipse RichClient
- * 
- * http://rtsys.informatik.uni-kiel.de/kieler
- * 
- * Copyright ${year} by
- * + Kiel University
- *   + Department of Computer Science
- *     + Real-Time and Embedded Systems Group
- * 
- * This code is provided under the terms of the Eclipse Public License (EPL).
- */
+// ******************************************************************************
+//
+// Copyright (c) 2021 by
+// Scheidt & Bachmann System Technik GmbH, 24109 Melsdorf
+//
+// This program and the accompanying materials are made available under the terms of the
+// Eclipse Public License v2.0 which accompanies this distribution, and is available at
+// https://www.eclipse.org/legal/epl-v20.html
+//
+// ******************************************************************************
+
 package de.scheidtbachmann.statemachine.codegen.lean.cpp
 
 import com.google.inject.Inject
@@ -29,9 +28,7 @@ import de.cau.cs.kieler.sccharts.processors.statebased.lean.codegen.AbstractStat
 import org.eclipse.xtend.lib.annotations.Accessors
 
 /**
- * Code generator template for lean statebased C++ code.
- * 
- * @author wechselberg
+ * Code generator template for lean state-based C++ code.
  */
 class StatebasedLeanCppTemplate extends AbstractStatebasedLeanTemplate {
 
@@ -81,10 +78,11 @@ class StatebasedLeanCppTemplate extends AbstractStatebasedLeanTemplate {
                 // External interface (and local variables)
                 class Iface
                 {
-              public:
-                Iface();
+                  public:
+                    Iface();
 
-                    « FOR valuedObject : rootState.declarations.filter(VariableDeclaration).map[it.valuedObjects].flatten »
+                    « FOR valuedObject : rootState.declarations.filter(VariableDeclaration)
+                        .map[it.valuedObjects].flatten »
                         « createDeclaration(valuedObject) »
                     « ENDFOR »
                 };
@@ -204,6 +202,7 @@ class StatebasedLeanCppTemplate extends AbstractStatebasedLeanTemplate {
     }
 
     protected def CharSequence createSourceState(State state) {
+        //CHECKSTYLEOFF LineLength This is template code that can't be arbitrarily formatted
         return '''
             void «rootState.uniqueName»::logic_«state.uniqueName»(«state.uniqueContextMemberName» &context)
             {
@@ -227,6 +226,7 @@ class StatebasedLeanCppTemplate extends AbstractStatebasedLeanTemplate {
               «addSimpleStateCode(state)»
             }
         '''
+        //CHECKSTYLEON LineLength
     }
 
     protected def CharSequence addSuperstateCode(State state) {
@@ -248,6 +248,7 @@ class StatebasedLeanCppTemplate extends AbstractStatebasedLeanTemplate {
             trigger === null && delay == DelayType.IMMEDIATE && preemption != PreemptionType.TERMINATION
         ]
 
+        //CHECKSTYLEOFF LineLength This is template code that can't be arbitrarily formatted
         return '''
             « IF state.isFinal »
                 context.threadStatus = TERMINATED;
@@ -281,6 +282,7 @@ class StatebasedLeanCppTemplate extends AbstractStatebasedLeanTemplate {
                 « ENDIF »
             «ENDIF»
         '''
+        //CHECKSTYLEON LineLength
     }
 
     protected def CharSequence addDelayedEnabledCode(State state) {

@@ -1,15 +1,14 @@
-/*
- * KIELER - Kiel Integrated Environment for Layout Eclipse RichClient
- * 
- * http://rtsys.informatik.uni-kiel.de/kieler
- * 
- * Copyright ${year} by
- * + Kiel University
- *   + Department of Computer Science
- *     + Real-Time and Embedded Systems Group
- * 
- * This code is provided under the terms of the Eclipse Public License (EPL).
- */
+// ******************************************************************************
+//
+// Copyright (c) 2021 by
+// Scheidt & Bachmann System Technik GmbH, 24109 Melsdorf
+//
+// This program and the accompanying materials are made available under the terms of the
+// Eclipse Public License v2.0 which accompanies this distribution, and is available at
+// https://www.eclipse.org/legal/epl-v20.html
+//
+// ******************************************************************************
+
 package de.scheidtbachmann.statemachine.codegen.lean.cpp
 
 import de.cau.cs.kieler.kexpressions.BoolValue
@@ -21,8 +20,7 @@ import com.google.inject.Inject
 import de.cau.cs.kieler.kexpressions.extensions.KExpressionsValuedObjectExtensions
 
 /**
- * @author Wechselberg
- * 
+ * Extension methods to serialize code for human-readable C++ code generation.
  */
 class StatebasedCppCodeSerializeHRExtensions extends StatebasedCCodeSerializeHRExtensions {
     
@@ -34,7 +32,7 @@ class StatebasedCppCodeSerializeHRExtensions extends StatebasedCCodeSerializeHRE
         switch (valueType) {
           case STRING: {
               modifications.put(INCLUDES, "<string>")
-              return "std::string"              
+              return "std::string"
           }
           case FLOAT: return "double"
           default: return valueType.literal

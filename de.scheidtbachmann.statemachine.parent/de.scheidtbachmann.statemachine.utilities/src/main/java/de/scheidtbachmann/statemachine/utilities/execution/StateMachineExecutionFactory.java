@@ -1,7 +1,17 @@
+// ******************************************************************************
+//
+// Copyright (c) 2021 by
+// Scheidt & Bachmann System Technik GmbH, 24109 Melsdorf
+//
+// This program and the accompanying materials are made available under the terms of the
+// Eclipse Public License v2.0 which accompanies this distribution, and is available at
+// https://www.eclipse.org/legal/epl-v20.html
+//
+// ******************************************************************************
 
 package de.scheidtbachmann.statemachine.utilities.execution;
 
-import de.scheidtbachmann.statemachine.utilities.execution.StateMachineTimeoutManager.Timeout;
+import de.scheidtbachmann.statemachine.utilities.execution.impl.StateMachineTimeoutManagerImpl;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -24,7 +34,7 @@ public interface StateMachineExecutionFactory {
     ScheduledExecutorService createExecutor(String nameFragment);
 
     /**
-     * Creates a new {@link StateMachineTimeoutManager} for the state machine.
+     * Creates a new {@link StateMachineTimeoutManagerImpl} for the state machine.
      *
      * @param executor
      *            The {@link ScheduledExecutorService} used by the state
@@ -35,12 +45,12 @@ public interface StateMachineExecutionFactory {
      *            The {@link TimeUnit} of the delay.
      * @param timeoutAction
      *            The action to perform when the timeout is hit. The
-     *            {@link Consumer} is passed the actual {@link Timeout},
+     *            {@link Consumer} is passed the actual {@link StateMachineTimeout},
      *            so that the cancellation state can be validated during
      *            execution.
-     * @return The created {@link StateMachineTimeoutManager}.
+     * @return The created {@link StateMachineTimeoutManagerImpl}.
      */
     StateMachineTimeoutManager createTimeout(ScheduledExecutorService executor, long delay, TimeUnit timeUnit,
-        Consumer<Timeout> timeoutAction);
+        Consumer<StateMachineTimeout> timeoutAction);
 
 }

@@ -1,3 +1,13 @@
+// ******************************************************************************
+//
+// Copyright (c) 2021 by
+// Scheidt & Bachmann System Technik GmbH, 24109 Melsdorf
+//
+// This program and the accompanying materials are made available under the terms of the
+// Eclipse Public License v2.0 which accompanies this distribution, and is available at
+// https://www.eclipse.org/legal/epl-v20.html
+//
+// ******************************************************************************
 package de.scheidtbachmann.statemachine.diagrams
 
 import java.io.Closeable
@@ -12,38 +22,38 @@ import static java.nio.file.StandardCopyOption.*
 import static extension java.nio.file.Files.*
 
 class WebpageCopier {
-	
-	static val PAGE_FOLDER_NAME = 'page'
-	
-	def static copyStaticPageParts(Path outlet) {
-		var Closeable closeable
-		val it = WebpageCopier.classLoader.getResource(PAGE_FOLDER_NAME)
-		if (protocol == 'jar') {
-			val file = new JarFile(file.substring(0, file.indexOf('!')).replaceFirst('^file:', ''))
-			closeable = file
-			file.stream.filter[
-				!isDirectory && name.startsWith(PAGE_FOLDER_NAME)
-			].forEach[
-				val target = outlet.resolve(Paths.get(name.substring(5)))
-				target.parent.createDirectories()
-				file.getInputStream(it).copy(target, REPLACE_EXISTING)
-			]
-		} else {
-			try {
-				FileSystems.getFileSystem(toURI);
-			} catch ( FileSystemNotFoundException e ) {
-				closeable = FileSystems.newFileSystem(toURI, emptyMap)
-			} catch ( Throwable t) {
-				// do nothing; chsch: on osx I get an IllegalArgumentException if the path is unequal to '/'
-			}
-			
-			val root = Paths.get(toURI)
-			for (it :  root.find(5)[ it, attributes | attributes.regularFile ].iterator.toIterable) {
-				val target = outlet.resolve(root.relativize(it))
-				target.parent.createDirectories()
-				copy(target, REPLACE_EXISTING)
-			}
-		}
-		closeable?.close()
-	}
+
+    static val PAGE_FOLDER_NAME = 'page'
+
+    def static copyStaticPageParts(Path outlet) {
+        var Closeable closeable
+        val it = WebpageCopier.classLoader.getResource(PAGE_FOLDER_NAME)
+        if (protocol == 'jar') {
+            val file = new JarFile(file.substring(0, file.indexOf('!')).replaceFirst('^file:', ''))
+            closeable = file
+            file.stream.filter [
+                !isDirectory && name.startsWith(PAGE_FOLDER_NAME)
+            ].forEach [
+                val target = outlet.resolve(Paths.get(name.substring(5)))
+                target.parent.createDirectories()
+                file.getInputStream(it).copy(target, REPLACE_EXISTING)
+            ]
+        } else {
+            try {
+                FileSystems.getFileSystem(toURI);
+            } catch (FileSystemNotFoundException e) {
+                closeable = FileSystems.newFileSystem(toURI, emptyMap)
+            } catch (Throwable t) {
+                // do nothing; chsch: on osx I get an IllegalArgumentException if the path is unequal to '/'
+            }
+
+            val root = Paths.get(toURI)
+            for (it : root.find(5)[it, attributes|attributes.regularFile].iterator.toIterable) {
+                val target = outlet.resolve(root.relativize(it))
+                target.parent.createDirectories()
+                copy(target, REPLACE_EXISTING)
+            }
+        }
+        closeable?.close()
+    }
 }

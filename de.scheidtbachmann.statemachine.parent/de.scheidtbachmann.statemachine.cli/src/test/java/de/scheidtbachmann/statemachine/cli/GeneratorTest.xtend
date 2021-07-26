@@ -1,3 +1,14 @@
+// ******************************************************************************
+//
+// Copyright (c) 2021 by
+// Scheidt & Bachmann System Technik GmbH, 24109 Melsdorf
+//
+// This program and the accompanying materials are made available under the terms of the
+// Eclipse Public License v2.0 which accompanies this distribution, and is available at
+// https://www.eclipse.org/legal/epl-v20.html
+//
+// ******************************************************************************
+
 package de.scheidtbachmann.statemachine.cli
 
 import de.cau.cs.kieler.sccharts.text.SCTXStandaloneSetup
@@ -58,7 +69,7 @@ class GeneratorTest {
     commandLineRun(Paths.get(''))
     
     assertSysOutEquals('''
-      Scheidt & Bachmann StateChart Compiler
+      Scheidt & Bachmann StateMachine Compiler
       Usage: scc [-hV] [COMMAND]
         -h, --help      Show this help message and exit.
         -V, --version   Print version information and exit.
@@ -134,9 +145,9 @@ class GeneratorTest {
       
       Options:
             --stdin             Forces the artist to read input from stdIn.
-        -f, --format <format>   The desired output format of the diagram drawings.
-                                Candidates are: bmp, jpeg, png, svg.
-                                Default is: png.
+        -f, --format <format>   The format of the images.
+                                Candidates: bmp, jpeg, png, svg.
+                                Default: png.
         -o, --output <path>     The destination folder of the drawn diagram pages.
                                 Default is: diagrams.
     ''')
@@ -152,119 +163,7 @@ class GeneratorTest {
       No content found in the provided resource.
     ''')
   }
-  
-//	@Test
-//	def void testDrawStdIn() {
-//		System.setIn(new ByteArrayInputStream('scchart foo { initial state foo }'.bytes))
-//		
-//		val basePath = Files.createTempDirectory('stateChartGenTesting')
-//		runDraw(basePath, '-stdin', '-diagModelOnly')
-//		
-//		val diagramModelFile = basePath.resolve('diagrams/foo').resolve(DiagramModelGenerator.DIAGRAM_MODEL_FILE_NAME)
-//		
-//		assertSysOutEquals('''
-//			Creating diagram model...done.
-//		''')
-//		
-//		assertFileEquals(diagramModelFile, '''
-//			function getDiagramModel() {
-//			  return {
-//			    "id": "graph",
-//			    "type": "graph",
-//			    "layoutOptions": {
-//			      "hAlign": "left",
-//			      "hGap": 5,
-//			      "paddingLeft": 7,
-//			      "paddingRight": 7,
-//			      "paddingTop": 7,
-//			      "paddingBottom": 7
-//			    },
-//			    "children": [
-//			      {
-//			        "id": "state-0",
-//			        "type": "node:state",
-//			        "layout": "vbox",
-//			        "layoutOptions": {
-//			          "paddingLeft": 10,
-//			          "paddingRight": 10,
-//			          "paddingTop": 8,
-//			          "paddingBottom": 8,
-//			          "resizeContainer": true
-//			        },
-//			        "children": [
-//			          {
-//			            "text": "foo",
-//			            "id": "state-0-label-0",
-//			            "type": "label:stateLabel"
-//			          }
-//			        ]
-//			      }
-//			    ]
-//			  };
-//			}
-//		''')
-//		
-//		basePath.deleteDirRecursively
-//	}
-//	
-//	@Test
-//	def void testDrawFile() {
 
-//		val fileName = 'foo.sctx'
-//		val basePath = Files.createTempDirectory('stateChartGenTesting')
-//		basePath.resolve(fileName).write(#[ 'scchart foo { initial state foo }' ], CREATE, WRITE)
-//		
-//		runDraw(basePath, fileName, '-diagModelOnly')
-//		
-//		val diagramModelFile = basePath.resolve('diagrams/foo').resolve(DiagramModelGenerator.DIAGRAM_MODEL_FILE_NAME)
-//		
-//		assertSysOutEquals('''
-
-//			Creating diagram model for foo.sctx...done.
-//		''')
-//		
-//		assertFileEquals(diagramModelFile, '''
-//			function getDiagramModel() {
-//			  return {
-//			    "id": "graph",
-//			    "type": "graph",
-//			    "layoutOptions": {
-//			      "hAlign": "left",
-//			      "hGap": 5,
-//			      "paddingLeft": 7,
-//			      "paddingRight": 7,
-//			      "paddingTop": 7,
-//			      "paddingBottom": 7
-//			    },
-//			    "children": [
-//			      {
-//			        "id": "state-0",
-//			        "type": "node:state",
-//			        "layout": "vbox",
-//			        "layoutOptions": {
-//			          "paddingLeft": 10,
-//			          "paddingRight": 10,
-//			          "paddingTop": 8,
-//			          "paddingBottom": 8,
-//			          "resizeContainer": true
-//			        },
-//			        "children": [
-//			          {
-//			            "text": "foo",
-//			            "id": "state-0-label-0",
-//			            "type": "label:stateLabel"
-//			          }
-//			        ]
-//			      }
-//			    ]
-//			  };
-//			}
-//		''')
-//		
-//		basePath.deleteDirRecursively
-//	}
-  
-  
   @Test
   def void testGenerate() {
     runGenerate(Paths.get(''))
@@ -284,8 +183,8 @@ class GeneratorTest {
             --stdout           Forces the generator to write generated content to
                                  stdOut.
         -s, --strategy <strategy>
-                               The generation strategy to apply.
-                               Candidates are:
+                               The strategy to apply.
+                               Options:
                                  de.cau.cs.kieler.c.sccharts.dataflow,
                                  de.cau.cs.kieler.kicool.identity,
                                  de.cau.cs.kieler.kicool.identity.dynamic,
@@ -389,7 +288,7 @@ class GeneratorTest {
                                  de.scheidtbachmann.statemachine.codegen.statebased.
                                  lean.java.template.selective,
                                  or a path to a custom <.kico> file.
-                               Default is:
+                               Default:
                                  de.cau.cs.kieler.sccharts.statebased.
             --select <model>   The parts of the model that should be taken from the
                                  input file
@@ -677,14 +576,7 @@ class GeneratorTest {
   private def isWindows() {
     System.getProperty('os.name').toLowerCase.contains('win')
   }
-  
-//  private def assertFileEquals(Path file, String expected) {
-//    Assert.assertTrue("Diagram model doesn't exist at the expected location.", file.exists)
-//    
-//    val diagramModel = new String(file.readAllBytes, StandardCharsets.UTF_8)
-//    Assert.assertEquals(expected, diagramModel)
-//  }
-		
+
   private def assertSysOutEquals(String expected) {
     Assert.assertEquals('Found outputs in stdErr:', '', syserr.toString)
     Assert.assertEquals(expected, sysout.toString(UTF8))
