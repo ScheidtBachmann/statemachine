@@ -2,7 +2,7 @@ pipeline {
   // Run this build in the defined docker build environment
   agent {
     docker {
-      image 'sub-base-vnc-swt:2021-03_1'
+      image 'sub-base-vnc-swt:2021-03'
       registryUrl 'https://ki-vl-artifactory.ki.lan:5001'
     }
   }
