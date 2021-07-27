@@ -14,20 +14,20 @@ import de.cau.cs.kieler.klighd.LightDiagramServices
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import javax.xml.parsers.DocumentBuilderFactory
+import org.junit.Ignore
 import org.junit.Test
 
 import static de.cau.cs.kieler.klighd.kgraph.util.KGraphUtil.*
 import static org.junit.Assert.*
 
 import static extension de.scheidtbachmann.statemachine.diagrams.DiagramTests.*
-import org.junit.Ignore
 
 class DiagramGenerationTest {
 
     public static val init = DiagramTests.init
 
+    @Ignore('Generated SVG is platform dependant')
     @Test
-    @Ignore // The generated svg is platform dependant and this test should thus be reworked in some way
     def generationTest01() {
         val root = createInitializedNode
 

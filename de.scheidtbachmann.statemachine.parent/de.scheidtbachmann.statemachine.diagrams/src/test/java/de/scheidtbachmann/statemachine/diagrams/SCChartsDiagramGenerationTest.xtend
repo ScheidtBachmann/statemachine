@@ -17,6 +17,7 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
 import org.eclipse.emf.common.util.URI
+import org.junit.Ignore
 import org.junit.Test
 
 import static org.junit.Assert.*
@@ -27,6 +28,7 @@ class SCChartsDiagramGenerationTest {
 
     public static val init = DiagramTests.init
 
+    @Ignore('Generated SVG is platform dependant')
     @Test
     def generationTest01() {
         val sm = '''
@@ -72,8 +74,6 @@ class SCChartsDiagramGenerationTest {
         assertNotNull('No diagram generated.', result)
         assertTrue('Diagram generation failed: ' + result.message + result.failureTrace, result.isOK)
 
-        // TODO: wechselberg - Disabled for the moment. Different platforms use slightly 
-        // different fonts, leading to single pixel differences depending on platform.
         //CHECKSTYLEOFF LineLength This is template code that can't be arbitrarily formatted
         stream.assertEquals('''
             <?xml version="1.0" standalone="no"?>
