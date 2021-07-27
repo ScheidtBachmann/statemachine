@@ -36,7 +36,17 @@ pipeline {
       steps {
         dir('de.scheidtbachmann.statemachine.parent') {
           configFileProvider([configFile(fileId: '881491aa-33ec-4807-bd2f-5bae17666022', targetLocation: 'settings.xml', variable: 'MAVENSETTINGS')]) {
-            sh "${env.MVN_CMD} clean verify"
+            sh "${env.MVN_CMD} clean install"
+          }
+        }
+      }
+    }
+
+    stage('Deploy') {
+      steps {
+        dir('de.scheidtbachmann.statemachine.parent') {
+          configFileProvider([configFile(fileId: '881491aa-33ec-4807-bd2f-5bae17666022', targetLocation: 'settings.xml', variable: 'MAVENSETTINGS')]) {
+            sh "${env.MVN_CMD} deploy:deploy"
           }
         }
       }
@@ -45,7 +55,7 @@ pipeline {
     stage('WhiteSource') {
       when {
         allOf {
-          expression { BRANCH_NAME == "main" }
+          expression { BRANCH_NAME == "master" }
           expression { params.Whitesource }
         }
       }
