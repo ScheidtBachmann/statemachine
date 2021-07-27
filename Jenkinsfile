@@ -16,11 +16,6 @@ pipeline {
     skipDefaultCheckout true
   }
 
-  // Run this build triggered from SCM
-  triggers {
-    pollSCM "H/10 * * * 1-5"
-  }
-
   parameters {
     // Parameters for stages
     booleanParam(name: "Whitesource", defaultValue: false,
