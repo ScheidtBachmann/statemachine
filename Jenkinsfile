@@ -17,6 +17,8 @@ pipeline {
 
   parameters {
     // Parameters for stages
+    booleanParam(name: "Deploy", defaultValue: true,
+      description: "Deploy the built artifacts to the repository.")
     booleanParam(name: "Whitesource", defaultValue: false,
       description: "Run the Whitesource analysis during the build.")
     // General process parameters
@@ -43,6 +45,13 @@ pipeline {
     }
 
     stage('Deploy') {
+      when {
+        allOf {
+          expression { currentBuild.resultIsBetterOrEqualTo("SUCCESS") }
+          expression { BRANCH_NAME == "master" }
+          expression { params.Deploy }
+        }
+      }
       steps {
         dir('de.scheidtbachmann.statemachine.parent') {
           configFileProvider([configFile(fileId: '881491aa-33ec-4807-bd2f-5bae17666022', targetLocation: 'settings.xml', variable: 'MAVENSETTINGS')]) {
