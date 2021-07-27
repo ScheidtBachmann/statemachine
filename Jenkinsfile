@@ -28,14 +28,16 @@ pipeline {
 
   environment {
     JENKINS_MAVEN_AGENT_DISABLED=true
-    MVN_CMD = "mvn -B ${params.Update ? '-U' : ''} -Dmaven.repo.local=../.m2Repo"
+    MVN_CMD = "mvn -B ${params.Update ? '-U' : ''} -Dmaven.repo.local=../.m2Repo -s settings.xml"
   }
 
   stages {
     stage('Build') {
       steps {
         dir('de.scheidtbachmann.statemachine.parent') {
-          sh "${env.MVN_CMD} clean verify"
+          configFileProvider([configFile(fileId: '881491aa-33ec-4807-bd2f-5bae17666022', targetLocation: 'settings.xml', variable: 'MAVENSETTINGS')]) {
+            sh "${env.MVN_CMD} clean verify"
+          }
         }
       }
     }
