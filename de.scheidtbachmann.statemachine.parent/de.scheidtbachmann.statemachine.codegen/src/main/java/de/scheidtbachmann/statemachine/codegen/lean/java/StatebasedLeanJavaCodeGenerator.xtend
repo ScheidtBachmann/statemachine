@@ -106,7 +106,7 @@ class StatebasedLeanJavaCodeGenerator extends ExogenousProcessor<SCCharts, CodeC
 
         codeContainer.addJavaCode(javaFilename, javaFile.toString).naming.putAll(naming)
 
-        if (template.needsContextInterface) {
+        if (template.context.length > 0) {
             val contextFilename = codeFilename + CONTEXT_SUFFIX + JAVA_EXTENSION
             val contextFile = new StringBuilder
 
@@ -136,7 +136,7 @@ class StatebasedLeanJavaCodeGenerator extends ExogenousProcessor<SCCharts, CodeC
 
     protected def void hostcodeAdditions(StringBuilder sb, SCCharts scc, StatebasedLeanJavaTemplate template,
         boolean allCodeImports) {
-        val includes = template.findModifications.get(IMPORTS).sort
+        val includes = template.findModifications.get(IMPORTS).sort.toSet
         if (allCodeImports) {
             for (include : includes) {
                 sb.append("import " + include + ";\n")
@@ -168,13 +168,13 @@ class StatebasedLeanJavaCodeGenerator extends ExogenousProcessor<SCCharts, CodeC
     def boolean checkConsistencyOfFeatures(Set<StatebasedLeanJavaExtendedFeatures> featureSet) {
         val boolean atMaxOneExecutorFeature = !(featureSet.contains(StatebasedLeanJavaExtendedFeatures.EXECUTOR) &&
             featureSet.contains(StatebasedLeanJavaExtendedFeatures.EXECUTOR_AUTO_CATCH))
-//        val boolean onlyUtilitesOrExecutor = !((featureSet.contains(StatebasedLeanJavaExtendedFeatures.EXECUTOR) ||
-//                featureSet.contains(StatebasedLeanJavaExtendedFeatures.EXECUTOR_AUTO_CATCH))
-//            && featureSet.contains(StatebasedLeanJavaExtendedFeatures.UTILITIES))
+        val boolean onlyUtilitesOrExecutor = !((featureSet.contains(StatebasedLeanJavaExtendedFeatures.EXECUTOR) ||
+                featureSet.contains(StatebasedLeanJavaExtendedFeatures.EXECUTOR_AUTO_CATCH))
+            && featureSet.contains(StatebasedLeanJavaExtendedFeatures.UTILITIES))
         val boolean onlyUtilitesOrStringContainer = !(featureSet.contains(
             StatebasedLeanJavaExtendedFeatures.UTILITIES) &&
             featureSet.contains(StatebasedLeanJavaExtendedFeatures.STRING_CONTAINER))
-        return atMaxOneExecutorFeature /* && onlyUtilitesOrExecutor*/ && onlyUtilitesOrStringContainer
+        return atMaxOneExecutorFeature && onlyUtilitesOrExecutor && onlyUtilitesOrStringContainer
     }
 
     protected def void applyFeaturesToTemplate(Set<StatebasedLeanJavaExtendedFeatures> featureSet,

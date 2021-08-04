@@ -39,6 +39,7 @@ import de.cau.cs.kieler.sccharts.processors.statebased.DebugAnnotations
 import de.cau.cs.kieler.sccharts.processors.statebased.lean.codegen.AbstractStatebasedLeanTemplate
 import java.util.List
 import org.eclipse.xtend.lib.annotations.Accessors
+import java.util.LinkedList
 
 class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
 
@@ -49,55 +50,50 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
     @Inject extension SCChartsActionExtensions
     @Inject extension EnhancedStatebasedJavaCodeSerializeHRExtensions
 
-    @Accessors val source = new StringBuilder
-    @Accessors val context = new StringBuilder
-   
-    protected Iterable<VariableDeclaration> inputEventDeclarations
-    @Accessors var boolean needsContextInterface = false
-    @Accessors var String superClass = null
-
-    @Accessors var List<StatebasedLeanJavaExtendedFeatures> enabledFeatures = newLinkedList()
-
     static val INTERFACE_PARAM_NAME = "arg"
 
-    def boolean isLoggingEnabled() {
-        return enabledFeatures.contains(StatebasedLeanJavaExtendedFeatures.LOGGER)
-    }
+    // Output for the generated code and interface
+    @Accessors(PUBLIC_GETTER) val source = new StringBuilder
+    @Accessors(PUBLIC_GETTER) val context = new StringBuilder
+
+    // Externally set flags to configure generated code   
+    @Accessors var String superClass = null
+    @Accessors var List<StatebasedLeanJavaExtendedFeatures> enabledFeatures = newLinkedList()
     
-    def boolean isExecutorEnabled() {
-        return enabledFeatures.contains(StatebasedLeanJavaExtendedFeatures.EXECUTOR) 
-            || enabledFeatures.contains(StatebasedLeanJavaExtendedFeatures.EXECUTOR_AUTO_CATCH)
-    }
-    
-    def boolean isExecutorCatching() {
-        return enabledFeatures.contains(StatebasedLeanJavaExtendedFeatures.EXECUTOR_AUTO_CATCH)
-    }
-    
-    def boolean isStringContainerEnabled() {
-        return enabledFeatures.contains(StatebasedLeanJavaExtendedFeatures.STRING_CONTAINER)
-    }
-    
-    def boolean isUtilitiesEnabled() {
-        return enabledFeatures.contains(StatebasedLeanJavaExtendedFeatures.UTILITIES)
-    }
-    
-    def void addImports(String... newImports) {
-        newImports.forEach[newImport |
-            modifications.put("imports", newImport)
-        ]
-    }
-    
+    var boolean generateContextInterface = false
+    protected Iterable<VariableDeclaration> eventDeclarations
+
+
     def void create(State rootState) {
         this.rootState = rootState
 
-        needsContextInterface = rootState.declarations.exists[annotations.exists['Context'.equalsIgnoreCase(name)]]
-        inputEventDeclarations = rootState.declarations.filter(VariableDeclaration).filter [
-            annotations.exists['InputEvent'.equalsIgnoreCase(name)]
-        ]
-        
+        processDeclarations()
+        addNeededImports()
+
+        scopes = <Scope>newLinkedList
+        scopeNames = <Scope, String>newHashMap
+        scopeEnumNames = <Scope, String>newHashMap
+        contextStructNames = <Scope, String>newHashMap
+        regionCounter = 0
+        stateEnumCounter = 1
+        enumerateScopes(rootState)
+
+        createCode()
+        createContextInterface()    
+    }
+    
+    private def Iterable<VariableDeclaration> processDeclarations() {
+        generateContextInterface = rootState.declarations
+            .exists[hasAnnotation('Context')]
+        eventDeclarations = rootState.declarations
+            .filter(VariableDeclaration)
+            .filter[hasAnnotation('InputEvent')]
+    }
+    
+    private def void addNeededImports() {
         addImports("java.util.stream.Stream", "java.util.stream.Collectors")
-        
-        if (inputEventDeclarations.size > 0) {
+
+        if (eventDeclarations.size > 0) {
             addImports("java.util.Arrays",
                 "java.util.Collection",
                 "java.util.Collections"
@@ -107,7 +103,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
         if (isLoggingEnabled) {
             addImports("org.slf4j.Logger", "org.slf4j.LoggerFactory")
         }
-
+        
         if (isExecutorEnabled) {
             addImports("java.util.UUID", 
                 "java.util.concurrent.Executors", 
@@ -119,49 +115,67 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
         
         if (isUtilitiesEnabled) {
             addImports("de.scheidtbachmann.statemachine.utilities.StateMachineRootContext",
-                "de.scheidtbachmann.statemachine.utilities.StateMachineStateContainer")
+                "de.scheidtbachmann.statemachine.utilities.StateMachineStateContainer",
+                "de.scheidtbachmann.statemachine.utilities.execution.StateMachineExecutionFactory",
+                "java.util.concurrent.Future",
+                "java.util.concurrent.ScheduledExecutorService",
+                "de.scheidtbachmann.statemachine.utilities.execution.StateMachineTimeout",
+                "de.scheidtbachmann.statemachine.utilities.execution.StateMachineTimeoutManager",
+                "java.util.concurrent.TimeUnit",
+                "java.util.function.Consumer")                
         }
-
-        scopes = <Scope>newLinkedList
-        scopeNames = <Scope, String>newHashMap
-        scopeEnumNames = <Scope, String>newHashMap
-        contextStructNames = <Scope, String>newHashMap
-        regionCounter = 0
-        stateEnumCounter = 1
-        enumerateScopes(rootState)
-
-        createCode
-        createContextInterface    
     }
 
     protected def void createCode() {
-        //CHECKSTYLEOFF LineLength This is template code that can't be arbitrarily formatted
         source.append('''
           @SuppressWarnings("all")
           public class « rootState.uniqueName »« IF superClass !== null » extends « superClass »« ENDIF » {
-            « IF isLoggingEnabled »
 
+            « generatePeripheralObjects() »
+            « generateDebuggingHelper() »
+            « generateInputEvents() »
+            « generateIface() »
+            « generateRuntimeDataStructures() »
+            « generateBehaviour() »
+            « generateInteractions() »
+            « generateCurrentStateOutput() »
+            « generateConstructor() »
+            « generateExecutorMethods() »
+            « generateTimeoutMethods() »
+            « generateGlobalObjects() »
+          }
+        ''')
+    }
+
+    private def generatePeripheralObjects() {
+        // CHECKSTYLEOFF LineLength - This is template code that cannot be arbitrarily formatted
+        return '''
+            « IF isLoggingEnabled »
               private static final Logger LOG = LoggerFactory.getLogger(«rootState.uniqueName».class);
+
             « ENDIF »
             « IF isExecutorEnabled »
-
               private final ThreadFactory executorThreadFactory = r -> new Thread(r, "StateMachine-«rootState.uniqueName»-" + UUID.randomUUID());
               protected final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(executorThreadFactory);
-            « ENDIF »
 
-            « IF rootState.declarations.filter(VariableDeclaration).map[it.valuedObjects].flatten.size > 0 »
-            public Iface iface;
             « ENDIF »
-            private TickData rootContext;
-            « IF needsContextInterface »
-              private final «rootState.uniqueName»Context externalContext; // Auto-Created context interface
-            « ENDIF »
+            « IF isUtilitiesEnabled »
+              private final StateMachineExecutionFactory executionFactory;
+              private final ScheduledExecutorService executor;
 
+            « ENDIF »
+        '''
+        // CHECKSTYLEON LineLength
+    }
+
+    private def generateDebuggingHelper() {
+        // CHECKSTYLEOFF LineLength - This is template code that cannot be arbitrarily formatted
+        return '''
             « IF rootState.hasAnnotation("ORIGINAL_SCCHART") »
               public static final String ORIGINAL_SCCHART = "« rootState.getAnnotation("ORIGINAL_SCCHART").asStringAnnotation.values.head »";
+              
             « ENDIF »
             « IF DebugAnnotations.USE_ANNOTATIONS »
-
               /**
                * Annotation for debugging
                */
@@ -169,68 +183,105 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
                  public String originalName() default "";
                  public int originalStateHash() default 0;
               }
+              
             « ENDIF »
-            « IF inputEventDeclarations.size > 0 »
+        '''
+        // CHECKSTYLEON LineLength
+    }    
 
+    private def generateInputEvents() {
+        return '''
+            « IF eventDeclarations.size > 0 »
               public enum InputEvent {
-                « FOR decl : inputEventDeclarations SEPARATOR ',' »
-                  «FOR vo : decl.valuedObjects SEPARATOR ', ' »«vo.name»« ENDFOR »
+                « FOR decl : eventDeclarations SEPARATOR ',' »
+                  «FOR event : decl.valuedObjects SEPARATOR ', ' »«event.name»« ENDFOR »
                 « ENDFOR »
               }
+
             «ENDIF»
+        '''
+    }
+
+    private def CharSequence generateIface() {
+        return '''
+            « IF isIfaceNeeded() »
+              /**
+               * The interface containing all model variables (inputs, outputs)
+               */
+              public static class Iface {
+                « rootState.createDeclarations »
+              }
+
+              public Iface iface;
+
+            « ENDIF »
+        '''
+    }
+    
+    private def generateRuntimeDataStructures() {
+        return '''
+            « generateRootRuntimeStructure() »
+            « generateScopeRuntimeStructures() »
+        '''
+    }
+
+    private def generateRootRuntimeStructure() {
+        val rootRegions = rootState.regions.filter(ControlflowRegion)
+        return '''
+            private TickData rootContext;
+            « IF generateContextInterface »
+              private final «rootState.uniqueName»Context externalContext;
+            « ENDIF »
 
             /**
-             * Enumeration for the possible thread states.
+             * Enumeration for the thread states of the root level program.
              * The chosen scheduling regime (IUR) uses four states to maintain the statuses of threads.
              */
             public enum ThreadStatus {
               TERMINATED, RUNNING, READY, PAUSING;
             }
 
-            « IF rootState.declarations.filter(VariableDeclaration).map[it.valuedObjects].flatten.size > 0 »
-            /**
-             * The interface containing all model variables (inputs, outputs)
-             */
-            public static class Iface {
-              « rootState.createDeclarations »
-            }
-
-            « ENDIF »
             /**
              * Runtime data for the root level program
              */
             public static class TickData« IF isUtilitiesEnabled » implements StateMachineRootContext« ENDIF » {
               ThreadStatus threadStatus;
 
-              « FOR r : rootState.regions.filter(ControlflowRegion) »
+              « FOR r : rootRegions »
                 « r.uniqueContextMemberName » « r.uniqueName » = new « r.uniqueContextMemberName »();
               « ENDFOR »
-              
+
               public Stream<String> getCurrentState() {
                 return Stream.of(
-                    « FOR r : rootState.regions.filter(ControlflowRegion) SEPARATOR ',' »
+                  « FOR r : rootRegions SEPARATOR ',' »
                     « r.uniqueName ».getCurrentState()
-                    « ENDFOR »
-                  ).flatMap(i -> i);
+                  « ENDFOR »
+                ).flatMap(i -> i);
               }
             }
-            « FOR r : scopes.filter(ControlflowRegion) »
 
+        '''            
+    }
+
+    private def generateScopeRuntimeStructures() {
+        return '''
+            « FOR r : scopes.filter(ControlflowRegion) »
               /**
                * Enumeration for all states of the « r.name » region
                */
               public enum « r.uniqueName »States {
-                « FOR s : r.states.indexed SEPARATOR ', ' 
-                  »« s.value.uniqueEnumName »("« (s.value.getAnnotations("SourceState").last as StringAnnotation).values.head »")«
-                   IF s.value.isHierarchical », « s.value.uniqueEnumName»RUNNING("« (s.value.getAnnotations("SourceState").last as StringAnnotation).values.head »")« ENDIF 
-                  »« ENDFOR »;
+                « FOR s : r.states SEPARATOR ', ' »
+                  « s.uniqueEnumName »("« getSourceState(s) »")«IF s.isHierarchical », 
+                  « s.uniqueEnumName»RUNNING("« getSourceState(s) »")« ENDIF »
+                « ENDFOR »
+                ;
 
                 private String origin;
 
                 « r.uniqueName »States(String origin) {
                   this.origin = origin;
                 }
-                
+
                 public String getOrigin() {
                   return origin;
                 }
@@ -243,30 +294,35 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
                 ThreadStatus threadStatus;
                 « r.uniqueName »States activeState;
                 « IF r.states.exists[s | s.outgoingTransitions.exists[t | !t.immediate]] »
-                boolean delayedEnabled;
+                  boolean delayedEnabled;
                 « ENDIF »
                 « FOR c : r.states.map[ regions ].flatten.filter(ControlflowRegion) »
                   « c.uniqueContextMemberName » « c.uniqueContextName » = new « c.uniqueContextMemberName »();
                 « ENDFOR »
-                
+
                 public Stream<String> getCurrentState() {
                   switch (activeState) {
-                  « FOR s : r.states.filter[isHierarchical] »
-                  case « s.uniqueEnumName »:
-                  case « s.uniqueEnumName »RUNNING:
-                    return Stream.of(
-                        « FOR subr : s.regions.filter(ControlflowRegion) SEPARATOR ',' »
-                        « subr.uniqueContextName ».getCurrentState()
-                        « ENDFOR »  
-                      ).flatMap(i -> i);
-                  « ENDFOR »
-                  default:
-                    return Stream.of(activeState.getOrigin().replaceAll("^State (.+) \\(-?[0-9]+\\)$", "$1"));
+                    « FOR s : r.states.filter[isHierarchical] »
+                      case « s.uniqueEnumName »:
+                      case « s.uniqueEnumName »RUNNING:
+                        return Stream.of(
+                          « FOR subr : s.regions.filter(ControlflowRegion) SEPARATOR ',' »
+                            « subr.uniqueContextName ».getCurrentState()
+                          « ENDFOR »  
+                        ).flatMap(i -> i);
+                    « ENDFOR »
+                    default:
+                      return Stream.of(activeState.getOrigin().replaceAll("^State (.+) \\(-?[0-9]+\\)$", "$1"));
                   }
                 }
               }
-            « ENDFOR »
 
+            « ENDFOR »
+        '''
+    }
+
+    private def generateBehaviour() {
+        return '''
             «FOR s : scopes»
               « IF (s instanceof State) »
                 « createCodeState(s) »
@@ -276,22 +332,23 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
               « ENDIF »
 
             « ENDFOR »
+        '''
+    }
 
-            public void init() {
-              « IF isLoggingEnabled »
-                LOG.trace("Initializing StateMachine");
-              « ENDIF »
-              reset();
-              « IF inputEventDeclarations.size > 0 »
-                writeEventsToIfaceInputs(Collections.emptyList());
-              « ENDIF »
-              tick();
-            }
+    private def generateInteractions() {
+        // CHECKSTYLEOFF LineLength - This is template code that cannot be arbitrarily formatted
+        return '''
+            « IF eventDeclarations.size > 0 »
+              private void writeEventsToIfaceInputs(Collection<InputEvent> events) {
+              « FOR decl : eventDeclarations »
+                « FOR vo: decl.valuedObjects »
+                  iface.«vo.name» = events.contains(InputEvent.«vo.name»);
+                « ENDFOR »
+              « ENDFOR »
+              }
 
-            public void reset() {
-              « IF isLoggingEnabled »
-                LOG.trace("Resetting StateMachine");
-              « ENDIF »
+            « ENDIF »
+            private void reset() {
               « FOR r : rootState.regions.filter(ControlflowRegion) »
                 rootContext.« r.uniqueContextName ».activeState = « r.uniqueName »States.« r.states.filter[ initial ].head.uniqueEnumName »;
                 rootContext.« r.uniqueContextName ».threadStatus = ThreadStatus.READY;
@@ -300,42 +357,90 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
               rootContext.threadStatus = ThreadStatus.READY;
             }
 
-            public void tick() {
-              « IF isLoggingEnabled »
-                LOG.trace("Performing tick on StateMachine");
-              « ENDIF »
+            private void tick() {
+              « generateLogging('"Performing tick on StateMachine"') »
               if (rootContext.threadStatus == ThreadStatus.TERMINATED) return;
-
+            
               « rootState.uniqueName »_root(rootContext);
             }
-            « IF inputEventDeclarations.size > 0 »
 
-            private void writeEventsToIfaceInputs(Collection<InputEvent> events) {
-              « FOR decl : inputEventDeclarations »
-              « FOR vo: decl.valuedObjects »
-              iface.«vo.name» = events.contains(InputEvent.«vo.name»);
-              « ENDFOR »
-              « ENDFOR »
+            « IF isUtilitiesEnabled »
+            public Future<?> init() {
+              return init(null, null);
             }
 
-            public void apply(Collection<InputEvent> events) {
-              « IF isLoggingEnabled »
-                LOG.trace("Performing action on input events {}", events);
+            public Future<?> init(Runnable preInitTask, Runnable postInitTask) {
+              return executor.submit(() -> {
+                if (preInitTask != null) {
+                  preInitTask.run();
+                }
+                « generateLogging('"Initializing StateMachine"') »
+                reset();
+                « IF eventDeclarations.size > 0 »
+                  writeEventsToIfaceInputs(Collections.emptyList());
+                « ENDIF »
+                tick();
+                if (postInitTask != null) {
+                  postInitTask.run();
+                }
+              });
+            }
+            « ELSE »
+            public void init() {
+              « generateLogging('"Initializing StateMachine"') »
+              reset();
+              « IF eventDeclarations.size > 0 »
+                writeEventsToIfaceInputs(Collections.emptyList());
               « ENDIF »
-              writeEventsToIfaceInputs(events);
               tick();
             }
+            « ENDIF »
 
+            « IF isUtilitiesEnabled »
+            public Future<?> apply(InputEvent... events) {
+              return apply(Arrays.asList(events));
+            }
+
+            public Future<?> apply(Collection<InputEvent> events) {
+              return apply(null, null, events);
+            }
+            
+            public Future<?> apply(Runnable preExecutionTask, Runnable postExecutionTask, Collection<InputEvent> events) {
+              return executor.submit(() -> {
+                « generateLogging('"Performing action on input events {}", events') »
+                if (preExecutionTask != null) {
+                  preExecutionTask.run();
+                }
+                « IF eventDeclarations.size > 0 »
+                  writeEventsToIfaceInputs(events);
+                « ENDIF»
+                tick();
+                if (postExecutionTask != null) {
+                  postExecutionTask.run();
+                }
+              });
+            }
+            « ELSE »
             public void apply(InputEvent... events) {
               apply(Arrays.asList(events));
             }
-            « ENDIF»
 
+            public void apply(Collection<InputEvent> events) {
+              « generateLogging('"Performing action on input events {}", events') »
+              « IF eventDeclarations.size > 0 »
+                writeEventsToIfaceInputs(events);
+              « ENDIF»
+              tick();
+            }
+            « ENDIF »
+
+        '''
+        // CHECKSTYLEON LineLength
+    }
+    
+    private def generateCurrentStateOutput() {
+        return '''
             « IF isStringContainerEnabled »
-              public CurrentStateContainer getCurrentState() {
-                return new CurrentStateContainer(rootContext);
-              }
-
               static class CurrentStateContainer {
                 private final TickData rootContext;
 
@@ -347,6 +452,10 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
                   return rootContext.getCurrentState().distinct().collect(Collectors.joining(","));
                 }
               }
+
+              public CurrentStateContainer getCurrentState() {
+                return new CurrentStateContainer(rootContext);
+              }
             « ELSEIF isUtilitiesEnabled »
               public StateMachineStateContainer getCurrentState() {
                 return new StateMachineStateContainer(rootContext);
@@ -356,106 +465,138 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
                 return rootContext.getCurrentState().distinct().collect(Collectors.joining(","));
               }
             « ENDIF »
-            
-            «  »
-            public «rootState.uniqueName»(« IF needsContextInterface»«rootState.uniqueName»Context externalContext« ENDIF ») {
-              « IF needsContextInterface»
+
+        '''
+    }
+    
+    private def generateConstructor() {
+        var parameters = new LinkedList<String>();
+        if (generateContextInterface) {
+            parameters.add(rootState.uniqueName + "Context externalContext")
+        }
+        if (isUtilitiesEnabled) {
+            parameters.add("StateMachineExecutionFactory executionFactory")
+        }
+        return '''
+            public « rootState.uniqueName »(« parameters.join(", ") ») {
+              « IF generateContextInterface »
                 this.externalContext = externalContext;
               « ENDIF »
-              « IF rootState.declarations.filter(VariableDeclaration).map[it.valuedObjects].flatten.size > 0 »
+              « IF isUtilitiesEnabled »
+                this.executionFactory = executionFactory;
+                this.executor = executionFactory.createExecutor("« rootState.uniqueName »");
+              « ENDIF »
+              « IF isIfaceNeeded »
               this.iface = new Iface();
               « ENDIF »
               this.rootContext = new TickData();
             }
+        '''
+    }
+    
+    private def generateExecutorMethods() {
+        return '''
             « IF isExecutorEnabled »
+              public void execute(final Runnable task) {
+                « IF isExecutorCatching »
+                  executor.execute(() -> {
+                    try {
+                      task.run();
+                    } catch (Throwable t) {
+                      t.printStackTrace();
+                    }
+                  });
+                « ELSE »
+                  executor.execute(task);
+                « ENDIF »
+                }
 
-            public void execute(final Runnable task) {
-              « IF isExecutorCatching »
-                executor.execute(() -> {
-                  try {
-                    task.run();
-                  } catch (Throwable t) {
-                    t.printStackTrace();
-                  }
-                });
-              « ELSE »
-                executor.execute(task);
-              « ENDIF »
-            }
+              public ScheduledFuture<?> schedule(final Runnable command, final long delay, final TimeUnit unit) {
+                « IF isExecutorCatching »
+                  return executor.schedule(() -> {
+                    try {
+                      command.run();
+                    } catch (Throwable t) {
+                      t.printStackTrace();
+                    }
+                  }, delay, unit);
+                « ELSE »
+                  return executor.schedule(command, delay, unit);
+                « ENDIF »
+                }
 
-            public ScheduledFuture<?> schedule(final Runnable command, final long delay, final TimeUnit unit) {
-              « IF isExecutorCatching »
-                return executor.schedule(() -> {
-                  try {
-                    command.run();
-                  } catch (Throwable t) {
-                    t.printStackTrace();
-                  }
-                }, delay, unit);
-              « ELSE »
-                return executor.schedule(command, delay, unit);
-              « ENDIF »
-            }
+              public ScheduledFuture<?> scheduleAtFixedRate(final Runnable command, final long initialDelay, 
+                  final long period, final TimeUnit unit) {
+                « IF isExecutorCatching »
+                  return executor.scheduleAtFixedRate(() -> {
+                    try {
+                      command.run();
+                    } catch (Throwable t) {
+                      t.printStackTrace();
+                    }
+                  }, initialDelay, period, unit);
+                « ELSE »
+                  return executor.scheduleAtFixedRate(command, initialDelay, period, unit);
+                « ENDIF »
+              }
 
-            public ScheduledFuture<?> scheduleAtFixedRate(final Runnable command, final long initialDelay, final long period,
-              final TimeUnit unit) {
-              « IF isExecutorCatching »
-                return executor.scheduleAtFixedRate(() -> {
-                  try {
-                    command.run();
-                  } catch (Throwable t) {
-                    t.printStackTrace();
-                  }
-                }, initialDelay, period, unit);
-              « ELSE »
-                return executor.scheduleAtFixedRate(command, initialDelay, period, unit);
-              « ENDIF »
-            }
             « ENDIF »
+        '''
+    }
+    
+    private def generateTimeoutMethods() {
+        return '''
+            « IF isUtilitiesEnabled »
+              public StateMachineTimeoutManager createTimeout(long delay, TimeUnit timeUnit, 
+                  Consumer<StateMachineTimeout> timeoutAction) {
+                return executionFactory.createTimeout(executor, delay, timeUnit, timeoutAction);
+              }
 
+            « ENDIF »
+        '''
+    }
+
+    private def generateGlobalObjects() {
+        return '''
             « FOR globalObject : modifications.get(EnhancedStatebasedJavaCodeSerializeHRExtensions.GLOBAL_OBJECTS) »
               « globalObject »
             « ENDFOR »
-          }
-        ''')
-        //CHECKSTYLEON LineLength
-    }
-
-    protected def CharSequence createCodeState(State state) {
+        '''
+    }    
+    
+    private def CharSequence createCodeState(State state) {
         val originalName = state.getAnnotation("OriginalState")?.asStringAnnotation?.values?.head
         val originalNameHashAnnotation = state.getAnnotation("OriginalNameHash")?.asIntAnnotation 
         val originalStateHashCode = if (originalNameHashAnnotation === null) 0 else originalNameHashAnnotation.value
 
         //CHECKSTYLEOFF LineLength This is template code that can't be arbitrarily formatted
         return '''
-          « state.generateJavaDocFromCommentAnnotations »
-          « IF originalName !== null »@SCChartsDebug(originalName = "« originalName »", originalStateHash = « originalStateHashCode »)«ENDIF»
-          private void « state.uniqueName »« IF (state == rootState) »_root« ENDIF »(« state.uniqueContextMemberName » context) {
-            « IF isLoggingEnabled »
-              LOG.trace("Activating state « state.getStringAnnotationValue("SourceState") »");
-            « ENDIF »
-          « IF state.isHierarchical »
-          « IF state !== rootState »
-            « FOR r : state.regions.filter(ControlflowRegion) »
-              context.« r.uniqueContextName ».activeState = « r.uniqueName »States.« r.states.filter[ initial ].head.uniqueEnumName »;
-              « IF r.states.exists[s | s.outgoingTransitions.exists[t | !t.immediate]] »
-              context.« r.uniqueContextName ».delayedEnabled = false;
-              « ENDIF »
-              context.« r.uniqueContextName ».threadStatus = ThreadStatus.READY;
-            « ENDFOR »
-          
-            context.activeState = « state.parentRegion.uniqueName »States.« state.uniqueEnumName »RUNNING;
-          }
+            « generateJavaDocFromCommentAnnotations(state) »
+            « IF originalName !== null »@SCChartsDebug(originalName = "« originalName »", originalStateHash = « originalStateHashCode »)«ENDIF»
+            private void « state.uniqueName »« IF (state == rootState) »_root« ENDIF »(« state.uniqueContextMemberName » context) {
+              « generateLogging('''"Activating state « state.getStringAnnotationValue("SourceState") »"''') »
+            « IF state.isHierarchical »
+            « IF state !== rootState »
+              « FOR r : state.regions.filter(ControlflowRegion) »
+                context.« r.uniqueContextName ».activeState = « r.uniqueName »States.« r.states.filter[ initial ].head.uniqueEnumName »;
+                « IF r.states.exists[s | s.outgoingTransitions.exists[t | !t.immediate]] »
+                context.« r.uniqueContextName ».delayedEnabled = false;
+                « ENDIF »
+                context.« r.uniqueContextName ».threadStatus = ThreadStatus.READY;
+              « ENDFOR »
 
-          « state.generateJavaDocFromCommentAnnotations »
-          « IF originalName !== null »@SCChartsDebug(originalName = "« originalName »", originalStateHash = « originalStateHashCode »)«ENDIF»
-          private void « state.uniqueName »_running(« state.uniqueContextMemberName » context) {
-            « IF isLoggingEnabled »LOG.trace("Activating state « state.getStringAnnotationValue("SourceState") »");« ENDIF »
-          « ENDIF »
-            « createCodeSuperstate(state) »
-          « ENDIF »
-            « addSimpleStateCode(state) »
-          }
+              context.activeState = « state.parentRegion.uniqueName »States.« state.uniqueEnumName »RUNNING;
+            }
+
+            « state.generateJavaDocFromCommentAnnotations »
+            « IF originalName !== null »@SCChartsDebug(originalName = "« originalName »", originalStateHash = « originalStateHashCode »)«ENDIF»
+            private void « state.uniqueName »_running(« state.uniqueContextMemberName » context) {
+              « IF isLoggingEnabled »LOG.trace("Activating state « state.getStringAnnotationValue("SourceState") »");« ENDIF »
+            « ENDIF »
+              « createCodeSuperstate(state) »
+            « ENDIF »
+              « addSimpleStateCode(state) »
+            }
         '''
         //CHECKSTYLEON LineLength
     }
@@ -633,7 +774,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
     }
 
     protected def createContextInterface() {
-        if (needsContextInterface) {
+        if (generateContextInterface) {
             // We want to support method overloading (at least roughly)
             // So we gather all method calls and store the information of the used argument types 
             val Multimap<ReferenceDeclaration, List<CharSequence>> referenceUsages = HashMultimap.create
@@ -744,11 +885,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
         }
     }
 
-    protected def findModifications() {
-        return modifications
-    }
-    
-    protected def generateJavaDocFromCommentAnnotations(Annotatable annotatable) {
+    private def generateJavaDocFromCommentAnnotations(Annotatable annotatable) {
         val comments = annotatable.annotations.filter(CommentAnnotation);
         return '''
             « IF comments !== null && !comments.empty »
@@ -770,6 +907,52 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
         if (commentString !== null && !commentString.equals("")) {
             return ''' // « commentString »'''
         }
-         
+    }
+    
+    private def CharSequence generateLogging(String log) {
+        return '''
+            « IF isLoggingEnabled »
+              LOG.trace(« log »);
+            « ENDIF »
+        '''
+    }    
+
+    private def boolean isLoggingEnabled() {
+        return enabledFeatures.contains(StatebasedLeanJavaExtendedFeatures.LOGGER)
+    }
+    
+    private def boolean isExecutorEnabled() {
+        return enabledFeatures.contains(StatebasedLeanJavaExtendedFeatures.EXECUTOR) 
+            || enabledFeatures.contains(StatebasedLeanJavaExtendedFeatures.EXECUTOR_AUTO_CATCH)
+    }
+    
+    private def boolean isExecutorCatching() {
+        return enabledFeatures.contains(StatebasedLeanJavaExtendedFeatures.EXECUTOR_AUTO_CATCH)
+    }
+    
+    private def boolean isStringContainerEnabled() {
+        return enabledFeatures.contains(StatebasedLeanJavaExtendedFeatures.STRING_CONTAINER)
+    }
+    
+    private def boolean isUtilitiesEnabled() {
+        return enabledFeatures.contains(StatebasedLeanJavaExtendedFeatures.UTILITIES)
+    }
+
+    private def boolean isIfaceNeeded() {
+        return rootState.declarations.filter(VariableDeclaration).map[it.valuedObjects].flatten.size > 0
+    }
+    
+    private def void addImports(String... newImports) {
+        newImports.forEach[newImport |
+            modifications.put("imports", newImport)
+        ]
+    }
+    
+    private def String getSourceState(State s) {
+        return (s.getAnnotations("SourceState").last as StringAnnotation).values.head 
+    }    
+
+    protected def findModifications() {
+        return modifications
     }
 }

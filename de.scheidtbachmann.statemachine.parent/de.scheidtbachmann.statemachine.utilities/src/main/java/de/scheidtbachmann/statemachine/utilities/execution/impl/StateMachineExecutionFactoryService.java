@@ -28,7 +28,7 @@ import java.util.function.Consumer;
  * Implementation of the {@link StateMachineExecutionFactory} for regular usage
  * in OSGi context.
  */
-@Component(immediate = true)
+@Component(name = "statemachine.utilities.StateMachineExecutionFactoryService", immediate = true)
 public class StateMachineExecutionFactoryService implements StateMachineExecutionFactory {
 
     @Override

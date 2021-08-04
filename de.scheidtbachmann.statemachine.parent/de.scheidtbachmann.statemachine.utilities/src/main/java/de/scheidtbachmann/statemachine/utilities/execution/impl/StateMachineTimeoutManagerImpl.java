@@ -55,6 +55,7 @@ public class StateMachineTimeoutManagerImpl implements StateMachineTimeoutManage
         this.executor = executor;
         this.delay = delay;
         this.timeUnit = timeUnit;
+        timeout = new Timeout();
     }
 
     @Override
@@ -67,7 +68,7 @@ public class StateMachineTimeoutManagerImpl implements StateMachineTimeoutManage
         if (timeout != null) {
             timeout.cancel();
         }
-        timeout = new Timeout(executor, delay, timeUnit);
+        timeout = new Timeout();
     }
 
     @Override
@@ -82,7 +83,7 @@ public class StateMachineTimeoutManagerImpl implements StateMachineTimeoutManage
         private ScheduledFuture<?> timeoutFuture;
         private boolean cancelled = false;
 
-        public Timeout(final ScheduledExecutorService executor, final long delay, final TimeUnit timeUnit) {
+        public Timeout() {
             timeoutFuture = executor.schedule(this::execute, delay, timeUnit);
         }
 
