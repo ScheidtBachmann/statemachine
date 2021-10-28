@@ -122,7 +122,8 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
                 "de.scheidtbachmann.statemachine.utilities.execution.StateMachineTimeout",
                 "de.scheidtbachmann.statemachine.utilities.execution.StateMachineTimeoutManager",
                 "java.util.concurrent.TimeUnit",
-                "java.util.function.Consumer")                
+                "java.util.function.Consumer",
+                "java.util.List")                
         }
     }
 
@@ -402,7 +403,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             }
 
             public Future<?> apply(Collection<InputEvent> events) {
-              return apply(null, null, events);
+              return apply(null, events, null);
             }
 
             public Future<?> apply(Runnable preExecutionTask, InputEvent event) {
