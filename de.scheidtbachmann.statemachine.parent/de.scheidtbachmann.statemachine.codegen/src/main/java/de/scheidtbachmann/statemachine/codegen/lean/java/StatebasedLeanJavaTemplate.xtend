@@ -404,8 +404,28 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             public Future<?> apply(Collection<InputEvent> events) {
               return apply(null, null, events);
             }
-            
-            public Future<?> apply(Runnable preExecutionTask, Runnable postExecutionTask, Collection<InputEvent> events) {
+
+            public Future<?> apply(Runnable preExecutionTask, InputEvent event) {
+                return apply(preExecutionTask, List.of(event), null);
+            }
+
+            public Future<?> apply(Runnable preExecutionTask, Collection<InputEvent> events) {
+                return apply(preExecutionTask, events, null);
+            }
+
+            public Future<?> apply(InputEvent event, Runnable postExecutionTask) {
+                return apply(null, List.of(event), postExecutionTask);
+            }
+
+            public Future<?> apply(Collection<InputEvent> events, Runnable postExecutionTask) {
+                return apply(null, events, postExecutionTask);
+            }
+
+            public Future<?> apply(Runnable preExecutionTask, InputEvent event, Runnable postExecutionTask) {
+                return apply(preExecutionTask, List.of(event), postExecutionTask);
+            }
+
+            public Future<?> apply(Runnable preExecutionTask, Collection<InputEvent> events, Runnable postExecutionTask) {
               return executor.submit(() -> {
                 « generateLogging('"Performing action on input events {}", events') »
                 if (preExecutionTask != null) {
