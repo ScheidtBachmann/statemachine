@@ -429,10 +429,10 @@
 			<id>klighd-localRelease</id>
 			<url>http://ki-vl-arch-repo.ki.lan/nexus/content/repositories/releases/</url>
 		</repository>
-		<repository>
+		<!-- <repository>
 			<id>klighd-piccolo2d</id>
 			<url>http://services.typefox.io/open-source/jenkins/job/KLighD.Piccolo2d/lastSuccessfulBuild/artifact/klighd-piccolo2d</url>
-		</repository>
+		</repository> -->
 		<!-- <repository> <id>elk</id> <url>https://oss.sonatype.org/content/repositories/snapshots/</url> 
 			</repository> -->
 		<repository>
