@@ -31,11 +31,11 @@ public class StateMachineTestTimeoutManager implements StateMachineTimeoutManage
     private final Consumer<StateMachineTimeout> action;
 
     public StateMachineTestTimeoutManager(final ScheduledExecutorService executor, final String timeoutId,
-        final Consumer<StateMachineTimeout> action) {
+        final Consumer<StateMachineTimeout> action, final boolean autoStart) {
         this.executor = executor;
         this.timeoutId = timeoutId;
         this.action = action;
-        running = false;
+        running = autoStart;
     }
 
     @Override

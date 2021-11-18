@@ -62,7 +62,7 @@ public class StateMachineTestExecutionFactory implements StateMachineExecutionFa
             throw new StateMachineTestTimeoutException(String.format(
                 "Tried creating new timeout %s, but timeout already exists and is already running.", timeoutId));
         } else {
-            return registerNewTimeout(executor, timeoutId, timeoutAction);
+            return registerNewTimeout(executor, timeoutId, timeoutAction, autoStart);
         }
     }
 
@@ -71,9 +71,9 @@ public class StateMachineTestExecutionFactory implements StateMachineExecutionFa
     }
 
     private StateMachineTimeoutManager registerNewTimeout(final ScheduledExecutorService executor,
-        final String timeoutId, final Consumer<StateMachineTimeout> timeoutAction) {
+        final String timeoutId, final Consumer<StateMachineTimeout> timeoutAction, final boolean autoStart) {
         return timeouts.computeIfAbsent(timeoutId,
-            id -> new StateMachineTestTimeoutManager(executor, id, timeoutAction));
+            id -> new StateMachineTestTimeoutManager(executor, id, timeoutAction, autoStart));
     }
 
     /**
