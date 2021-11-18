@@ -48,7 +48,7 @@ pipeline {
       when {
         allOf {
           expression { currentBuild.resultIsBetterOrEqualTo("SUCCESS") }
-          expression { BRANCH_NAME == "master" }
+          expression { BRANCH_NAME == "main" }
           expression { params.Deploy }
         }
       }
@@ -64,7 +64,7 @@ pipeline {
     stage('WhiteSource') {
       when {
         allOf {
-          expression { BRANCH_NAME == "master" }
+          expression { BRANCH_NAME == "main" }
           expression { params.Whitesource }
         }
       }
