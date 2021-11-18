@@ -514,8 +514,8 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
         return '''
             « IF isExecutorEnabled »
               public StateMachineTimeoutManager createTimeout(String timeoutId, long delay, TimeUnit timeUnit, 
-                  Consumer<StateMachineTimeout> timeoutAction) {
-                return executionFactory.createTimeout(executor, timeoutId, delay, timeUnit, timeoutAction);
+                  Consumer<StateMachineTimeout> timeoutAction, boolean autoStart) {
+                return executionFactory.createTimeout(executor, timeoutId, delay, timeUnit, timeoutAction, autoStart);
               }
 
             « ENDIF »
