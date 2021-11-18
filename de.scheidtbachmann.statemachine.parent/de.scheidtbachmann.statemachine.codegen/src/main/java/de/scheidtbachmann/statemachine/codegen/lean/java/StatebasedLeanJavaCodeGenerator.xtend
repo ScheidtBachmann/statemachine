@@ -47,7 +47,7 @@ class StatebasedLeanJavaCodeGenerator extends ExogenousProcessor<SCCharts, CodeC
         "Superclass to use for the generated class file.")
 
     protected static val FEATURES = PragmaRegistry.register("features", StringPragma,
-        "Comma-separated list of extension features to enable in the generated code")
+        "Comma-separated list of feature overrides for the generated code")
 
     public static val JAVA_EXTENSION = ".java"
     public static val IMPORTS = "imports"
@@ -70,23 +70,15 @@ class StatebasedLeanJavaCodeGenerator extends ExogenousProcessor<SCCharts, CodeC
             template.superClass = model.getStringPragmas(SUPERCLASS).head.values.head
         }
 
-        val Set<StatebasedLeanJavaExtendedFeatures> activeFeatureSet = getFeatureSet()
-        var boolean featureSetIsConsistent = true;
-        if (activeFeatureSet !== null) {
-            featureSetIsConsistent = checkConsistencyOfFeatures(activeFeatureSet)
-            applyFeaturesToTemplate(activeFeatureSet, template)
-        }
+        val Set<StatebasedLeanJavaFeatureOverrides> featureOverrideSet = getFeatureSet()
+        applyOverridesToTemplate(featureOverrideSet, template)
+        
+        template.create(model.rootStates.head)
 
-        if (featureSetIsConsistent) {
-            template.create(model.rootStates.head)
+        val cc = new CodeContainer
+        cc.writeToCodeContainer(template, model.rootStates.head.name.hostcodeSafeName, model)
 
-            val cc = new CodeContainer
-            cc.writeToCodeContainer(template, model.rootStates.head.name.hostcodeSafeName, model)
-
-            setModel(cc)
-        } else {
-            environment.errors.add("Features set is not consistent: " + activeFeatureSet)
-        }
+        setModel(cc)
     }
 
     protected def void writeToCodeContainer(CodeContainer codeContainer, StatebasedLeanJavaTemplate template,
@@ -165,35 +157,23 @@ class StatebasedLeanJavaCodeGenerator extends ExogenousProcessor<SCCharts, CodeC
         }
     }
 
-    def boolean checkConsistencyOfFeatures(Set<StatebasedLeanJavaExtendedFeatures> featureSet) {
-        val boolean atMaxOneExecutorFeature = !(featureSet.contains(StatebasedLeanJavaExtendedFeatures.EXECUTOR) &&
-            featureSet.contains(StatebasedLeanJavaExtendedFeatures.EXECUTOR_AUTO_CATCH))
-        val boolean onlyUtilitesOrExecutor = !((featureSet.contains(StatebasedLeanJavaExtendedFeatures.EXECUTOR) ||
-                featureSet.contains(StatebasedLeanJavaExtendedFeatures.EXECUTOR_AUTO_CATCH))
-            && featureSet.contains(StatebasedLeanJavaExtendedFeatures.UTILITIES))
-        val boolean onlyUtilitesOrStringContainer = !(featureSet.contains(
-            StatebasedLeanJavaExtendedFeatures.UTILITIES) &&
-            featureSet.contains(StatebasedLeanJavaExtendedFeatures.STRING_CONTAINER))
-        return atMaxOneExecutorFeature && onlyUtilitesOrExecutor && onlyUtilitesOrStringContainer
-    }
-
-    protected def void applyFeaturesToTemplate(Set<StatebasedLeanJavaExtendedFeatures> featureSet,
+    protected def void applyOverridesToTemplate(Set<StatebasedLeanJavaFeatureOverrides> featureOverrides,
         StatebasedLeanJavaTemplate template) {
         if (model.getPragma(FEATURES) !== null) {
             model.getStringPragmas(FEATURES).head.values.forEach [
-                val enabledFeature = StatebasedLeanJavaExtendedFeatures.valueOf(it.toUpperCase())
-                if (enabledFeature !== null) {
-                    template.enabledFeatures.add(enabledFeature);
+                val featureOverride = StatebasedLeanJavaFeatureOverrides.valueOf(it.toUpperCase())
+                if (featureOverride !== null) {
+                    template.featureOverrides.add(featureOverride);
                 }
             ]
         }
     }
 
-    protected def Set<StatebasedLeanJavaExtendedFeatures> getFeatureSet() {
+    protected def Set<StatebasedLeanJavaFeatureOverrides> getFeatureSet() {
         if (model.getPragma(FEATURES) !== null) {
             return model.getStringPragmas(FEATURES).head?.values //
             .map[it.toUpperCase] //
-            .map[StatebasedLeanJavaExtendedFeatures.valueOf(it)] //
+            .map[StatebasedLeanJavaFeatureOverrides.valueOf(it)] //
             .toSet
         } else {
             return #{}

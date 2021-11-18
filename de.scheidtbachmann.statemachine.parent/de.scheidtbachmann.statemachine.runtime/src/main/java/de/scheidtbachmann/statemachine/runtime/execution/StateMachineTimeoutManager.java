@@ -9,7 +9,7 @@
 //
 // ******************************************************************************
 
-package de.scheidtbachmann.statemachine.utilities.execution;
+package de.scheidtbachmann.statemachine.runtime.execution;
 
 /**
  * Timeout manager that is started for a state machine and waits for a given
@@ -26,6 +26,11 @@ public interface StateMachineTimeoutManager {
      * @return {@code true} if a timeout is running, {@code false} otherwise.
      */
     boolean isRunning();
+
+    /**
+     * Starts the timeout.
+     */
+    void start();
 
     /**
      * Resets/starts the timeout.

@@ -9,7 +9,7 @@
 //
 // ******************************************************************************
 
-package de.scheidtbachmann.statemachine.utilities;
+package de.scheidtbachmann.statemachine.runtime;
 
 import java.util.stream.Stream;
 

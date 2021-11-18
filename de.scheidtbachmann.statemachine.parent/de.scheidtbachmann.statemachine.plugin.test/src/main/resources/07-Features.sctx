@@ -1,7 +1,5 @@
 #package "de.scheidtbachmann.statemachine.foo"
 
-#features logger,utilities
-
 scchart FeaturesTest {
 	initial state S1
 	go to S2

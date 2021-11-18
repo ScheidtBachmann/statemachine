@@ -9,7 +9,7 @@
 //
 // ******************************************************************************
 
-package de.scheidtbachmann.statemachine.utilities.execution;
+package de.scheidtbachmann.statemachine.runtime.execution;
 
 /**
  * An actual Timeout event. This allows to check the cancellation of the Timeout prior to execution of the action.
@@ -24,5 +24,12 @@ public interface StateMachineTimeout {
      * @return {@code true} if the timeout has been cancelled, {@code false} otherwise.
      */
     boolean isCancelled();
+
+    /**
+     * Returns the identification of the triggered timeout.
+     *
+     * @return the timeout identification
+     */
+    String getId();
 
 }

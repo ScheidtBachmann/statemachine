@@ -9,9 +9,7 @@
 //
 // ******************************************************************************
 
-package de.scheidtbachmann.statemachine.utilities.execution;
-
-import de.scheidtbachmann.statemachine.utilities.execution.impl.StateMachineTimeoutManagerImpl;
+package de.scheidtbachmann.statemachine.runtime.execution;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -34,11 +32,13 @@ public interface StateMachineExecutionFactory {
     ScheduledExecutorService createExecutor(String nameFragment);
 
     /**
-     * Creates a new {@link StateMachineTimeoutManagerImpl} for the state machine.
+     * Creates a new {@link StateMachineTimeoutManager} for the state machine.
      *
      * @param executor
      *            The {@link ScheduledExecutorService} used by the state
      *            machine.
+     * @param timeoutId
+     *            The identification of the timeout.
      * @param delay
      *            The delay for the timeout scheduling
      * @param timeUnit
@@ -48,9 +48,11 @@ public interface StateMachineExecutionFactory {
      *            {@link Consumer} is passed the actual {@link StateMachineTimeout},
      *            so that the cancellation state can be validated during
      *            execution.
-     * @return The created {@link StateMachineTimeoutManagerImpl}.
+     * @param autoStart
+     *            Flag to control whether the timeout should be immediately started
+     * @return The created {@link StateMachineTimeoutManager}.
      */
-    StateMachineTimeoutManager createTimeout(ScheduledExecutorService executor, long delay, TimeUnit timeUnit,
-        Consumer<StateMachineTimeout> timeoutAction);
+    StateMachineTimeoutManager createTimeout(ScheduledExecutorService executor, String timeoutId, long delay,
+        TimeUnit timeUnit, Consumer<StateMachineTimeout> timeoutAction, boolean autoStart);
 
 }

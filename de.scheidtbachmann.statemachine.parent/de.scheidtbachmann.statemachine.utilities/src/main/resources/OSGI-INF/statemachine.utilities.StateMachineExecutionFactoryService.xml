@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" immediate="true" name="statemachine.utilities.StateMachineExecutionFactoryService">
-   <service>
-      <provide interface="de.scheidtbachmann.statemachine.utilities.execution.StateMachineExecutionFactory"/>
-   </service>
-   <implementation class="de.scheidtbachmann.statemachine.utilities.execution.impl.StateMachineExecutionFactoryService"/>
-</scr:component>

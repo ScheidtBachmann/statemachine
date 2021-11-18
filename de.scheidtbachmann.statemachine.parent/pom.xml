@@ -56,7 +56,8 @@
 		<module>de.scheidtbachmann.statemachine.cli</module>
 		<module>de.scheidtbachmann.statemachine.plugin</module>
 		<module>de.scheidtbachmann.statemachine.plugin.test</module>
-		<module>de.scheidtbachmann.statemachine.utilities</module>
+		<module>de.scheidtbachmann.statemachine.runtime</module>
+		<module>de.scheidtbachmann.statemachine.testing</module>
 	</modules>
 
 	<!-- Global dependencies -->

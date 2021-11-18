@@ -9,10 +9,10 @@
 //
 // ******************************************************************************
 
-package de.scheidtbachmann.statemachine.utilities.execution.impl;
+package de.scheidtbachmann.statemachine.runtime.execution.impl;
 
-import de.scheidtbachmann.statemachine.utilities.execution.StateMachineTimeout;
-import de.scheidtbachmann.statemachine.utilities.execution.StateMachineTimeoutManager;
+import de.scheidtbachmann.statemachine.runtime.execution.StateMachineTimeout;
+import de.scheidtbachmann.statemachine.runtime.execution.StateMachineTimeoutManager;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -20,15 +20,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 /**
- * Timeout manager that is started for a state machine and waits for a given
- * time. After the time has elapsed the given action is executed in the
- * execution context of the state machine.
+ * Timeout manager that controls execution for delayed actions in the state machine.
+ * After the time has elapsed the given action is executed in the execution context of the state machine.
  *
  * The timeout can be cancelled or restarted at any time.
  */
 public class StateMachineTimeoutManagerImpl implements StateMachineTimeoutManager {
 
     private final ScheduledExecutorService executor;
+    private final String timeoutId;
     private final Consumer<StateMachineTimeout> timeoutAction;
     private Timeout timeout = null;
     private final long delay;
@@ -39,6 +39,8 @@ public class StateMachineTimeoutManagerImpl implements StateMachineTimeoutManage
      *
      * @param executor
      *            the executor to use for timeouts
+     * @param timeoutId
+     *            the identification of the timeout
      * @param delay
      *            the delay for this timeout
      * @param timeUnit
@@ -48,14 +50,20 @@ public class StateMachineTimeoutManagerImpl implements StateMachineTimeoutManage
      *            {@link Consumer} for the concrete {@link Timeout}, so
      *            that during execution the cancellation of the timeout
      *            can be checked..
+     * @param autoStart
+     *            Flag to control whether the timeout should be immediately started
      */
-    public StateMachineTimeoutManagerImpl(final ScheduledExecutorService executor, final long delay,
-        final TimeUnit timeUnit, final Consumer<StateMachineTimeout> timeoutAction) {
+    public StateMachineTimeoutManagerImpl(final ScheduledExecutorService executor, final String timeoutId,
+        final long delay, final TimeUnit timeUnit, final Consumer<StateMachineTimeout> timeoutAction,
+        final boolean autoStart) {
         this.timeoutAction = timeoutAction;
         this.executor = executor;
         this.delay = delay;
         this.timeUnit = timeUnit;
-        timeout = new Timeout();
+        this.timeoutId = timeoutId;
+        if (autoStart) {
+            start();
+        }
     }
 
     @Override
@@ -64,16 +72,21 @@ public class StateMachineTimeoutManagerImpl implements StateMachineTimeoutManage
     }
 
     @Override
-    public void restart() {
-        if (timeout != null) {
-            timeout.cancel();
+    public void start() {
+        if (!isRunning()) {
+            timeout = new Timeout();
         }
-        timeout = new Timeout();
+    }
+
+    @Override
+    public void restart() {
+        cancel();
+        start();
     }
 
     @Override
     public void cancel() {
-        if (timeout != null) {
+        if (isRunning()) {
             timeout.cancel();
             timeout = null;
         }
@@ -88,7 +101,7 @@ public class StateMachineTimeoutManagerImpl implements StateMachineTimeoutManage
         }
 
         private void execute() {
-            if (cancelled) {
+            if (isCancelled()) {
                 return;
             }
             timeoutAction.accept(this);
@@ -106,6 +119,11 @@ public class StateMachineTimeoutManagerImpl implements StateMachineTimeoutManage
         @Override
         public boolean isCancelled() {
             return cancelled;
+        }
+
+        @Override
+        public String getId() {
+            return timeoutId;
         }
     }
 }

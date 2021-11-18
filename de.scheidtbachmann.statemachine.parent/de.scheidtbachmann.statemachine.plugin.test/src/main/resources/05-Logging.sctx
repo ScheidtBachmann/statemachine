@@ -1,14 +1,14 @@
 #package "de.scheidtbachmann.statemachine.foo"
 
-#features logger
+#features NO_EXECUTOR
 
 scchart LoggingMachine {
 
   extern "foo" foo
 
- initial state x
- do foo()
- go to y
+  initial state x
+    do foo()
+    go to y
 
- state y
+  state y
 }

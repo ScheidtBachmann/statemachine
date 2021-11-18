@@ -58,7 +58,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
 
     // Externally set flags to configure generated code   
     @Accessors var String superClass = null
-    @Accessors var List<StatebasedLeanJavaExtendedFeatures> enabledFeatures = newLinkedList()
+    @Accessors var List<StatebasedLeanJavaFeatureOverrides> featureOverrides = newLinkedList()
     
     var boolean generateContextInterface = false
     protected Iterable<VariableDeclaration> eventDeclarations
@@ -104,26 +104,21 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             addImports("org.slf4j.Logger", "org.slf4j.LoggerFactory")
         }
         
-        if (isExecutorEnabled) {
-            addImports("java.util.UUID", 
-                "java.util.concurrent.Executors", 
-                "java.util.concurrent.ScheduledExecutorService",
-                "java.util.concurrent.ScheduledFuture",
-                "java.util.concurrent.ThreadFactory",
-                "java.util.concurrent.TimeUnit")
+        if (isStringContainerEnabled) {
+            addImports("de.scheidtbachmann.statemachine.utilities.StateMachineRootContext",
+                "de.scheidtbachmann.statemachine.utilities.StateMachineStateContainer")
         }
         
-        if (isUtilitiesEnabled) {
-            addImports("de.scheidtbachmann.statemachine.utilities.StateMachineRootContext",
-                "de.scheidtbachmann.statemachine.utilities.StateMachineStateContainer",
-                "de.scheidtbachmann.statemachine.utilities.execution.StateMachineExecutionFactory",
-                "java.util.concurrent.Future",
+        if (isExecutorEnabled) {
+            addImports("de.scheidtbachmann.statemachine.utilities.execution.StateMachineExecutionFactory",
                 "java.util.concurrent.ScheduledExecutorService",
+                "java.util.Collection",
+                "java.util.Arrays",
+                "java.util.List",
                 "de.scheidtbachmann.statemachine.utilities.execution.StateMachineTimeout",
                 "de.scheidtbachmann.statemachine.utilities.execution.StateMachineTimeoutManager",
                 "java.util.concurrent.TimeUnit",
-                "java.util.function.Consumer",
-                "java.util.List")                
+                "java.util.function.Consumer")
         }
     }
 
@@ -141,7 +136,6 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             « generateInteractions() »
             « generateCurrentStateOutput() »
             « generateConstructor() »
-            « generateExecutorMethods() »
             « generateTimeoutMethods() »
             « generateGlobalObjects() »
           }
@@ -153,14 +147,10 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
         return '''
             « IF isLoggingEnabled »
               private static final Logger LOG = LoggerFactory.getLogger(«rootState.uniqueName».class);
-
+              private final String loggingPrefix;
+              
             « ENDIF »
             « IF isExecutorEnabled »
-              private final ThreadFactory executorThreadFactory = r -> new Thread(r, "StateMachine-«rootState.uniqueName»-" + UUID.randomUUID());
-              protected final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(executorThreadFactory);
-
-            « ENDIF »
-            « IF isUtilitiesEnabled »
               private final StateMachineExecutionFactory executionFactory;
               private final ScheduledExecutorService executor;
 
@@ -245,7 +235,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             /**
              * Runtime data for the root level program
              */
-            public static class TickData« IF isUtilitiesEnabled » implements StateMachineRootContext« ENDIF » {
+            public static class TickData« IF isStringContainerEnabled » implements StateMachineRootContext« ENDIF » {
               ThreadStatus threadStatus;
 
               « FOR r : rootRegions »
@@ -365,13 +355,25 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
               « rootState.uniqueName »_root(rootContext);
             }
 
-            « IF isUtilitiesEnabled »
-            public Future<?> init() {
-              return init(null, null);
+            « IF isExecutorEnabled »
+              « generateExecutorInteractions »
+            « ELSE »
+              « generateSimpleInteractions »
+            « ENDIF »
+
+        '''
+        // CHECKSTYLEON LineLength
+    }
+    
+    private def generateExecutorInteractions() {
+        // CHECKSTYLEOFF LineLength - This is template code that cannot be arbitrarily formatted
+        return '''
+            public void init() {
+              init(null, null);
             }
 
-            public Future<?> init(Runnable preInitTask, Runnable postInitTask) {
-              return executor.submit(() -> {
+            public void init(Runnable preInitTask, Runnable postInitTask) {
+              executor.execute(() -> {
                 if (preInitTask != null) {
                   preInitTask.run();
                 }
@@ -386,52 +388,41 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
                 }
               });
             }
-            « ELSE »
-            public void init() {
-              « generateLogging('"Initializing StateMachine"') »
-              reset();
-              « IF eventDeclarations.size > 0 »
-                writeEventsToIfaceInputs(Collections.emptyList());
-              « ENDIF »
-              tick();
-            }
-            « ENDIF »
 
-            « IF isUtilitiesEnabled »
-            public Future<?> apply(InputEvent... events) {
-              return apply(Arrays.asList(events));
+            public void apply(InputEvent... events) {
+              apply(null, Arrays.asList(events), null);
             }
 
-            public Future<?> apply(Collection<InputEvent> events) {
-              return apply(null, events, null);
+            public void apply(Collection<InputEvent> events) {
+              apply(null, events, null);
             }
 
-            public Future<?> apply(Runnable preExecutionTask, InputEvent event) {
-                return apply(preExecutionTask, List.of(event), null);
+            public void apply(Runnable preExecutionTask, InputEvent event) {
+              apply(preExecutionTask, List.of(event), null);
             }
 
-            public Future<?> apply(Runnable preExecutionTask, Collection<InputEvent> events) {
-                return apply(preExecutionTask, events, null);
+            public void apply(Runnable preExecutionTask, Collection<InputEvent> events) {
+              apply(preExecutionTask, events, null);
             }
 
-            public Future<?> apply(InputEvent event, Runnable postExecutionTask) {
-                return apply(null, List.of(event), postExecutionTask);
+            public void apply(InputEvent event, Runnable postExecutionTask) {
+              apply(null, List.of(event), postExecutionTask);
             }
 
-            public Future<?> apply(Collection<InputEvent> events, Runnable postExecutionTask) {
-                return apply(null, events, postExecutionTask);
+            public void apply(Collection<InputEvent> events, Runnable postExecutionTask) {
+              apply(null, events, postExecutionTask);
             }
 
-            public Future<?> apply(Runnable preExecutionTask, InputEvent event, Runnable postExecutionTask) {
-                return apply(preExecutionTask, List.of(event), postExecutionTask);
+            public void apply(Runnable preExecutionTask, InputEvent event, Runnable postExecutionTask) {
+              apply(preExecutionTask, List.of(event), postExecutionTask);
             }
 
-            public Future<?> apply(Runnable preExecutionTask, Collection<InputEvent> events, Runnable postExecutionTask) {
-              return executor.submit(() -> {
-                « generateLogging('"Performing action on input events {}", events') »
+            public void apply(Runnable preExecutionTask, Collection<InputEvent> events, Runnable postExecutionTask) {
+              executor.execute(() -> {
                 if (preExecutionTask != null) {
                   preExecutionTask.run();
                 }
+                « generateLogging('"Performing action on input events {}", events') »
                 « IF eventDeclarations.size > 0 »
                   writeEventsToIfaceInputs(events);
                 « ENDIF»
@@ -441,7 +432,21 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
                 }
               });
             }
-            « ELSE »
+        '''
+        // CHECKSTYLEON LineLength
+    }
+    
+    private def generateSimpleInteractions() {
+        return '''
+            public void init() {
+              « generateLogging('"Initializing StateMachine"') »
+              reset();
+              « IF eventDeclarations.size > 0 »
+                writeEventsToIfaceInputs(Collections.emptyList());
+              « ENDIF »
+              tick();
+            }
+            
             public void apply(InputEvent... events) {
               apply(Arrays.asList(events));
             }
@@ -453,31 +458,12 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
               « ENDIF»
               tick();
             }
-            « ENDIF »
-
         '''
-        // CHECKSTYLEON LineLength
     }
     
     private def generateCurrentStateOutput() {
         return '''
             « IF isStringContainerEnabled »
-              static class CurrentStateContainer {
-                private final TickData rootContext;
-
-                private CurrentStateContainer(TickData context) {
-                  rootContext = context;
-                }
-
-                public String toString() {
-                  return rootContext.getCurrentState().distinct().collect(Collectors.joining(","));
-                }
-              }
-
-              public CurrentStateContainer getCurrentState() {
-                return new CurrentStateContainer(rootContext);
-              }
-            « ELSEIF isUtilitiesEnabled »
               public StateMachineStateContainer getCurrentState() {
                 return new StateMachineStateContainer(rootContext);
               }
@@ -495,82 +481,41 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
         if (generateContextInterface) {
             parameters.add(rootState.uniqueName + "Context externalContext")
         }
-        if (isUtilitiesEnabled) {
+        if (isExecutorEnabled) {
             parameters.add("StateMachineExecutionFactory executionFactory")
+        }
+        if (isLoggingEnabled) {
+            parameters.add("String loggingPrefix")
         }
         return '''
             public « rootState.uniqueName »(« parameters.join(", ") ») {
               « IF generateContextInterface »
                 this.externalContext = externalContext;
               « ENDIF »
-              « IF isUtilitiesEnabled »
+              « IF isExecutorEnabled »
                 this.executionFactory = executionFactory;
-                this.executor = executionFactory.createExecutor("« rootState.uniqueName »");
+                « IF isLoggingEnabled »
+                  this.executor = executionFactory.createExecutor("« rootState.uniqueName »" + loggingPrefix);
+                  this.loggingPrefix = loggingPrefix;
+                « ELSE »
+                  this.executor = executionFactory.createExecutor("« rootState.uniqueName »");
+                « ENDIF »
               « ENDIF »
               « IF isIfaceNeeded »
               this.iface = new Iface();
               « ENDIF »
               this.rootContext = new TickData();
             }
-        '''
-    }
-    
-    private def generateExecutorMethods() {
-        return '''
-            « IF isExecutorEnabled »
-              public void execute(final Runnable task) {
-                « IF isExecutorCatching »
-                  executor.execute(() -> {
-                    try {
-                      task.run();
-                    } catch (Throwable t) {
-                      t.printStackTrace();
-                    }
-                  });
-                « ELSE »
-                  executor.execute(task);
-                « ENDIF »
-                }
 
-              public ScheduledFuture<?> schedule(final Runnable command, final long delay, final TimeUnit unit) {
-                « IF isExecutorCatching »
-                  return executor.schedule(() -> {
-                    try {
-                      command.run();
-                    } catch (Throwable t) {
-                      t.printStackTrace();
-                    }
-                  }, delay, unit);
-                « ELSE »
-                  return executor.schedule(command, delay, unit);
-                « ENDIF »
-                }
-
-              public ScheduledFuture<?> scheduleAtFixedRate(final Runnable command, final long initialDelay, 
-                  final long period, final TimeUnit unit) {
-                « IF isExecutorCatching »
-                  return executor.scheduleAtFixedRate(() -> {
-                    try {
-                      command.run();
-                    } catch (Throwable t) {
-                      t.printStackTrace();
-                    }
-                  }, initialDelay, period, unit);
-                « ELSE »
-                  return executor.scheduleAtFixedRate(command, initialDelay, period, unit);
-                « ENDIF »
-              }
-
-            « ENDIF »
         '''
     }
     
     private def generateTimeoutMethods() {
         return '''
-            « IF isUtilitiesEnabled »
-              public StateMachineTimeoutManager createTimeout(long delay, TimeUnit timeUnit, 
+            « IF isExecutorEnabled »
+              public StateMachineTimeoutManager createTimeout(String timeoutId, long delay, TimeUnit timeUnit, 
                   Consumer<StateMachineTimeout> timeoutAction) {
-                return executionFactory.createTimeout(executor, delay, timeUnit, timeoutAction);
+                return executionFactory.createTimeout(executor, timeoutId, delay, timeUnit, timeoutAction);
               }
 
             « ENDIF »
@@ -933,32 +878,23 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
     private def CharSequence generateLogging(String log) {
         return '''
             « IF isLoggingEnabled »
-              LOG.trace(« log »);
+              LOG.trace(loggingPrefix + " - " + « log »);
             « ENDIF »
         '''
     }    
 
     private def boolean isLoggingEnabled() {
-        return enabledFeatures.contains(StatebasedLeanJavaExtendedFeatures.LOGGER)
+        return !featureOverrides.contains(StatebasedLeanJavaFeatureOverrides.NO_LOGGER)
     }
     
     private def boolean isExecutorEnabled() {
-        return enabledFeatures.contains(StatebasedLeanJavaExtendedFeatures.EXECUTOR) 
-            || enabledFeatures.contains(StatebasedLeanJavaExtendedFeatures.EXECUTOR_AUTO_CATCH)
-    }
-    
-    private def boolean isExecutorCatching() {
-        return enabledFeatures.contains(StatebasedLeanJavaExtendedFeatures.EXECUTOR_AUTO_CATCH)
+        return !featureOverrides.contains(StatebasedLeanJavaFeatureOverrides.NO_EXECUTOR) 
     }
     
     private def boolean isStringContainerEnabled() {
-        return enabledFeatures.contains(StatebasedLeanJavaExtendedFeatures.STRING_CONTAINER)
+        return !featureOverrides.contains(StatebasedLeanJavaFeatureOverrides.NO_STRING_CONTAINER)
     }
     
-    private def boolean isUtilitiesEnabled() {
-        return enabledFeatures.contains(StatebasedLeanJavaExtendedFeatures.UTILITIES)
-    }
-
     private def boolean isIfaceNeeded() {
         return rootState.declarations.filter(VariableDeclaration).map[it.valuedObjects].flatten.size > 0
     }
