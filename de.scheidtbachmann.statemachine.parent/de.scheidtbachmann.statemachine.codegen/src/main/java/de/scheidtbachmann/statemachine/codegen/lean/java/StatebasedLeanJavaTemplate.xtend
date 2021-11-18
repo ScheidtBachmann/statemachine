@@ -105,18 +105,18 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
         }
         
         if (isStringContainerEnabled) {
-            addImports("de.scheidtbachmann.statemachine.utilities.StateMachineRootContext",
-                "de.scheidtbachmann.statemachine.utilities.StateMachineStateContainer")
+            addImports("de.scheidtbachmann.statemachine.runtime.StateMachineRootContext",
+                "de.scheidtbachmann.statemachine.runtime.StateMachineStateContainer")
         }
         
         if (isExecutorEnabled) {
-            addImports("de.scheidtbachmann.statemachine.utilities.execution.StateMachineExecutionFactory",
+            addImports("de.scheidtbachmann.statemachine.runtime.execution.StateMachineExecutionFactory",
                 "java.util.concurrent.ScheduledExecutorService",
                 "java.util.Collection",
                 "java.util.Arrays",
                 "java.util.List",
-                "de.scheidtbachmann.statemachine.utilities.execution.StateMachineTimeout",
-                "de.scheidtbachmann.statemachine.utilities.execution.StateMachineTimeoutManager",
+                "de.scheidtbachmann.statemachine.runtime.execution.StateMachineTimeout",
+                "de.scheidtbachmann.statemachine.runtime.execution.StateMachineTimeoutManager",
                 "java.util.concurrent.TimeUnit",
                 "java.util.function.Consumer")
         }
