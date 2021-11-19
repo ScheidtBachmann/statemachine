@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -88,11 +89,22 @@ public class StateMachineTestExecutionFactory implements StateMachineExecutionFa
      *            The id of the timeout to trigger.
      */
     public void triggerTimeout(final String timeoutId) {
-        executorService.execute(() -> {
-            if (timeoutIsRunning(timeoutId)) {
-                timeouts.get(timeoutId).trigger();
-            }
-        });
+        syncExecution();
+        if (timeoutIsRunning(timeoutId)) {
+            timeouts.get(timeoutId).trigger();
+        }
+    }
+
+    private void syncExecution() {
+        try {
+            executorService.submit(() -> {
+                // Just wait for proper execution
+            }).get();
+        } catch (final InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (final ExecutionException e) {
+            throw new StateMachineTestTimeoutException("Problem triggering timeout", e);
+        }
     }
 
     /**
