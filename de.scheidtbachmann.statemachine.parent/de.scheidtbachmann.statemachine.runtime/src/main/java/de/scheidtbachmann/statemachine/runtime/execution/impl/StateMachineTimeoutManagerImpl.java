@@ -11,7 +11,6 @@
 
 package de.scheidtbachmann.statemachine.runtime.execution.impl;
 
-import de.scheidtbachmann.statemachine.runtime.execution.StateMachineTimeout;
 import de.scheidtbachmann.statemachine.runtime.execution.StateMachineTimeoutManager;
 
 import java.util.concurrent.ScheduledExecutorService;
@@ -29,7 +28,7 @@ public class StateMachineTimeoutManagerImpl implements StateMachineTimeoutManage
 
     private final ScheduledExecutorService executor;
     private final Runnable timeoutAction;
-    private Timeout timeout = null;
+    private StateMachineTimeout timeout = null;
     private final long delay;
     private final TimeUnit timeUnit;
 
@@ -69,7 +68,7 @@ public class StateMachineTimeoutManagerImpl implements StateMachineTimeoutManage
     @Override
     public void start() {
         if (!isRunning()) {
-            timeout = new Timeout();
+            timeout = new StateMachineTimeout();
         }
     }
 
@@ -87,11 +86,11 @@ public class StateMachineTimeoutManagerImpl implements StateMachineTimeoutManage
         }
     }
 
-    public class Timeout implements StateMachineTimeout {
+    public class StateMachineTimeout {
         private ScheduledFuture<?> timeoutFuture;
         private boolean cancelled = false;
 
-        public Timeout() {
+        public StateMachineTimeout() {
             timeoutFuture = executor.schedule(this::execute, delay, timeUnit);
         }
 
@@ -111,7 +110,6 @@ public class StateMachineTimeoutManagerImpl implements StateMachineTimeoutManage
             }
         }
 
-        @Override
         public boolean isCancelled() {
             return cancelled;
         }

@@ -110,15 +110,13 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
         }
         
         if (isExecutorEnabled) {
-            addImports("de.scheidtbachmann.statemachine.runtime.execution.StateMachineExecutionFactory",
-                "java.util.concurrent.ScheduledExecutorService",
+            addImports("java.util.concurrent.ScheduledExecutorService",
                 "java.util.Collection",
                 "java.util.Arrays",
                 "java.util.List",
-                "de.scheidtbachmann.statemachine.runtime.execution.StateMachineTimeout",
-                "de.scheidtbachmann.statemachine.runtime.execution.StateMachineTimeoutManager",
                 "java.util.concurrent.TimeUnit",
-                "java.util.function.Consumer")
+                "de.scheidtbachmann.statemachine.runtime.execution.StateMachineExecutionFactory",
+                "de.scheidtbachmann.statemachine.runtime.execution.StateMachineTimeoutManager")
         }
     }
 
@@ -514,7 +512,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
         return '''
             « IF isExecutorEnabled »
               public StateMachineTimeoutManager createTimeout(String timeoutId, long delay, TimeUnit timeUnit, 
-                  Consumer<StateMachineTimeout> timeoutAction, boolean autoStart) {
+                  Runnable timeoutAction, boolean autoStart) {
                 return executionFactory.createTimeout(executor, timeoutId, delay, timeUnit, timeoutAction, autoStart);
               }
 
