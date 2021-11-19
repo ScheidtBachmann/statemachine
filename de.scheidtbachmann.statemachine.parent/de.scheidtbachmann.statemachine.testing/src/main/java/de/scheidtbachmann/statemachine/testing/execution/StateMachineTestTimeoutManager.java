@@ -56,7 +56,11 @@ public class StateMachineTestTimeoutManager implements StateMachineTimeoutManage
 
     void trigger() {
         try {
-            executor.submit(action::run).get();
+            executor.submit(() -> {
+                if (running) {
+                    action.run();
+                }
+            }).get();
             running = false;
         } catch (final ExecutionException e) {
             throw new StateMachineTestTimeoutException("Problem triggering timeout", e);

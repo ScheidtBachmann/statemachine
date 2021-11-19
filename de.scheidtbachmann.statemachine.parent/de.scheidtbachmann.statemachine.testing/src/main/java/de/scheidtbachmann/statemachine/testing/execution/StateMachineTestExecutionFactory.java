@@ -25,6 +25,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Implementation of {@link StateMachineExecutionFactory} for Unit tests.
@@ -87,19 +88,20 @@ public class StateMachineTestExecutionFactory implements StateMachineExecutionFa
      *
      * @param timeoutId
      *            The id of the timeout to trigger.
+     * @throws StateMachineTestTimeoutException
+     *             if execution is not successful
      */
     public void triggerTimeout(final String timeoutId) {
-        syncExecution();
-        if (timeoutIsRunning(timeoutId)) {
-            timeouts.get(timeoutId).trigger();
-        }
-    }
-
-    private void syncExecution() {
+        final AtomicReference<StateMachineTestTimeoutManager> timeoutManager = new AtomicReference<>();
         try {
             executorService.submit(() -> {
-                // Just wait for proper execution
+                if (timeoutIsRunning(timeoutId)) {
+                    timeoutManager.set(timeouts.get(timeoutId));
+                }
             }).get();
+            if (timeoutManager.get() != null) {
+                timeoutManager.get().trigger();
+            }
         } catch (final InterruptedException e) {
             Thread.currentThread().interrupt();
         } catch (final ExecutionException e) {
