@@ -88,9 +88,11 @@ public class StateMachineTestExecutionFactory implements StateMachineExecutionFa
      *            The id of the timeout to trigger.
      */
     public void triggerTimeout(final String timeoutId) {
-        if (timeoutIsRunning(timeoutId)) {
-            timeouts.get(timeoutId).trigger();
-        }
+        executorService.execute(() -> {
+            if (timeoutIsRunning(timeoutId)) {
+                timeouts.get(timeoutId).trigger();
+            }
+        });
     }
 
     /**
