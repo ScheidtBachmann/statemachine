@@ -24,12 +24,4 @@ public interface StateMachineTimeout {
      * @return {@code true} if the timeout has been cancelled, {@code false} otherwise.
      */
     boolean isCancelled();
-
-    /**
-     * Returns the identification of the triggered timeout.
-     *
-     * @return the timeout identification
-     */
-    String getId();
-
 }

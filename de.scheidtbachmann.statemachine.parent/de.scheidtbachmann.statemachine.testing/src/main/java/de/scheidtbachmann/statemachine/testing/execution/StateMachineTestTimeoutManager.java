@@ -11,12 +11,10 @@
 
 package de.scheidtbachmann.statemachine.testing.execution;
 
-import de.scheidtbachmann.statemachine.runtime.execution.StateMachineTimeout;
 import de.scheidtbachmann.statemachine.runtime.execution.StateMachineTimeoutManager;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.function.Consumer;
 
 /**
  * Implementation of {@link StateMachineTimeoutManager} for testing purposes.
@@ -25,15 +23,13 @@ import java.util.function.Consumer;
 public class StateMachineTestTimeoutManager implements StateMachineTimeoutManager {
 
     private boolean running;
-    private final String timeoutId;
 
     private final ScheduledExecutorService executor;
-    private final Consumer<StateMachineTimeout> action;
+    private final Runnable action;
 
-    public StateMachineTestTimeoutManager(final ScheduledExecutorService executor, final String timeoutId,
-        final Consumer<StateMachineTimeout> action, final boolean autoStart) {
+    public StateMachineTestTimeoutManager(final ScheduledExecutorService executor, final Runnable action,
+        final boolean autoStart) {
         this.executor = executor;
-        this.timeoutId = timeoutId;
         this.action = action;
         running = autoStart;
     }
@@ -60,24 +56,12 @@ public class StateMachineTestTimeoutManager implements StateMachineTimeoutManage
 
     void trigger() {
         try {
-            executor.submit(() -> action.accept(new StateMachineTestTimeout())).get();
+            executor.submit(action::run).get();
             running = false;
         } catch (final ExecutionException e) {
             throw new StateMachineTestTimeoutException("Problem triggering timeout", e);
         } catch (final InterruptedException e) {
             Thread.currentThread().interrupt();
-        }
-    }
-
-    private class StateMachineTestTimeout implements StateMachineTimeout {
-        @Override
-        public boolean isCancelled() {
-            return !running;
-        }
-
-        @Override
-        public String getId() {
-            return timeoutId;
         }
     }
 }

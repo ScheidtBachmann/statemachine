@@ -12,8 +12,10 @@
 package de.scheidtbachmann.statemachine.testing.execution;
 
 import de.scheidtbachmann.statemachine.runtime.execution.StateMachineExecutionFactory;
-import de.scheidtbachmann.statemachine.runtime.execution.StateMachineTimeout;
 import de.scheidtbachmann.statemachine.runtime.execution.StateMachineTimeoutManager;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,7 +24,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 
 /**
  * Implementation of {@link StateMachineExecutionFactory} for Unit tests.
@@ -30,6 +31,8 @@ import java.util.function.Consumer;
  * using {@link #triggerTimeout(String)} with the corresponding timeout ID.
  */
 public class StateMachineTestExecutionFactory implements StateMachineExecutionFactory {
+
+    private static final Logger LOG = LoggerFactory.getLogger(StateMachineTestExecutionFactory.class);
 
     private final ScheduledExecutorService executorService;
 
@@ -42,7 +45,10 @@ public class StateMachineTestExecutionFactory implements StateMachineExecutionFa
         timeouts = new HashMap<>();
         final ThreadFactory factory = runnable -> {
             final Thread createdThread = new Thread(runnable, "StateMachineTestExecutionThread");
-            createdThread.setUncaughtExceptionHandler((thread, throwable) -> executorIsHealthy.set(false));
+            createdThread.setUncaughtExceptionHandler((thread, throwable) -> {
+                LOG.error(String.format("Uncaught exception in Thread (%s)", thread), throwable);
+                executorIsHealthy.set(false);
+            });
             return createdThread;
         };
         executorService = Executors.newSingleThreadScheduledExecutor(factory);
@@ -55,8 +61,7 @@ public class StateMachineTestExecutionFactory implements StateMachineExecutionFa
 
     @Override
     public StateMachineTimeoutManager createTimeout(final ScheduledExecutorService executor, final String timeoutId,
-        final long delay, final TimeUnit timeunit, final Consumer<StateMachineTimeout> timeoutAction,
-        final boolean autoStart) {
+        final long delay, final TimeUnit timeunit, final Runnable timeoutAction, final boolean autoStart) {
 
         if (timeoutIsRunning(timeoutId)) {
             throw new StateMachineTestTimeoutException(String.format(
@@ -71,9 +76,9 @@ public class StateMachineTestExecutionFactory implements StateMachineExecutionFa
     }
 
     private StateMachineTimeoutManager registerNewTimeout(final ScheduledExecutorService executor,
-        final String timeoutId, final Consumer<StateMachineTimeout> timeoutAction, final boolean autoStart) {
+        final String timeoutId, final Runnable timeoutAction, final boolean autoStart) {
         return timeouts.computeIfAbsent(timeoutId,
-            id -> new StateMachineTestTimeoutManager(executor, id, timeoutAction, autoStart));
+            id -> new StateMachineTestTimeoutManager(executor, timeoutAction, autoStart));
     }
 
     /**

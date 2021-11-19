@@ -12,7 +12,6 @@
 package de.scheidtbachmann.statemachine.runtime.execution.impl;
 
 import de.scheidtbachmann.statemachine.runtime.execution.StateMachineExecutionFactory;
-import de.scheidtbachmann.statemachine.runtime.execution.StateMachineTimeout;
 import de.scheidtbachmann.statemachine.runtime.execution.StateMachineTimeoutManager;
 
 import org.osgi.service.component.annotations.Component;
@@ -24,7 +23,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
 /**
  * Implementation of the {@link StateMachineExecutionFactory} for regular usage
@@ -38,6 +36,7 @@ public class StateMachineExecutionFactoryService implements StateMachineExecutio
     @Override
     public ScheduledExecutorService createExecutor(final String nameFragment) {
         // Create a thread factory to be able to use prettier names for the generated threads
+        // as well as handling of uncaught exceptions
         final ThreadFactory executorThreadFactory = runnable -> {
             final String threadName = String.format("StateMachine-%s-%s", nameFragment, UUID.randomUUID().toString());
             final Thread thread = new Thread(runnable, threadName);
@@ -50,8 +49,7 @@ public class StateMachineExecutionFactoryService implements StateMachineExecutio
 
     @Override
     public StateMachineTimeoutManager createTimeout(final ScheduledExecutorService executor, final String timeoutId,
-        final long delay, final TimeUnit timeUnit, final Consumer<StateMachineTimeout> timeoutAction,
-        final boolean autoStart) {
-        return new StateMachineTimeoutManagerImpl(executor, timeoutId, delay, timeUnit, timeoutAction, autoStart);
+        final long delay, final TimeUnit timeUnit, final Runnable timeoutAction, final boolean autoStart) {
+        return new StateMachineTimeoutManagerImpl(executor, delay, timeUnit, timeoutAction, autoStart);
     }
 }

@@ -28,8 +28,7 @@ import java.util.function.Consumer;
 public class StateMachineTimeoutManagerImpl implements StateMachineTimeoutManager {
 
     private final ScheduledExecutorService executor;
-    private final String timeoutId;
-    private final Consumer<StateMachineTimeout> timeoutAction;
+    private final Runnable timeoutAction;
     private Timeout timeout = null;
     private final long delay;
     private final TimeUnit timeUnit;
@@ -39,8 +38,6 @@ public class StateMachineTimeoutManagerImpl implements StateMachineTimeoutManage
      *
      * @param executor
      *            the executor to use for timeouts
-     * @param timeoutId
-     *            the identification of the timeout
      * @param delay
      *            the delay for this timeout
      * @param timeUnit
@@ -53,14 +50,12 @@ public class StateMachineTimeoutManagerImpl implements StateMachineTimeoutManage
      * @param autoStart
      *            Flag to control whether the timeout should be immediately started
      */
-    public StateMachineTimeoutManagerImpl(final ScheduledExecutorService executor, final String timeoutId,
-        final long delay, final TimeUnit timeUnit, final Consumer<StateMachineTimeout> timeoutAction,
-        final boolean autoStart) {
+    public StateMachineTimeoutManagerImpl(final ScheduledExecutorService executor, final long delay,
+        final TimeUnit timeUnit, final Runnable timeoutAction, final boolean autoStart) {
         this.timeoutAction = timeoutAction;
         this.executor = executor;
         this.delay = delay;
         this.timeUnit = timeUnit;
-        this.timeoutId = timeoutId;
         if (autoStart) {
             start();
         }
@@ -104,7 +99,7 @@ public class StateMachineTimeoutManagerImpl implements StateMachineTimeoutManage
             if (isCancelled()) {
                 return;
             }
-            timeoutAction.accept(this);
+            timeoutAction.run();
             timeout = null;
         }
 
@@ -119,11 +114,6 @@ public class StateMachineTimeoutManagerImpl implements StateMachineTimeoutManage
         @Override
         public boolean isCancelled() {
             return cancelled;
-        }
-
-        @Override
-        public String getId() {
-            return timeoutId;
         }
     }
 }

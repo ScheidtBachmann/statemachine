@@ -13,7 +13,6 @@ package de.scheidtbachmann.statemachine.runtime.execution;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
 /**
  * Interface for a factory that is used by the state machine to handle the
@@ -44,15 +43,12 @@ public interface StateMachineExecutionFactory {
      * @param timeUnit
      *            The {@link TimeUnit} of the delay.
      * @param timeoutAction
-     *            The action to perform when the timeout is hit. The
-     *            {@link Consumer} is passed the actual {@link StateMachineTimeout},
-     *            so that the cancellation state can be validated during
-     *            execution.
+     *            The action to perform when the timeout is hit.
      * @param autoStart
      *            Flag to control whether the timeout should be immediately started
      * @return The created {@link StateMachineTimeoutManager}.
      */
     StateMachineTimeoutManager createTimeout(ScheduledExecutorService executor, String timeoutId, long delay,
-        TimeUnit timeUnit, Consumer<StateMachineTimeout> timeoutAction, boolean autoStart);
+        TimeUnit timeUnit, Runnable timeoutAction, boolean autoStart);
 
 }
