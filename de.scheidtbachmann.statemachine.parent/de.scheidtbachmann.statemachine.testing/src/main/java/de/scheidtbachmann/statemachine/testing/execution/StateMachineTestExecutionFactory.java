@@ -79,8 +79,10 @@ public class StateMachineTestExecutionFactory implements StateMachineExecutionFa
 
     private StateMachineTimeoutManager registerNewTimeout(final ScheduledExecutorService executor,
         final String timeoutId, final Runnable timeoutAction, final boolean autoStart) {
-        return timeouts.computeIfAbsent(timeoutId,
-            id -> new StateMachineTestTimeoutManager(executor, timeoutAction, autoStart));
+        final StateMachineTestTimeoutManager newTimeout =
+            new StateMachineTestTimeoutManager(executor, timeoutAction, autoStart);
+        timeouts.put(timeoutId, newTimeout);
+        return newTimeout;
     }
 
     /**
