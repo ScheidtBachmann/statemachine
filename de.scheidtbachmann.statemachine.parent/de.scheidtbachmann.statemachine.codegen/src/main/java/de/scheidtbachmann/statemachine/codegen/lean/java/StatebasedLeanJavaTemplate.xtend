@@ -347,7 +347,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             }
 
             private void tick() {
-              « generateLogging('"Performing tick on StateMachine"') »
+              « generateTraceLogging('"Performing tick on StateMachine"') »
               if (rootContext.threadStatus == ThreadStatus.TERMINATED) return;
             
               « rootState.uniqueName »_root(rootContext);
@@ -375,7 +375,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
                 if (preInitTask != null) {
                   preInitTask.run();
                 }
-                « generateLogging('"Initializing StateMachine"') »
+                « generateTraceLogging('"Initializing StateMachine"') »
                 reset();
                 « IF eventDeclarations.size > 0 »
                   writeEventsToIfaceInputs(Collections.emptyList());
@@ -420,7 +420,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
                 if (preExecutionTask != null) {
                   preExecutionTask.run();
                 }
-                « generateLogging('"Performing action on input events {}", events') »
+                « generateDebugLogging('"Performing action on input events {} while in state {}", events, getCurrentState()') »
                 « IF eventDeclarations.size > 0 »
                   writeEventsToIfaceInputs(events);
                 « ENDIF»
@@ -428,6 +428,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
                 if (postExecutionTask != null) {
                   postExecutionTask.run();
                 }
+                « generateDebugLogging('"Action done, finished in state {}", getCurrentState()') »
               });
             }
         '''
@@ -437,7 +438,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
     private def generateSimpleInteractions() {
         return '''
             public void init() {
-              « generateLogging('"Initializing StateMachine"') »
+              « generateTraceLogging('"Initializing StateMachine"') »
               reset();
               « IF eventDeclarations.size > 0 »
                 writeEventsToIfaceInputs(Collections.emptyList());
@@ -450,7 +451,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             }
 
             public void apply(Collection<InputEvent> events) {
-              « generateLogging('"Performing action on input events {}", events') »
+              « generateTraceLogging('"Performing action on input events {}", events') »
               « IF eventDeclarations.size > 0 »
                 writeEventsToIfaceInputs(events);
               « ENDIF»
@@ -538,7 +539,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             « generateJavaDocFromCommentAnnotations(state) »
             « IF originalName !== null »@SCChartsDebug(originalName = "« originalName »", originalStateHash = « originalStateHashCode »)«ENDIF»
             private void « state.uniqueName »« IF (state == rootState) »_root« ENDIF »(« state.uniqueContextMemberName » context) {
-              « generateLogging('''"Activating state « state.getStringAnnotationValue("SourceState") »"''') »
+              « generateTraceLogging('''"Activating state « state.getStringAnnotationValue("SourceState") »"''') »
             « IF state.isHierarchical »
             « IF state !== rootState »
               « FOR r : state.regions.filter(ControlflowRegion) »
@@ -873,10 +874,18 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
         }
     }
     
-    private def CharSequence generateLogging(String log) {
+    private def CharSequence generateTraceLogging(String log) {
         return '''
             « IF isLoggingEnabled »
               LOG.trace(loggingPrefix + " - " + « log »);
+            « ENDIF »
+        '''
+    }    
+
+    private def CharSequence generateDebugLogging(String log) {
+        return '''
+            « IF isLoggingEnabled »
+              LOG.debug(loggingPrefix + " - " + « log »);
             « ENDIF »
         '''
     }    
