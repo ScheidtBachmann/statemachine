@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -118,5 +119,23 @@ public class StateMachineTestExecutionFactory implements StateMachineExecutionFa
      */
     public boolean getExecutorIsHealthy() {
         return executorIsHealthy.get();
+    }
+
+    /**
+     * Synchronizes the execution by waiting for all running tasks to be finished in the executor.
+     *
+     * @throws StateMachineTestTimeoutException
+     *             if a problem occurs during execution
+     */
+    public void waitForAllTasksDone() {
+        try {
+            CompletableFuture.runAsync(() -> {
+                // Nothing to do here, just wait on the execution
+            }, executorService).get();
+        } catch (final InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (final ExecutionException e) {
+            throw new StateMachineTestTimeoutException("Problem synchronizing execution", e);
+        }
     }
 }
