@@ -26,6 +26,17 @@ pipeline {
       description: "Update any snapshots used in the built process.")
     booleanParam(name: "Parallel", defaultValue: true,
       description: "Run the maven build in parallel mode.")
+    // Release parameters
+    booleanParam(name: "RELEASE", defaultValue: false,
+      description: "Perform a release build.")
+    string(name: "ReleaseVersion", defaultValue: "a.b.c",
+      description: "Version to release",  trim: true)
+    string(name: "SnapshotVersion", defaultValue: "d.e.f-SNAPSHOT",
+      description: "Version for the next snapshot",  trim: true)
+    string(name: "GithubUser", defaultValue: "",
+      description: "User to use when pushing to SCM")
+    password(name: "GithubPassword", defaultValue: "",
+      description: "Password to use when pushing to SCM")
   }
 
   environment {
@@ -56,6 +67,23 @@ pipeline {
         dir('de.scheidtbachmann.statemachine.parent') {
           configFileProvider([configFile(fileId: '881491aa-33ec-4807-bd2f-5bae17666022', targetLocation: 'settings.xml', variable: 'MAVENSETTINGS')]) {
             sh "${env.MVN_CMD} deploy"
+          }
+        }
+      }
+    }
+
+    stage('Perform Release') {
+      when {
+        allOf {
+          expression { currentBuild.resultIsBetterOrEqualTo("SUCCESS") }
+          expression { BRANCH_NAME == "main" }
+          expression { params.RELEASE }
+        }
+      }
+      steps {
+        dir('de.scheidtbachmann.statemachine.parent') {
+          configFileProvider([configFile(fileId: '881491aa-33ec-4807-bd2f-5bae17666022', targetLocation: 'settings.xml', variable: 'MAVENSETTINGS')]) {
+            sh "${env.MVN_CMD} -DdevelopmentVersion=${params.SnapshotVersion} -DreleaseVersion=${params.ReleaseVersion} -Dtag=${params.releaseVersion} -Dresume=false -DignoreSnapshots=true -Dusername=${params.GithubUser} -Dpassword=${params.GithubPassword} release:prepare release:perform"
           }
         }
       }
