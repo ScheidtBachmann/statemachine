@@ -83,7 +83,7 @@ pipeline {
       steps {
         dir('de.scheidtbachmann.statemachine.parent') {
           configFileProvider([configFile(fileId: '881491aa-33ec-4807-bd2f-5bae17666022', targetLocation: 'settings.xml', variable: 'MAVENSETTINGS')]) {
-            sh "${env.MVN_CMD} -DdevelopmentVersion=${params.SnapshotVersion} -DreleaseVersion=${params.ReleaseVersion} -Dtag=${params.releaseVersion} -Dresume=false -DignoreSnapshots=true -Dusername=${params.GithubUser} -Dpassword=${params.GithubPassword} release:prepare release:perform"
+            sh "${env.MVN_CMD} -DdevelopmentVersion=${params.SnapshotVersion} -DreleaseVersion=${params.ReleaseVersion} -Dtag=${params.ReleaseVersion} -Dresume=false -DignoreSnapshots=true -Dusername=${params.GithubUser} -Dpassword=${params.GithubPassword} release:prepare release:perform"
           }
         }
       }
