@@ -290,18 +290,22 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
                 « ENDFOR »
 
                 public Stream<String> getCurrentState() {
-                  switch (activeState) {
-                    « FOR s : r.states.filter[isHierarchical] »
-                      case « s.uniqueEnumName »:
-                      case « s.uniqueEnumName »RUNNING:
-                        return Stream.of(
-                          « FOR subr : s.regions.filter(ControlflowRegion) SEPARATOR ',' »
-                            « subr.uniqueContextName ».getCurrentState()
-                          « ENDFOR »  
-                        ).flatMap(i -> i);
-                    « ENDFOR »
-                    default:
-                      return Stream.of(activeState.getOrigin().replaceAll("^State (.+) \\(-?[0-9]+\\)$", "$1"));
+                  if (activeState != null) {
+                    switch (activeState) {
+                      « FOR s : r.states.filter[isHierarchical] »
+                        case « s.uniqueEnumName »:
+                        case « s.uniqueEnumName »RUNNING:
+                          return Stream.of(
+                            « FOR subr : s.regions.filter(ControlflowRegion) SEPARATOR ',' »
+                              « subr.uniqueContextName ».getCurrentState()
+                            « ENDFOR »  
+                          ).flatMap(i -> i);
+                      « ENDFOR »
+                      default:
+                        return Stream.of(activeState.getOrigin().replaceAll("^State (.+) \\(-?[0-9]+\\)$", "$1"));
+                    }
+                  } else {
+                    return Stream.empty();
                   }
                 }
               }
