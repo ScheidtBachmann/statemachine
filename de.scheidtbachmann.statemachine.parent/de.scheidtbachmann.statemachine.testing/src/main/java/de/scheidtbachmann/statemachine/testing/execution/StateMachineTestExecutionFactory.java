@@ -128,7 +128,7 @@ public class StateMachineTestExecutionFactory implements StateMachineExecutionFa
      * @throws StateMachineTestTimeoutException
      *             if a problem occurs during execution
      */
-    public synchronized void waitForAllTasksDone() {
+    public void waitForAllTasksDone() {
         try {
             CompletableFuture.runAsync(() -> {
                 // Nothing to do here, just wait on the execution
