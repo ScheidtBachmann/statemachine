@@ -95,7 +95,7 @@ public class StateMachineTestExecutionFactory implements StateMachineExecutionFa
      * @throws StateMachineTestTimeoutException
      *             if execution is not successful
      */
-    public synchronized void triggerTimeout(final String timeoutId) {
+    public void triggerTimeout(final String timeoutId) {
         final AtomicReference<StateMachineTestTimeoutManager> timeoutManager = new AtomicReference<>();
         try {
             executorService.submit(() -> {
