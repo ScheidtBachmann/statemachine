@@ -28,7 +28,7 @@ public class StateMachineTimeoutManagerImpl implements StateMachineTimeoutManage
 
     private final ScheduledExecutorService executor;
     private final Runnable timeoutAction;
-    private StateMachineTimeout timeout = null;
+    private ScheduledFuture<?> timeoutFuture = null;
     private final long delay;
     private final TimeUnit timeUnit;
 
@@ -61,57 +61,33 @@ public class StateMachineTimeoutManagerImpl implements StateMachineTimeoutManage
     }
 
     @Override
-    public boolean isRunning() {
-        return timeout != null;
+    public synchronized boolean isRunning() {
+        return timeoutFuture != null;
     }
 
     @Override
-    public void start() {
+    public synchronized void start() {
         if (!isRunning()) {
-            timeout = new StateMachineTimeout();
+            timeoutFuture = executor.schedule(this::execute, delay, timeUnit);
         }
     }
 
     @Override
-    public void restart() {
+    public synchronized void restart() {
         cancel();
         start();
     }
 
     @Override
-    public void cancel() {
+    public synchronized void cancel() {
         if (isRunning()) {
-            timeout.cancel();
-            timeout = null;
+            timeoutFuture.cancel(false);
+            timeoutFuture = null;
         }
     }
 
-    public class StateMachineTimeout {
-        private ScheduledFuture<?> timeoutFuture;
-        private boolean cancelled = false;
-
-        public StateMachineTimeout() {
-            timeoutFuture = executor.schedule(this::execute, delay, timeUnit);
-        }
-
-        private void execute() {
-            if (isCancelled()) {
-                return;
-            }
-            timeoutAction.run();
-            timeout = null;
-        }
-
-        private void cancel() {
-            cancelled = true;
-            if (timeoutFuture != null) {
-                timeoutFuture.cancel(false);
-                timeoutFuture = null;
-            }
-        }
-
-        public boolean isCancelled() {
-            return cancelled;
-        }
+    private synchronized void execute() {
+        timeoutAction.run();
+        timeoutFuture = null;
     }
 }

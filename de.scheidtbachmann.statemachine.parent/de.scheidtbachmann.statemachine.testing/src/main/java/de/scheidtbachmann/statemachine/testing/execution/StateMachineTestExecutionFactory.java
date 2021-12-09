@@ -63,8 +63,9 @@ public class StateMachineTestExecutionFactory implements StateMachineExecutionFa
     }
 
     @Override
-    public StateMachineTimeoutManager createTimeout(final ScheduledExecutorService executor, final String timeoutId,
-        final long delay, final TimeUnit timeunit, final Runnable timeoutAction, final boolean autoStart) {
+    public synchronized StateMachineTimeoutManager createTimeout(final ScheduledExecutorService executor,
+        final String timeoutId, final long delay, final TimeUnit timeunit, final Runnable timeoutAction,
+        final boolean autoStart) {
 
         if (timeoutIsRunning(timeoutId)) {
             throw new StateMachineTestTimeoutException(String.format(
@@ -94,7 +95,7 @@ public class StateMachineTestExecutionFactory implements StateMachineExecutionFa
      * @throws StateMachineTestTimeoutException
      *             if execution is not successful
      */
-    public void triggerTimeout(final String timeoutId) {
+    public synchronized void triggerTimeout(final String timeoutId) {
         final AtomicReference<StateMachineTestTimeoutManager> timeoutManager = new AtomicReference<>();
         try {
             executorService.submit(() -> {
@@ -117,7 +118,7 @@ public class StateMachineTestExecutionFactory implements StateMachineExecutionFa
      *
      * @return {@code true} if the executor didn't encounter any exception, {@code false} otherwise.
      */
-    public boolean getExecutorIsHealthy() {
+    public synchronized boolean getExecutorIsHealthy() {
         return executorIsHealthy.get();
     }
 
@@ -127,7 +128,7 @@ public class StateMachineTestExecutionFactory implements StateMachineExecutionFa
      * @throws StateMachineTestTimeoutException
      *             if a problem occurs during execution
      */
-    public void waitForAllTasksDone() {
+    public synchronized void waitForAllTasksDone() {
         try {
             CompletableFuture.runAsync(() -> {
                 // Nothing to do here, just wait on the execution

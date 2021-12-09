@@ -159,14 +159,9 @@ class StatebasedLeanJavaCodeGenerator extends ExogenousProcessor<SCCharts, CodeC
 
     protected def void applyOverridesToTemplate(Set<StatebasedLeanJavaFeatureOverrides> featureOverrides,
         StatebasedLeanJavaTemplate template) {
-        if (model.getPragma(FEATURES) !== null) {
-            model.getStringPragmas(FEATURES).head.values.forEach [
-                val featureOverride = StatebasedLeanJavaFeatureOverrides.valueOf(it.toUpperCase())
-                if (featureOverride !== null) {
-                    template.featureOverrides.add(featureOverride);
-                }
-            ]
-        }
+        featureOverrides.forEach[
+            template.featureOverrides.add(it);            
+        ]
     }
 
     protected def Set<StatebasedLeanJavaFeatureOverrides> getFeatureSet() {

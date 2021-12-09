@@ -91,7 +91,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
     }
     
     private def void addNeededImports() {
-        addImports("java.util.stream.Stream", "java.util.stream.Collectors")
+        addImports("java.util.stream.Stream")
 
         if (eventDeclarations.size > 0) {
             addImports("java.util.Arrays",
@@ -107,6 +107,8 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
         if (isStringContainerEnabled) {
             addImports("de.scheidtbachmann.statemachine.runtime.StateMachineRootContext",
                 "de.scheidtbachmann.statemachine.runtime.StateMachineStateContainer")
+        } else {
+            addImports("java.util.stream.Collectors")            
         }
         
         if (isExecutorEnabled) {
