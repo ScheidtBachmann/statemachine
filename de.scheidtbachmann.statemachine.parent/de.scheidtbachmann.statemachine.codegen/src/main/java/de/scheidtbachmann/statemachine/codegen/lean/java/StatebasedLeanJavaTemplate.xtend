@@ -378,17 +378,21 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
 
             public void init(Runnable preInitTask, Runnable postInitTask) {
               executor.execute(() -> {
-                if (preInitTask != null) {
-                  preInitTask.run();
-                }
-                « generateTraceLogging('"Initializing StateMachine"') »
-                reset();
-                « IF eventDeclarations.size > 0 »
-                  writeEventsToIfaceInputs(Collections.emptyList());
-                « ENDIF »
-                tick();
-                if (postInitTask != null) {
-                  postInitTask.run();
+                try {
+                  if (preInitTask != null) {
+                    preInitTask.run();
+                  }
+                  « generateTraceLogging('"Initializing StateMachine"') »
+                  reset();
+                  « IF eventDeclarations.size > 0 »
+                    writeEventsToIfaceInputs(Collections.emptyList());
+                  « ENDIF »
+                  tick();
+                  if (postInitTask != null) {
+                    postInitTask.run();
+                  }
+                } catch (final Throwable t) {
+                  « generateErrorLogging('"Exception in statemachine initialization", t') »
                 }
               });
             }
@@ -423,18 +427,22 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
 
             public void apply(Runnable preExecutionTask, Collection<InputEvent> events, Runnable postExecutionTask) {
               executor.execute(() -> {
-                if (preExecutionTask != null) {
-                  preExecutionTask.run();
+                try {
+                  if (preExecutionTask != null) {
+                    preExecutionTask.run();
+                  }
+                  « generateDebugLogging('"Performing action on input events {} while in state {}", events, getCurrentState()') »
+                  « IF eventDeclarations.size > 0 »
+                    writeEventsToIfaceInputs(events);
+                  « ENDIF»
+                  tick();
+                  if (postExecutionTask != null) {
+                    postExecutionTask.run();
+                  }
+                  « generateDebugLogging('"Action done, finished in state {}", getCurrentState()') »
+                } catch (final Throwable t) {
+                  « generateErrorLogging('"Exception in statemachine application", t') »
                 }
-                « generateDebugLogging('"Performing action on input events {} while in state {}", events, getCurrentState()') »
-                « IF eventDeclarations.size > 0 »
-                  writeEventsToIfaceInputs(events);
-                « ENDIF»
-                tick();
-                if (postExecutionTask != null) {
-                  postExecutionTask.run();
-                }
-                « generateDebugLogging('"Action done, finished in state {}", getCurrentState()') »
               });
             }
         '''
@@ -895,6 +903,14 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             « ENDIF »
         '''
     }    
+
+    private def CharSequence generateErrorLogging(String log) {
+        return '''
+            « IF isLoggingEnabled »
+              LOG.error(loggingPrefix + " - " + « log »);
+            « ENDIF »
+        '''
+    }
 
     private def boolean isLoggingEnabled() {
         return !featureOverrides.contains(StatebasedLeanJavaFeatureOverrides.NO_LOGGER)

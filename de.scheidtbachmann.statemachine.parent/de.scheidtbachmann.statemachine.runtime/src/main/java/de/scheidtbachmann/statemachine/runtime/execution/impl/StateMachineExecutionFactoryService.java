@@ -15,8 +15,6 @@ import de.scheidtbachmann.statemachine.runtime.execution.StateMachineExecutionFa
 import de.scheidtbachmann.statemachine.runtime.execution.StateMachineTimeoutManager;
 
 import org.osgi.service.component.annotations.Component;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -31,18 +29,13 @@ import java.util.concurrent.TimeUnit;
 @Component(name = "statemachine.utilities.StateMachineExecutionFactoryService", immediate = true)
 public class StateMachineExecutionFactoryService implements StateMachineExecutionFactory {
 
-    private static final Logger LOG = LoggerFactory.getLogger(StateMachineExecutionFactoryService.class);
-
     @Override
     public ScheduledExecutorService createExecutor(final String nameFragment) {
         // Create a thread factory to be able to use prettier names for the generated threads
         // as well as handling of uncaught exceptions
         final ThreadFactory executorThreadFactory = runnable -> {
             final String threadName = String.format("StateMachine-%s-%s", nameFragment, UUID.randomUUID().toString());
-            final Thread thread = new Thread(runnable, threadName);
-            thread.setUncaughtExceptionHandler((failedThread, throwable) -> LOG.error(
-                String.format("Exception in StateMachine Execution on thread %s", failedThread.getName()), throwable));
-            return thread;
+            return new Thread(runnable, threadName);
         };
         return Executors.newSingleThreadScheduledExecutor(executorThreadFactory);
     }

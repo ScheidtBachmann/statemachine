@@ -13,6 +13,9 @@ package de.scheidtbachmann.statemachine.runtime.execution.impl;
 
 import de.scheidtbachmann.statemachine.runtime.execution.StateMachineTimeoutManager;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -25,6 +28,8 @@ import java.util.function.Consumer;
  * The timeout can be cancelled or restarted at any time.
  */
 public class StateMachineTimeoutManagerImpl implements StateMachineTimeoutManager {
+
+    private static final Logger LOG = LoggerFactory.getLogger(StateMachineTimeoutManagerImpl.class);
 
     private final ScheduledExecutorService executor;
     private final Runnable timeoutAction;
@@ -87,7 +92,11 @@ public class StateMachineTimeoutManagerImpl implements StateMachineTimeoutManage
     }
 
     private synchronized void execute() {
-        timeoutAction.run();
+        try {
+            timeoutAction.run();
+        } catch (final Throwable t) {
+            LOG.error("Exception in scheduled code", t);
+        }
         timeoutFuture = null;
     }
 }
