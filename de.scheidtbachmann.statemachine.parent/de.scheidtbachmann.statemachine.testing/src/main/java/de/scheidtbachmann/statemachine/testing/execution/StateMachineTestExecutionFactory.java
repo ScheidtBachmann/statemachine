@@ -118,7 +118,7 @@ public class StateMachineTestExecutionFactory implements StateMachineExecutionFa
      *
      * @return {@code true} if the executor didn't encounter any exception, {@code false} otherwise.
      */
-    public synchronized boolean getExecutorIsHealthy() {
+    public boolean getExecutorIsHealthy() {
         return executorIsHealthy.get();
     }
 

@@ -67,7 +67,7 @@ public class StateMachineTimeoutManagerImpl implements StateMachineTimeoutManage
 
     @Override
     public synchronized boolean isRunning() {
-        return timeoutFuture != null;
+        return timeoutFuture != null && !timeoutFuture.isDone();
     }
 
     @Override
@@ -87,16 +87,14 @@ public class StateMachineTimeoutManagerImpl implements StateMachineTimeoutManage
     public synchronized void cancel() {
         if (isRunning()) {
             timeoutFuture.cancel(false);
-            timeoutFuture = null;
         }
     }
 
-    private synchronized void execute() {
+    private void execute() {
         try {
             timeoutAction.run();
         } catch (final Throwable t) {
             LOG.error("Exception in scheduled code", t);
         }
-        timeoutFuture = null;
     }
 }
