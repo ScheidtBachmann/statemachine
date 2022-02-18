@@ -27,7 +27,7 @@ class TrackedStateMachineExecutorService implements ScheduledExecutorService {
 
     private final ScheduledExecutorService delegatedExecutor;
 
-    private boolean executedTasks;
+    private volatile boolean executedTasks;
 
     TrackedStateMachineExecutorService(final ThreadFactory factory) {
         executedTasks = false;

@@ -134,15 +134,7 @@ public class StateMachineTestExecutionFactory implements StateMachineExecutionFa
     public void waitForAllTasksDone() {
         while (executorService.hasExecutedTasks()) {
             executorService.resetExecutedTasks();
-            try {
-                CompletableFuture.runAsync(() -> {
-                    // Nothing to do here, just wait on the execution
-                }, executorService.getDelegate()).get();
-            } catch (final InterruptedException e) {
-                Thread.currentThread().interrupt();
-            } catch (final ExecutionException e) {
-                throw new StateMachineTestTimeoutException("Problem synchronizing execution", e);
-            }
+            waitForCurrentTasksDone();
         }
     }
 }
