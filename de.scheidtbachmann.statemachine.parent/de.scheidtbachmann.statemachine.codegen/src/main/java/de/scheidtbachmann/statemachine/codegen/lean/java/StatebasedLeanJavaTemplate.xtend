@@ -113,6 +113,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
         
         if (isExecutorEnabled) {
             addImports("java.util.concurrent.ScheduledExecutorService",
+                "java.util.function.Supplier",
                 "java.util.Collection",
                 "java.util.Arrays",
                 "java.util.List",
@@ -335,9 +336,10 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
         return '''
             « IF eventDeclarations.size > 0 »
               private void writeEventsToIfaceInputs(Collection<InputEvent> events) {
+                Collection<InputEvent> nullSafeEvents = events != null ? events : Collections.emptyList();
               « FOR decl : eventDeclarations »
                 « FOR vo: decl.valuedObjects »
-                  iface.«vo.name» = events.contains(InputEvent.«vo.name»);
+                  iface.«vo.name» = nullSafeEvents.contains(InputEvent.«vo.name»);
                 « ENDFOR »
               « ENDFOR »
               }
@@ -434,6 +436,29 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
                   « generateDebugLogging('"Performing action on input events {} while in state {}", events, getCurrentState()') »
                   « IF eventDeclarations.size > 0 »
                     writeEventsToIfaceInputs(events);
+                  « ENDIF»
+                  tick();
+                  if (postExecutionTask != null) {
+                    postExecutionTask.run();
+                  }
+                  « generateDebugLogging('"Action done, finished in state {}", getCurrentState()') »
+                } catch (final Throwable t) {
+                  « generateErrorLogging('"Exception in statemachine application", t') »
+                }
+              });
+            }
+
+            public void apply(Supplier<Collection<InputEvent>> eventsSupplier) {
+              apply(eventsSupplier, null);
+            }
+
+            public void apply(Supplier<Collection<InputEvent>> eventsSupplier, Runnable postExecutionTask) {
+              executor.execute(() -> {
+                try {
+                  Collection<InputEvent> events = eventsSupplier.get();
+                  « generateDebugLogging('"Performing action on input events {} while in state {}", events, getCurrentState()') »
+                  « IF eventDeclarations.size > 0 »
+                    writeEventsToIfaceInputs(events != null ? events : Collections.emptyList());
                   « ENDIF»
                   tick();
                   if (postExecutionTask != null) {

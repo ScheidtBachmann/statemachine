@@ -21,11 +21,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -37,24 +35,19 @@ public class StateMachineTestExecutionFactory implements StateMachineExecutionFa
 
     private static final Logger LOG = LoggerFactory.getLogger(StateMachineTestExecutionFactory.class);
 
-    private final ScheduledExecutorService executorService;
+    private final TrackedStateMachineExecutorService executorService;
 
     private final Map<String, StateMachineTestTimeoutManager> timeouts;
 
-    private final AtomicBoolean executorIsHealthy;
-
     public StateMachineTestExecutionFactory() {
-        executorIsHealthy = new AtomicBoolean(true);
         timeouts = new HashMap<>();
         final ThreadFactory factory = runnable -> {
             final Thread createdThread = new Thread(runnable, "StateMachineTestExecutionThread");
-            createdThread.setUncaughtExceptionHandler((thread, throwable) -> {
-                LOG.error(String.format("Uncaught exception in Thread (%s)", thread), throwable);
-                executorIsHealthy.set(false);
-            });
+            createdThread.setUncaughtExceptionHandler((thread, throwable) -> LOG
+                .error(String.format("Uncaught exception in Thread (%s)", thread), throwable));
             return createdThread;
         };
-        executorService = Executors.newSingleThreadScheduledExecutor(factory);
+        executorService = new TrackedStateMachineExecutorService(factory);
     }
 
     @Override
@@ -114,29 +107,42 @@ public class StateMachineTestExecutionFactory implements StateMachineExecutionFa
     }
 
     /**
-     * Checks if anything has thrown an uncaught exception in the executor.
+     * Synchronizes the execution by waiting for all <b>currently scheduled</b> tasks to be finished in the executor.
      *
-     * @return {@code true} if the executor didn't encounter any exception, {@code false} otherwise.
+     * @throws StateMachineTestTimeoutException
+     *             if a problem occurs during execution
      */
-    public boolean getExecutorIsHealthy() {
-        return executorIsHealthy.get();
+    public void waitForCurrentTasksDone() {
+        try {
+            CompletableFuture.runAsync(() -> {
+                // Nothing to do here, just wait on the execution
+            }, executorService.getDelegate()).get();
+        } catch (final InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (final ExecutionException e) {
+            throw new StateMachineTestTimeoutException("Problem synchronizing execution", e);
+        }
     }
 
     /**
-     * Synchronizes the execution by waiting for all running tasks to be finished in the executor.
+     * Synchronizes the execution by waiting for all <b>currently scheduled and newly incoming</b>
+     * tasks to be finished in the executor.
      *
      * @throws StateMachineTestTimeoutException
      *             if a problem occurs during execution
      */
     public void waitForAllTasksDone() {
-        try {
-            CompletableFuture.runAsync(() -> {
-                // Nothing to do here, just wait on the execution
-            }, executorService).get();
-        } catch (final InterruptedException e) {
-            Thread.currentThread().interrupt();
-        } catch (final ExecutionException e) {
-            throw new StateMachineTestTimeoutException("Problem synchronizing execution", e);
+        while (executorService.hasExecutedTasks()) {
+            executorService.resetExecutedTasks();
+            try {
+                CompletableFuture.runAsync(() -> {
+                    // Nothing to do here, just wait on the execution
+                }, executorService.getDelegate()).get();
+            } catch (final InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } catch (final ExecutionException e) {
+                throw new StateMachineTestTimeoutException("Problem synchronizing execution", e);
+            }
         }
     }
 }
