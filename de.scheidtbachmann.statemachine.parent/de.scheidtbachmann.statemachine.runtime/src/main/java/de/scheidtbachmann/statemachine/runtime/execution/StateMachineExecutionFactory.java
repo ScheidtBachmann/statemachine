@@ -31,6 +31,14 @@ public interface StateMachineExecutionFactory {
     ScheduledExecutorService createExecutor(String nameFragment);
 
     /**
+     * Tries to shutdown the given executor.
+     *
+     * @param executor
+     *            The executor to shut down.
+     */
+    void releaseExecutor(ScheduledExecutorService executor);
+
+    /**
      * Creates a new {@link StateMachineTimeoutManager} for the state machine.
      *
      * @param executor

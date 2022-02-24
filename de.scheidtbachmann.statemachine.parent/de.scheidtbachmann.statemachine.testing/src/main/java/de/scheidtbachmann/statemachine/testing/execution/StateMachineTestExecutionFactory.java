@@ -56,6 +56,13 @@ public class StateMachineTestExecutionFactory implements StateMachineExecutionFa
     }
 
     @Override
+    public void releaseExecutor(final ScheduledExecutorService executor) {
+        // Nothing to do here, yet
+        // In a future expansion we might want to handle some state here,
+        // validating that nobody tries to do things on an executor that has been shut down.
+    }
+
+    @Override
     public synchronized StateMachineTimeoutManager createTimeout(final ScheduledExecutorService executor,
         final String timeoutId, final long delay, final TimeUnit timeunit, final Runnable timeoutAction,
         final boolean autoStart) {
@@ -132,8 +139,8 @@ public class StateMachineTestExecutionFactory implements StateMachineExecutionFa
      *             if a problem occurs during execution
      */
     public void waitForAllTasksDone() {
-        while (executorService.hasExecutedTasks()) {
-            executorService.resetExecutedTasks();
+        while (executorService.potentiallyHasMoreTasks()) {
+            executorService.setTasksHaveBeenWaitedOn();
             waitForCurrentTasksDone();
         }
     }

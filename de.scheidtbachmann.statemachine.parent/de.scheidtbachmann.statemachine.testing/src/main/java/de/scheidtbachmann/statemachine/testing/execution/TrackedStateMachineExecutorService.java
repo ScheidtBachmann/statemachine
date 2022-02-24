@@ -27,10 +27,10 @@ class TrackedStateMachineExecutorService implements ScheduledExecutorService {
 
     private final ScheduledExecutorService delegatedExecutor;
 
-    private volatile boolean executedTasks;
+    private volatile boolean potentiallyHasMoreTasks;
 
     TrackedStateMachineExecutorService(final ThreadFactory factory) {
-        executedTasks = false;
+        potentiallyHasMoreTasks = false;
         delegatedExecutor = Executors.newSingleThreadScheduledExecutor(factory);
     }
 
@@ -103,8 +103,8 @@ class TrackedStateMachineExecutorService implements ScheduledExecutorService {
 
     @Override
     public void execute(final Runnable command) {
-        executedTasks = true;
         delegatedExecutor.execute(command);
+        potentiallyHasMoreTasks = true;
     }
 
     @Override
@@ -129,11 +129,11 @@ class TrackedStateMachineExecutorService implements ScheduledExecutorService {
         return delegatedExecutor.scheduleWithFixedDelay(command, initialDelay, delay, unit);
     }
 
-    public boolean hasExecutedTasks() {
-        return executedTasks;
+    public boolean potentiallyHasMoreTasks() {
+        return potentiallyHasMoreTasks;
     }
 
-    public void resetExecutedTasks() {
-        executedTasks = false;
+    public void setTasksHaveBeenWaitedOn() {
+        potentiallyHasMoreTasks = false;
     }
 }

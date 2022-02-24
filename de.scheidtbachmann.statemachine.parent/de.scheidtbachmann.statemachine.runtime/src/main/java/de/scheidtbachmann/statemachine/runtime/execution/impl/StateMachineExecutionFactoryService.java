@@ -41,6 +41,13 @@ public class StateMachineExecutionFactoryService implements StateMachineExecutio
     }
 
     @Override
+    public void releaseExecutor(final ScheduledExecutorService executor) {
+        if (executor != null) {
+            executor.shutdown();
+        }
+    }
+
+    @Override
     public StateMachineTimeoutManager createTimeout(final ScheduledExecutorService executor, final String timeoutId,
         final long delay, final TimeUnit timeUnit, final Runnable timeoutAction, final boolean autoStart) {
         return new StateMachineTimeoutManagerImpl(executor, delay, timeUnit, timeoutAction, autoStart);

@@ -113,11 +113,12 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
         
         if (isExecutorEnabled) {
             addImports("java.util.concurrent.ScheduledExecutorService",
-                "java.util.function.Supplier",
                 "java.util.Collection",
                 "java.util.Arrays",
                 "java.util.List",
                 "java.util.concurrent.TimeUnit",
+                "de.scheidtbachmann.statemachine.runtime.MultiEventSupplier",
+                "de.scheidtbachmann.statemachine.runtime.SingleEventSupplier",
                 "de.scheidtbachmann.statemachine.runtime.execution.StateMachineExecutionFactory",
                 "de.scheidtbachmann.statemachine.runtime.execution.StateMachineTimeoutManager")
         }
@@ -137,6 +138,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             « generateInteractions() »
             « generateCurrentStateOutput() »
             « generateConstructor() »
+            « generateDisposal() »
             « generateTimeoutMethods() »
             « generateGlobalObjects() »
           }
@@ -448,17 +450,28 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
               });
             }
 
-            public void apply(Supplier<Collection<InputEvent>> eventsSupplier) {
+            public void apply(SingleEventSupplier<InputEvent> eventSupplier) {
+              apply(eventSupplier, null);
+            }
+
+            public void apply(SingleEventSupplier<InputEvent> eventSupplier, Runnable postExecutionTask) {
+              apply(() -> {
+                InputEvent suppliedEvent = eventSupplier.getEvent();
+                return suppliedEvent != null ? List.of(suppliedEvent) : Collections.emptyList();
+              }, postExecutionTask);
+            }
+
+            public void apply(MultiEventSupplier<InputEvent> eventsSupplier) {
               apply(eventsSupplier, null);
             }
 
-            public void apply(Supplier<Collection<InputEvent>> eventsSupplier, Runnable postExecutionTask) {
+            public void apply(MultiEventSupplier<InputEvent> eventsSupplier, Runnable postExecutionTask) {
               executor.execute(() -> {
                 try {
-                  Collection<InputEvent> events = eventsSupplier.get();
+                  Collection<InputEvent> events = eventsSupplier.getEvents();
                   « generateDebugLogging('"Performing action on input events {} while in state {}", events, getCurrentState()') »
                   « IF eventDeclarations.size > 0 »
-                    writeEventsToIfaceInputs(events != null ? events : Collections.emptyList());
+                    writeEventsToIfaceInputs(events);
                   « ENDIF»
                   tick();
                   if (postExecutionTask != null) {
@@ -545,6 +558,18 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
               this.rootContext = new TickData();
             }
 
+        '''
+    }
+    
+    private def generateDisposal() {
+        return '''
+            public void dispose() {
+              « IF isExecutorEnabled »
+                if (this.executor != null) {
+                  executionFactory.releaseExecutor(this.executor);
+                }
+              « ENDIF »
+            }
         '''
     }
     
