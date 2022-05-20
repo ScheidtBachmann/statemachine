@@ -35,11 +35,12 @@ import de.cau.cs.kieler.sccharts.State
 import de.cau.cs.kieler.sccharts.Transition
 import de.cau.cs.kieler.sccharts.extensions.SCChartsActionExtensions
 import de.cau.cs.kieler.sccharts.extensions.SCChartsStateExtensions
+import de.cau.cs.kieler.sccharts.extensions.SCChartsTransitionExtensions
 import de.cau.cs.kieler.sccharts.processors.statebased.DebugAnnotations
 import de.cau.cs.kieler.sccharts.processors.statebased.lean.codegen.AbstractStatebasedLeanTemplate
+import java.util.LinkedList
 import java.util.List
 import org.eclipse.xtend.lib.annotations.Accessors
-import java.util.LinkedList
 
 class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
 
@@ -48,6 +49,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
     @Inject extension KExpressionsValuedObjectExtensions
     @Inject extension SCChartsStateExtensions
     @Inject extension SCChartsActionExtensions
+    @Inject extension SCChartsTransitionExtensions
     @Inject extension EnhancedStatebasedJavaCodeSerializeHRExtensions
 
     static val INTERFACE_PARAM_NAME = "arg"
@@ -287,7 +289,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
               public static class « r.uniqueContextMemberName » {
                 ThreadStatus threadStatus;
                 « r.uniqueName »States activeState;
-                « IF r.states.exists[s | s.outgoingTransitions.exists[t | !t.immediate]] »
+                « IF r.needsDelayedEnabled »
                   boolean delayedEnabled;
                 « ENDIF »
                 « FOR c : r.states.map[ regions ].flatten.filter(ControlflowRegion) »
@@ -608,7 +610,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             « IF state !== rootState »
               « FOR r : state.regions.filter(ControlflowRegion) »
                 context.« r.uniqueContextName ».activeState = « r.uniqueName »States.« r.states.filter[ initial ].head.uniqueEnumName »;
-                « IF r.states.exists[s | s.outgoingTransitions.exists[t | !t.immediate]] »
+                « IF r.needsDelayedEnabled »
                 context.« r.uniqueContextName ».delayedEnabled = false;
                 « ENDIF »
                 context.« r.uniqueContextName ».threadStatus = ThreadStatus.READY;
@@ -686,7 +688,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
     protected def CharSequence addDelayedEnabledCode(State state) {
         return '''
           « FOR r : state.regions.filter(ControlflowRegion) »
-            « IF r.states.exists[s | s.outgoingTransitions.exists[t | !t.immediate]] »
+            « IF r.needsDelayedEnabled »
             context.« r.uniqueName ».delayedEnabled = true;
             « ENDIF »
           « ENDFOR » 
@@ -738,7 +740,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
           « FOR e : transition.effects »
             « e.serializeHR »;
           « ENDFOR »
-          « IF transition.sourceState.parentRegion.states.exists[s | s.outgoingTransitions.exists[t | !t.immediate]] »
+          « IF transition.sourceState.parentRegion.needsDelayedEnabled »
           context.delayedEnabled = false;
           « ENDIF »
           « IF transition.sourceState != transition.targetState || transition.targetState.isHierarchical »
@@ -758,14 +760,15 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
                 « FOR s : region.states »
                   case « s.uniqueEnumName »:
                     « s.uniqueName »(context);
-                  « IF s.isHierarchical »
-                    // Superstate: intended fall-through 
-
-                  case « s.uniqueEnumName »RUNNING:
-                    « s.uniqueName »_running(context);
-                  « ENDIF »
+                    « IF s.isHierarchical »
+                      « s.uniqueName »_running(context);
+                    « ENDIF »
                     break;
-
+                  « IF  s.isHierarchical »
+                    case « s.uniqueEnumName »RUNNING:
+                      « s.uniqueName »_running(context);
+                      break;
+                  « ENDIF »
               «ENDFOR»
               }
             }
@@ -986,7 +989,11 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
     
     private def String getSourceState(State s) {
         return (s.getAnnotations("SourceState").last as StringAnnotation).values.head 
-    }    
+    }
+
+    private def boolean needsDelayedEnabled(ControlflowRegion r) {
+        return r.states.exists[s | s.outgoingTransitions.exists[t | !t.isImmediate && !t.isImplicitlyImmediate ]]
+    }
 
     protected def findModifications() {
         return modifications
