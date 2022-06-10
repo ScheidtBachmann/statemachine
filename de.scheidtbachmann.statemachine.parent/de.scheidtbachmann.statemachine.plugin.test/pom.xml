@@ -116,6 +116,24 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>de.scheidtbachmann.statemachine</groupId>
+                <artifactId>de.scheidtbachmann.statemachine.plugin</artifactId>
+                <version>${project.version}</version>
+                <executions>
+                    <execution>
+                        <id>statemachines</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>SMGenAll</goal>
+                        </goals>
+                        <configuration>
+                            <outputFolder>${project.build.directory}/other-sources</outputFolder>
+                            <strategy>de.scheidtbachmann.statemachine.codegen.statebased.lean.java.template</strategy>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>

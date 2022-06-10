@@ -55,4 +55,19 @@ public class StateMachine {
     public void setSelectedModel(final String selectedModel) {
         this.selectedModel = selectedModel;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder builder = new StringBuilder();
+        builder.append("StateMachine [fileName=");
+        builder.append(fileName);
+        builder.append(", outputFolder=");
+        builder.append(outputFolder);
+        builder.append(", strategy=");
+        builder.append(strategy);
+        builder.append(", selectedModel=");
+        builder.append(selectedModel);
+        builder.append("]");
+        return builder.toString();
+    }
 }
