@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -60,14 +61,19 @@ public class StateMachineAutoGeneratorPlugin extends AbstractStateMachineGenerat
     }
 
     private List<StateMachine> gatherAllStateMachines() throws MojoExecutionException {
-        try (Stream<Path> paths = Files.walk(Paths.get(sourceFolder))) {
-            return paths.map(Path::toFile) // Resolve all paths to files, to be able to work with then name
-                .filter(File::isFile) // Drop all directories and stuff
-                .filter(file -> file.getName().endsWith(DEFAULT_FILE_EXTENSION)) // Only take the state machine files
-                .map(this::createStateMachineConfig) // Resolve the file and configure the state machine from it
-                .collect(Collectors.toList());
-        } catch (final IOException e) {
-            throw new MojoExecutionException("Unable to read files", e);
+        final Path path = Paths.get(sourceFolder);
+        if (path.toFile().exists() && path.toFile().canRead() && path.toFile().isDirectory()) {
+            try (Stream<Path> paths = Files.walk(path)) {
+                return paths.map(Path::toFile) // Resolve all paths to files, to be able to work with then name
+                    .filter(File::isFile) // Drop all directories and stuff
+                    .filter(file -> file.getName().endsWith(DEFAULT_FILE_EXTENSION)) // Only take state machine files
+                    .map(this::createStateMachineConfig) // Resolve the file and configure the state machine from it
+                    .collect(Collectors.toList());
+            } catch (final IOException e) {
+                throw new MojoExecutionException("Unable to read files", e);
+            }
+        } else {
+            return Collections.emptyList();
         }
     }
 
