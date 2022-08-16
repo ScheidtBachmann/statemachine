@@ -114,10 +114,13 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
         }
         
         if (isExecutorEnabled) {
-            addImports("java.util.concurrent.ScheduledExecutorService",
-                "java.util.Collection",
+            addImports(
                 "java.util.Arrays",
+                "java.util.Collection",
                 "java.util.List",
+                "java.util.concurrent.Callable",
+                "java.util.concurrent.ExecutionException",
+                "java.util.concurrent.ScheduledExecutorService",
                 "java.util.concurrent.TimeUnit",
                 "de.scheidtbachmann.statemachine.runtime.MultiEventSupplier",
                 "de.scheidtbachmann.statemachine.runtime.SingleEventSupplier",
@@ -204,8 +207,14 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
               /**
                * The interface containing all model variables (inputs, outputs)
                */
-              public static class Iface {
+              public class Iface {
                 « rootState.createDeclarations »
+                
+                public void assertAccessFromValidThread() {
+                  if (!executionFactory.isRunningInExecutor()) {
+                      throw new RuntimeException("Illegal thread for access to statemachine interface");
+                  }
+                }
               }
 
               public Iface iface;
@@ -484,6 +493,15 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
                   « generateErrorLogging('"Exception in statemachine application", t') »
                 }
               });
+            }
+
+            public <T> T query(Callable<T> dataRequest) {
+              try {
+                return executor.submit(dataRequest).get();
+              } catch (InterruptedException | ExecutionException e) {
+                LOG.error(loggingPrefix + " - " + "Exception in statemachine application", e);
+                return null;
+              }
             }
         '''
         // CHECKSTYLEON LineLength
@@ -783,6 +801,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
           « IF declarations.size > 0 »
             « FOR valuedObject : declarations »
               « createDeclaration(valuedObject) »
+
             « ENDFOR »
           « ENDIF »
         '''
@@ -801,7 +820,21 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             }
 
         return '''
-            «voType» «vo.name»«IF vo.isArray»[] = new «voType»«ENDIF»«voCardinals»;«IF vo.input » // Input«ENDIF»«IF vo.output » // Output«ENDIF»
+            private « voType » « vo.name »« IF vo.isArray »[] = new « voType »« ENDIF »« voCardinals »;« IF vo.isInput » // Input« ENDIF »« IF vo.isOutput » // Output«ENDIF»
+            « IF !vo.variableDeclaration.hasAnnotation("InputEvent") »
+              « IF vo.isOutput »
+                public « voType »« IF vo.isArray »[]« ENDIF » get« vo.name.toFirstUpper »() {
+                  assertAccessFromValidThread();
+                  return « vo.name »;
+                }
+              « ENDIF »
+              « IF vo.isInput »
+                public void set« vo.name.toFirstUpper »(final « voType »« IF vo.isArray »[]« ENDIF » « vo.name ») {
+                  assertAccessFromValidThread();
+                  iface.« vo.name » = « vo.name »;
+                }
+              « ENDIF »
+            « ENDIF »
         '''
     }
 

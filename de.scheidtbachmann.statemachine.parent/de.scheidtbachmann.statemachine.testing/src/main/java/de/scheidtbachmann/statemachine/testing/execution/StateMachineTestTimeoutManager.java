@@ -58,10 +58,10 @@ public class StateMachineTestTimeoutManager implements StateMachineTimeoutManage
         try {
             executor.submit(() -> {
                 if (running) {
+                    running = false;
                     action.run();
                 }
             }).get();
-            running = false;
         } catch (final ExecutionException e) {
             throw new StateMachineTestTimeoutException("Problem triggering timeout", e);
         } catch (final InterruptedException e) {

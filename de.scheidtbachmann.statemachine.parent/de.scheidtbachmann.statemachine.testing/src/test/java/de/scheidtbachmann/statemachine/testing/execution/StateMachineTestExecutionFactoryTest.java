@@ -11,14 +11,14 @@
 
 package de.scheidtbachmann.statemachine.testing.execution;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class StateMachineTestExecutionFactoryTest {
+class StateMachineTestExecutionFactoryTest {
 
     private static final int THREAD_WAIT_TIME = 2000;
 
@@ -30,14 +30,14 @@ public class StateMachineTestExecutionFactoryTest {
     private final AtomicBoolean task2HasExecuted = new AtomicBoolean(false);
 
     @Test
-    public void testWaitForCurrentTasksDone() {
+    void testWaitForCurrentTasksDone() {
         givenTaskSchedulesAnotherTask();
         whenExecutingCurrentTaskAndWaitingForIt();
         thenOnlyFirstTaskShouldHaveExecuted();
     }
 
     @Test
-    public void testWaitForAllTasksDone() {
+    void testWaitForAllTasksDone() {
         givenTaskSchedulesAnotherTask();
         whenExecutingAllTaskAndWaitingForIt();
         thenBothTasksShouldHaveExecuted();
@@ -65,13 +65,13 @@ public class StateMachineTestExecutionFactoryTest {
     }
 
     private void thenOnlyFirstTaskShouldHaveExecuted() {
-        assertTrue("First task not executed.", task1HasExecuted.get());
-        assertFalse("Second task already executed.", task2HasExecuted.get());
+        assertTrue(task1HasExecuted.get(), "First task not executed.");
+        assertFalse(task2HasExecuted.get(), "Second task already executed.");
     }
 
     private void thenBothTasksShouldHaveExecuted() {
-        assertTrue("First task not executed.", task1HasExecuted.get());
-        assertTrue("Second task not executed.", task2HasExecuted.get());
+        assertTrue(task1HasExecuted.get(), "First task not executed.");
+        assertTrue(task2HasExecuted.get(), "Second task not executed.");
     }
 
     private void waitSomeTime() {

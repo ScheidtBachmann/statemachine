@@ -25,16 +25,16 @@ import java.nio.file.Paths
 import java.nio.file.SimpleFileVisitor
 import java.nio.file.attribute.BasicFileAttributes
 import org.eclipse.xtend.lib.annotations.Accessors
-import org.junit.After
-import org.junit.Assert
-import org.junit.Assume
-import org.junit.ComparisonFailure
-import org.junit.Test
 import picocli.CommandLine
 
 import static java.nio.file.StandardOpenOption.*
 
 import static extension java.nio.file.Files.*
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assumptions
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.AssertionFailureBuilder
 
 class GeneratorTest {
   
@@ -360,7 +360,7 @@ class GeneratorTest {
   
   @Test
   def void testGenerateOutputNonWritable01() {
-    Assume.assumeTrue(!isWindows)
+    Assumptions.assumeTrue(!isWindows)
     
     basePath = Files.createTempDirectory('stateChartGenTesting')
 
@@ -378,7 +378,7 @@ class GeneratorTest {
   
   @Test
   def void testGenerateOutputNonWritable02() {
-    Assume.assumeTrue(!isWindows)
+    Assumptions.assumeTrue(!isWindows)
     
     basePath = Files.createTempDirectory('stateChartGenTesting')
 
@@ -484,7 +484,7 @@ class GeneratorTest {
   
   @Test
   def void testGenerateOutputCustomStrategyUnreadable() {
-    Assume.assumeTrue(!isWindows)
+    Assumptions.assumeTrue(!isWindows)
     
     basePath = Files.createTempDirectory('stateChartGenTesting')
 
@@ -545,7 +545,7 @@ class GeneratorTest {
   
   // ----------------------------------------------------------------------------------------------
   
-  @After
+  @AfterEach
 
   def void removeBaseDir() {
     basePath?.deleteDirRecursively
@@ -578,18 +578,18 @@ class GeneratorTest {
   }
 
   private def assertSysOutEquals(String expected) {
-    Assert.assertEquals('Found outputs in stdErr:', '', syserr.toString)
-    Assert.assertEquals(expected, sysout.toString(UTF8))
+    Assertions.assertEquals('Found outputs in stdErr:', '', syserr.toString)
+    Assertions.assertEquals(expected, sysout.toString(UTF8))
   }
   
   private def assertSysOutStartsWith(String expected) {
-    Assert.assertEquals('Found outputs in stdErr:', '', syserr.toString)
+    Assertions.assertEquals('Found outputs in stdErr:', '', syserr.toString)
     val actualOutputs = sysout.toString(UTF8)
     if (actualOutputs !== null) {
         if (!actualOutputs.startsWith(expected.trim))
-          throw new ComparisonFailure('', expected, actualOutputs)
+          AssertionFailureBuilder.assertionFailure.expected(expected).actual(actualOutputs).buildAndThrow
     } else {
-        Assert.fail('Obtained result is not of type String.')
+        Assertions.fail('Obtained result is not of type String.')
     }
   }
   

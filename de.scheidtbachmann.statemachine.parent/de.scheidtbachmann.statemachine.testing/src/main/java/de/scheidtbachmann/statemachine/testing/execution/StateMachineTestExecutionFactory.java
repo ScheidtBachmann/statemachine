@@ -17,7 +17,11 @@ import de.scheidtbachmann.statemachine.runtime.execution.StateMachineTimeoutMana
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.Thread.State;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -39,12 +43,16 @@ public class StateMachineTestExecutionFactory implements StateMachineExecutionFa
 
     private final Map<String, StateMachineTestTimeoutManager> timeouts;
 
+    private final List<WeakReference<Thread>> threadRefs = new ArrayList<>();
+
     public StateMachineTestExecutionFactory() {
         timeouts = new HashMap<>();
         final ThreadFactory factory = runnable -> {
+            purgeTerminatedThreadRefs();
             final Thread createdThread = new Thread(runnable, "StateMachineTestExecutionThread");
             createdThread.setUncaughtExceptionHandler((thread, throwable) -> LOG
                 .error(String.format("Uncaught exception in Thread (%s)", thread), throwable));
+            threadRefs.add(new WeakReference<>(createdThread));
             return createdThread;
         };
         executorService = new TrackedStateMachineExecutorService(factory);
@@ -73,6 +81,21 @@ public class StateMachineTestExecutionFactory implements StateMachineExecutionFa
         } else {
             return registerNewTimeout(executor, timeoutId, timeoutAction, autoStart);
         }
+    }
+
+    @Override
+    public boolean isRunningInExecutor() {
+        final Thread currentThread = Thread.currentThread();
+        return threadRefs.stream().anyMatch(threadRef -> threadRef.get() == currentThread);
+    }
+
+    private void purgeTerminatedThreadRefs() {
+        threadRefs.removeIf(this::isThreadTerminated);
+    }
+
+    private boolean isThreadTerminated(final WeakReference<Thread> threadRef) {
+        final Thread thread = threadRef.get();
+        return thread == null || thread.getState() == State.TERMINATED;
     }
 
     private boolean timeoutIsRunning(final String timeoutId) {

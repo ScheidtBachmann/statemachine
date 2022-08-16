@@ -14,19 +14,19 @@ import de.cau.cs.kieler.klighd.LightDiagramServices
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import javax.xml.parsers.DocumentBuilderFactory
-import org.junit.Ignore
-import org.junit.Test
 
 import static de.cau.cs.kieler.klighd.kgraph.util.KGraphUtil.*
-import static org.junit.Assert.*
 
 import static extension de.scheidtbachmann.statemachine.diagrams.DiagramTests.*
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Assertions
 
 class DiagramGenerationTest {
 
     public static val init = DiagramTests.init
 
-    @Ignore('Generated SVG is platform dependant')
+    @Disabled('Generated SVG is platform dependant')
     @Test
     def generationTest01() {
         val root = createInitializedNode
@@ -34,8 +34,8 @@ class DiagramGenerationTest {
         val stream = new ByteArrayOutputStream
         val result = LightDiagramServices.renderOffScreen(root, 'svg', stream)
 
-        assertNotNull('No diagram generated.', result)
-        assertTrue('Diagram generation failed: ' + result.message + result.failureTrace, result.isOK)
+        Assertions.assertNotNull(result, 'No diagram generated.')
+        Assertions.assertTrue(result.isOK, 'Diagram generation failed: ' + result.message + result.failureTrace)
 
         //CHECKSTYLEOFF LineLength This is template code that can't be arbitrarily formatted
         stream.assertXMLEquals('''
@@ -138,6 +138,6 @@ class DiagramGenerationTest {
         val doc1 = db.parse(new ByteArrayInputStream(masked.getBytes("UTF-8")))
         val doc2 = db.parse(new ByteArrayInputStream(expected.toString.getBytes("UTF-8")))
 
-        assertTrue(doc1.isEqualNode(doc2));
+        Assertions.assertTrue(doc1.isEqualNode(doc2));
     }
 }

@@ -16,6 +16,10 @@ import de.scheidtbachmann.statemachine.runtime.execution.StateMachineTimeoutMana
 
 import org.osgi.service.component.annotations.Component;
 
+import java.lang.Thread.State;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -29,13 +33,18 @@ import java.util.concurrent.TimeUnit;
 @Component(name = "statemachine.utilities.StateMachineExecutionFactoryService", immediate = true)
 public class StateMachineExecutionFactoryService implements StateMachineExecutionFactory {
 
+    private final List<WeakReference<Thread>> threadRefs = new ArrayList<>();
+
     @Override
     public ScheduledExecutorService createExecutor(final String nameFragment) {
         // Create a thread factory to be able to use prettier names for the generated threads
         // as well as handling of uncaught exceptions
         final ThreadFactory executorThreadFactory = runnable -> {
+            purgeTerminatedThreadRefs();
             final String threadName = String.format("StateMachine-%s-%s", nameFragment, UUID.randomUUID().toString());
-            return new Thread(runnable, threadName);
+            final Thread createdThread = new Thread(runnable, threadName);
+            threadRefs.add(new WeakReference<>(createdThread));
+            return createdThread;
         };
         return Executors.newSingleThreadScheduledExecutor(executorThreadFactory);
     }
@@ -51,5 +60,20 @@ public class StateMachineExecutionFactoryService implements StateMachineExecutio
     public StateMachineTimeoutManager createTimeout(final ScheduledExecutorService executor, final String timeoutId,
         final long delay, final TimeUnit timeUnit, final Runnable timeoutAction, final boolean autoStart) {
         return new StateMachineTimeoutManagerImpl(executor, delay, timeUnit, timeoutAction, autoStart);
+    }
+
+    @Override
+    public boolean isRunningInExecutor() {
+        final Thread currentThread = Thread.currentThread();
+        return threadRefs.stream().anyMatch(threadRef -> threadRef.get() == currentThread);
+    }
+
+    private void purgeTerminatedThreadRefs() {
+        threadRefs.removeIf(this::isThreadTerminated);
+    }
+
+    private boolean isThreadTerminated(final WeakReference<Thread> threadRef) {
+        final Thread thread = threadRef.get();
+        return thread == null || thread.getState() == State.TERMINATED;
     }
 }

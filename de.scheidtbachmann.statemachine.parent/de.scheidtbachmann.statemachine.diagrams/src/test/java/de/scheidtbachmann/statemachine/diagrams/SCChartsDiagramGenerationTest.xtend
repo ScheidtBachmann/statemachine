@@ -17,20 +17,19 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
 import org.eclipse.emf.common.util.URI
-import org.junit.Ignore
-import org.junit.Test
-
-import static org.junit.Assert.*
 
 import static extension de.scheidtbachmann.statemachine.diagrams.DiagramTests.*
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Assertions
 
 class SCChartsDiagramGenerationTest {
 
     public static val init = DiagramTests.init
 
-    @Ignore('Generated SVG is platform dependant')
+    @Disabled('Generated SVG is platform dependant')
     @Test
-    def generationTest01() {
+    def void generationTest01() {
         val sm = '''
             scchart ABRO {
                 input signal pure A
@@ -71,8 +70,8 @@ class SCChartsDiagramGenerationTest {
         val stream = new ByteArrayOutputStream
         val result = LightDiagramServices.renderOffScreen(model, 'svg', stream)
 
-        assertNotNull('No diagram generated.', result)
-        assertTrue('Diagram generation failed: ' + result.message + result.failureTrace, result.isOK)
+        Assertions.assertNotNull(result, 'No diagram generated.')
+        Assertions.assertTrue(result.isOK, 'Diagram generation failed: ' + result.message + result.failureTrace)
 
         //CHECKSTYLEOFF LineLength This is template code that can't be arbitrarily formatted
         stream.assertEquals('''
@@ -660,6 +659,6 @@ class SCChartsDiagramGenerationTest {
         val descEnd = output.indexOf('</desc>')
         val masked = output.substring(0, descStart + 6) + '...' + output.substring(descEnd, output.length)
 
-        assertEquals(expected.toString.replaceAll("\r\n", "\n"), masked.replaceAll("\r\n", "\n"))
+        Assertions.assertEquals(expected.toString.replaceAll("\r\n", "\n"), masked.replaceAll("\r\n", "\n"))
     }
 }
