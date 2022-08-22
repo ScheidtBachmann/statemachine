@@ -127,6 +127,15 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
                 "de.scheidtbachmann.statemachine.runtime.execution.StateMachineExecutionFactory",
                 "de.scheidtbachmann.statemachine.runtime.execution.StateMachineTimeoutManager")
         }
+        
+        if (isHistoryEnabled) {
+            addImports(
+                "java.util.Collections",
+                "java.util.LinkedList",
+                "java.util.List",
+                "de.scheidtbachmann.statemachine.runtime.StateMachineHistoryEntry"
+            )
+        }
     }
 
     protected def void createCode() {
@@ -146,6 +155,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             « generateDisposal() »
             « generateTimeoutMethods() »
             « generateGlobalObjects() »
+            « generateActivityHistory() »
           }
         ''')
     }
@@ -212,7 +222,11 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
                 
                 public void assertAccessFromValidThread() {
                   if (!executionFactory.isRunningInExecutor()) {
+                    « IF isThreadAccessWarnOnly »
+                      LOG.warn("Illegal thread for access to statemachine interface", new Exception());
+                    « ELSE »
                       throw new RuntimeException("Illegal thread for access to statemachine interface");
+                    « ENDIF »
                   }
                 }
               }
@@ -442,11 +456,19 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
 
             public void apply(Runnable preExecutionTask, Collection<InputEvent> events, Runnable postExecutionTask) {
               executor.execute(() -> {
+                « IF isHistoryEnabled »
+                  final StateMachineHistoryEntry historyEntry = new StateMachineHistoryEntry();
+                  addHistoryEntry(historyEntry);
+                « ENDIF »
                 try {
                   if (preExecutionTask != null) {
                     preExecutionTask.run();
                   }
                   « generateDebugLogging('"Performing action on input events {} while in state {}", events, getCurrentState()') »
+                  « IF isHistoryEnabled »
+                    historyEntry.setStartState(getCurrentState().toString());
+                    historyEntry.setEvents(events.toString());
+                  « ENDIF »
                   « IF eventDeclarations.size > 0 »
                     writeEventsToIfaceInputs(events);
                   « ENDIF»
@@ -455,8 +477,14 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
                     postExecutionTask.run();
                   }
                   « generateDebugLogging('"Action done, finished in state {}", getCurrentState()') »
+                  « IF isHistoryEnabled »
+                    historyEntry.setEndState(getCurrentState().toString());
+                  « ENDIF »
                 } catch (final Throwable t) {
                   « generateErrorLogging('"Exception in statemachine application", t') »
+                  « IF isHistoryEnabled »
+                    historyEntry.setThrowable(t);
+                  « ENDIF »
                 }
               });
             }
@@ -478,9 +506,17 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
 
             public void apply(MultiEventSupplier<InputEvent> eventsSupplier, Runnable postExecutionTask) {
               executor.execute(() -> {
+                « IF isHistoryEnabled »
+                  final StateMachineHistoryEntry historyEntry = new StateMachineHistoryEntry();
+                  addHistoryEntry(historyEntry);
+                « ENDIF »
                 try {
                   Collection<InputEvent> events = eventsSupplier.getEvents();
                   « generateDebugLogging('"Performing action on input events {} while in state {}", events, getCurrentState()') »
+                  « IF isHistoryEnabled »
+                    historyEntry.setStartState(getCurrentState().toString());
+                    historyEntry.setEvents(events.toString());
+                  « ENDIF »
                   « IF eventDeclarations.size > 0 »
                     writeEventsToIfaceInputs(events);
                   « ENDIF»
@@ -489,16 +525,26 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
                     postExecutionTask.run();
                   }
                   « generateDebugLogging('"Action done, finished in state {}", getCurrentState()') »
+                  « IF isHistoryEnabled »
+                    historyEntry.setEndState(getCurrentState().toString());
+                  « ENDIF »
                 } catch (final Throwable t) {
                   « generateErrorLogging('"Exception in statemachine application", t') »
+                  « IF isHistoryEnabled »
+                    historyEntry.setThrowable(t);
+                  « ENDIF »
                 }
               });
             }
 
             public <T> T query(Callable<T> dataRequest) {
               try {
-                return executor.submit(dataRequest).get();
-              } catch (InterruptedException | ExecutionException e) {
+                if (executionFactory.isRunningInExecutor()) {
+                  return dataRequest.call();
+                } else {
+                  return executor.submit(dataRequest).get();
+                }
+              } catch (Exception e) {
                 LOG.error(loggingPrefix + " - " + "Exception in statemachine application", e);
                 return null;
               }
@@ -612,6 +658,28 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             « ENDFOR »
         '''
     }    
+    
+    private def generateActivityHistory() {
+        return '''
+            « IF isHistoryEnabled »
+
+              private final static int MAX_HISTORY_ENTRIES = 10;
+
+              private final List<StateMachineHistoryEntry> activityHistory = new LinkedList<>();
+
+              public List<StateMachineHistoryEntry> getActivityHistory() {
+                return Collections.unmodifiableList(activityHistory);
+              }
+
+              private void addHistoryEntry(StateMachineHistoryEntry historyEntry) {
+                activityHistory.add(historyEntry);
+                while (activityHistory.size() > 10) {
+                  activityHistory.remove(0);
+                }
+              }
+            « ENDIF »
+        '''
+    }
     
     private def CharSequence createCodeState(State state) {
         val originalName = state.getAnnotation("OriginalState")?.asStringAnnotation?.values?.head
@@ -1008,6 +1076,14 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
     
     private def boolean isStringContainerEnabled() {
         return !featureOverrides.contains(StatebasedLeanJavaFeatureOverrides.NO_STRING_CONTAINER)
+    }
+    
+    private def boolean isThreadAccessWarnOnly() {
+        return featureOverrides.contains(StatebasedLeanJavaFeatureOverrides.THREADACCESS_WARN_ONLY)
+    }
+    
+    private def boolean isHistoryEnabled() {
+        return !featureOverrides.contains(StatebasedLeanJavaFeatureOverrides.NO_HISTORY)
     }
     
     private def boolean isIfaceNeeded() {

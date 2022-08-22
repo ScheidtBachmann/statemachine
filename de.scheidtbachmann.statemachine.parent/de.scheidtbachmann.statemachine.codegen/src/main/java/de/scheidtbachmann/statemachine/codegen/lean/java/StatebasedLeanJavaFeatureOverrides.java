@@ -15,5 +15,5 @@ package de.scheidtbachmann.statemachine.codegen.lean.java;
  * Listing of extended features that can be enabled in the generated code.
  */
 public enum StatebasedLeanJavaFeatureOverrides {
-    NO_LOGGER, NO_STRING_CONTAINER, NO_EXECUTOR
+    NO_LOGGER, NO_STRING_CONTAINER, NO_EXECUTOR, NO_HISTORY, THREADACCESS_WARN_ONLY
 }
