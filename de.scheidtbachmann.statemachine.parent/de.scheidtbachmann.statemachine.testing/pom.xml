@@ -3,7 +3,7 @@
   <parent>
     <groupId>de.scheidtbachmann.statemachine</groupId>
     <artifactId>de.scheidtbachmann.statemachine.parent</artifactId>
-    <version>0.2.17-SNAPSHOT</version>
+    <version>0.2.17</version>
   </parent>
   <artifactId>de.scheidtbachmann.statemachine.testing</artifactId>
   <dependencies>
