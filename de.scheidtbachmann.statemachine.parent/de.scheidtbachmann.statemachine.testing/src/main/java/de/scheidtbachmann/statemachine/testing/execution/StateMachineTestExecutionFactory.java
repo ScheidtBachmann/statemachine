@@ -20,13 +20,13 @@ import org.slf4j.LoggerFactory;
 import java.lang.Thread.State;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -43,19 +43,12 @@ public class StateMachineTestExecutionFactory implements StateMachineExecutionFa
 
     private final Map<String, StateMachineTestTimeoutManager> timeouts;
 
-    private final List<WeakReference<Thread>> threadRefs = new ArrayList<>();
+    private final List<WeakReference<Thread>> executorThreadReferences =
+        Collections.synchronizedList(new ArrayList<>());
 
     public StateMachineTestExecutionFactory() {
         timeouts = new HashMap<>();
-        final ThreadFactory factory = runnable -> {
-            purgeTerminatedThreadRefs();
-            final Thread createdThread = new Thread(runnable, "StateMachineTestExecutionThread");
-            createdThread.setUncaughtExceptionHandler((thread, throwable) -> LOG
-                .error(String.format("Uncaught exception in Thread (%s)", thread), throwable));
-            threadRefs.add(new WeakReference<>(createdThread));
-            return createdThread;
-        };
-        executorService = new TrackedStateMachineExecutorService(factory);
+        executorService = new TrackedStateMachineExecutorService(this::newThreadForExecutor);
     }
 
     @Override
@@ -86,11 +79,20 @@ public class StateMachineTestExecutionFactory implements StateMachineExecutionFa
     @Override
     public boolean isRunningInExecutor() {
         final Thread currentThread = Thread.currentThread();
-        return threadRefs.stream().anyMatch(threadRef -> threadRef.get() == currentThread);
+        return executorThreadReferences.stream().anyMatch(threadRef -> threadRef.get() == currentThread);
+    }
+
+    private Thread newThreadForExecutor(final Runnable runnable) {
+        purgeTerminatedThreadRefs();
+        final Thread createdThread = new Thread(runnable, "StateMachineTestExecutionThread");
+        createdThread.setUncaughtExceptionHandler(
+            (thread, throwable) -> LOG.error(String.format("Uncaught exception in Thread (%s)", thread), throwable));
+        executorThreadReferences.add(new WeakReference<>(createdThread));
+        return createdThread;
     }
 
     private void purgeTerminatedThreadRefs() {
-        threadRefs.removeIf(this::isThreadTerminated);
+        executorThreadReferences.removeIf(this::isThreadTerminated);
     }
 
     private boolean isThreadTerminated(final WeakReference<Thread> threadRef) {

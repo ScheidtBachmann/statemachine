@@ -23,34 +23,80 @@ public class StateMachineHistoryEntry {
     private String endState;
     private Throwable throwable;
 
+    /**
+     * Returns the name of the state (or multiple comma-separated states) the state machine was in,
+     * at the start of the activation.
+     *
+     * @return the state at the start of the activation.
+     */
     public String getStartState() {
         return startState;
     }
 
+    /**
+     * Stores the state of the state machine before activation.
+     *
+     * @param startState
+     *            The name of the state before activation (or multiple comma-separated states).
+     */
     public void setStartState(final String startState) {
         this.startState = startState;
     }
 
+    /**
+     * Returns the (comma-seperated) events, active in the state machine activation.
+     *
+     * @return the string representation of the active events
+     */
     public String getEvents() {
         return events;
     }
 
+    /**
+     * Stores the events, active in the state machine activation.
+     *
+     * @param events
+     *            The string representation of the active events (comma-separated if multiple events)
+     */
     public void setEvents(final String events) {
         this.events = events;
     }
 
+    /**
+     * Returns the name of the state (or multiple comma-separated states) the state machine was in,
+     * at the end of the activation.
+     *
+     * @return the state at the end of the activation.
+     */
     public String getEndState() {
         return endState;
     }
 
+    /**
+     * Stores the state of the state machine after activation.
+     *
+     * @param endState
+     *            The name of the state after activation (or multiple comma-separated states).
+     */
     public void setEndState(final String endState) {
         this.endState = endState;
     }
 
+    /**
+     * Returns the {@link Throwable} that might have been thrown during the state machine activation.
+     *
+     * @return the {@link Throwable} that has been thrown, or {@code null} if no {@link Throwable} has been thrown
+     */
     public Throwable getThrowable() {
         return throwable;
     }
 
+    /**
+     * Stores the {@link Throwable} that has been thrown during the state machine activation.
+     *
+     * @param throwable
+     *            The {@link Throwable} to store for the execution.
+     */
     public void setThrowable(final Throwable throwable) {
         this.throwable = throwable;
     }

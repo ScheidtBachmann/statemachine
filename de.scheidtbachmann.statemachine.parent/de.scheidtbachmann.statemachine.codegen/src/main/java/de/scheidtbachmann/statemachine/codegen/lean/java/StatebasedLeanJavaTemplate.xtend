@@ -876,6 +876,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
     }
 
     protected def CharSequence createDeclaration(ValuedObject vo) {
+        //CHECKSTYLEOFF LineLength This is template code that can't be arbitrarily formatted
         val voType = if (vo.type != ValueType.HOST || vo.variableDeclaration.hostType.nullOrEmpty) {
                 vo.variableDeclaration.type.serializeHR
             } else {
@@ -891,7 +892,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             private « voType » « vo.name »« IF vo.isArray »[] = new « voType »« ENDIF »« voCardinals »;« IF vo.isInput » // Input« ENDIF »« IF vo.isOutput » // Output«ENDIF»
             « IF !vo.variableDeclaration.hasAnnotation("InputEvent") »
               « IF vo.isOutput »
-                public « voType »« IF vo.isArray »[]« ENDIF » get« vo.name.toFirstUpper »() {
+                public « voType »« IF vo.isArray »[]« ENDIF » « IF vo.isBool »is« ELSE »get« ENDIF »« vo.name.toFirstUpper »() {
                   assertAccessFromValidThread();
                   return « vo.name »;
                 }
@@ -904,6 +905,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
               « ENDIF »
             « ENDIF »
         '''
+        //CHECKSTYLEON LineLength
     }
 
     protected def createContextInterface() {

@@ -18,7 +18,8 @@ import org.osgi.service.component.annotations.Component;
 
 import java.lang.Thread.State;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -30,22 +31,18 @@ import java.util.concurrent.TimeUnit;
  * Implementation of the {@link StateMachineExecutionFactory} for regular usage
  * in OSGi context.
  */
-@Component(name = "statemachine.utilities.StateMachineExecutionFactoryService", immediate = true)
+@Component(name = "statemachine.utilities.StateMachineExecutionFactoryService", immediate = true,
+    service = { ScheduledExecutorService.class })
 public class StateMachineExecutionFactoryService implements StateMachineExecutionFactory {
 
-    private final List<WeakReference<Thread>> threadRefs = new ArrayList<>();
+    private final List<WeakReference<Thread>> executorThreadReferences =
+        Collections.synchronizedList(new LinkedList<>());
 
     @Override
     public ScheduledExecutorService createExecutor(final String nameFragment) {
         // Create a thread factory to be able to use prettier names for the generated threads
         // as well as handling of uncaught exceptions
-        final ThreadFactory executorThreadFactory = runnable -> {
-            purgeTerminatedThreadRefs();
-            final String threadName = String.format("StateMachine-%s-%s", nameFragment, UUID.randomUUID().toString());
-            final Thread createdThread = new Thread(runnable, threadName);
-            threadRefs.add(new WeakReference<>(createdThread));
-            return createdThread;
-        };
+        final ThreadFactory executorThreadFactory = runnable -> newThreadForExecutor(nameFragment, runnable);
         return Executors.newSingleThreadScheduledExecutor(executorThreadFactory);
     }
 
@@ -65,11 +62,19 @@ public class StateMachineExecutionFactoryService implements StateMachineExecutio
     @Override
     public boolean isRunningInExecutor() {
         final Thread currentThread = Thread.currentThread();
-        return threadRefs.stream().anyMatch(threadRef -> threadRef.get() == currentThread);
+        return executorThreadReferences.stream().anyMatch(threadRef -> threadRef.get() == currentThread);
+    }
+
+    protected Thread newThreadForExecutor(final String nameFragment, final Runnable runnable) {
+        purgeTerminatedThreadRefs();
+        final String threadName = String.format("StateMachine-%s-%s", nameFragment, UUID.randomUUID().toString());
+        final Thread createdThread = new Thread(runnable, threadName);
+        executorThreadReferences.add(new WeakReference<>(createdThread));
+        return createdThread;
     }
 
     private void purgeTerminatedThreadRefs() {
-        threadRefs.removeIf(this::isThreadTerminated);
+        executorThreadReferences.removeIf(this::isThreadTerminated);
     }
 
     private boolean isThreadTerminated(final WeakReference<Thread> threadRef) {
