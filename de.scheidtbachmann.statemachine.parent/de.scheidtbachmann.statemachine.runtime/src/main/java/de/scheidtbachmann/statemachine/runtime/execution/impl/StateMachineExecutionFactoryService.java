@@ -62,7 +62,9 @@ public class StateMachineExecutionFactoryService implements StateMachineExecutio
     @Override
     public boolean isRunningInExecutor() {
         final Thread currentThread = Thread.currentThread();
-        return executorThreadReferences.stream().anyMatch(threadRef -> threadRef.get() == currentThread);
+        synchronized (executorThreadReferences) {
+            return executorThreadReferences.stream().anyMatch(threadRef -> threadRef.get() == currentThread);
+        }
     }
 
     protected Thread newThreadForExecutor(final String nameFragment, final Runnable runnable) {
