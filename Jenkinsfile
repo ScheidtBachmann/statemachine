@@ -33,10 +33,9 @@ pipeline {
       description: "Version to release",  trim: true)
     string(name: "SnapshotVersion", defaultValue: "d.e.f-SNAPSHOT",
       description: "Version for the next snapshot",  trim: true)
-    string(name: "GithubUser", defaultValue: "",
-      description: "User to use when pushing to SCM")
-    password(name: "GithubPassword", defaultValue: "",
-      description: "Password to use when pushing to SCM")
+    credentials(name: 'GitPushCredentials', defaultValue: '', 
+      description: 'User credentials to use for pushing the updated data to git and setting the release tag',
+      credentialType: 'com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl', required: false),
   }
 
   environment {
@@ -83,7 +82,9 @@ pipeline {
       steps {
         dir('de.scheidtbachmann.statemachine.parent') {
           configFileProvider([configFile(fileId: '881491aa-33ec-4807-bd2f-5bae17666022', targetLocation: 'settings.xml', variable: 'MAVENSETTINGS')]) {
-            sh "${env.MVN_CMD} -DdevelopmentVersion=${params.SnapshotVersion} -DreleaseVersion=${params.ReleaseVersion} -Dtag=${params.ReleaseVersion} -Dresume=false -DignoreSnapshots=true -Dusername=${params.GithubUser} -Dpassword=${params.GithubPassword} release:prepare release:perform"
+            withCredentials([usernamePassword(credentialsId: "${GitPushCredentials}", passwordVariable: 'githubPass', usernameVariable: 'githubUser')]) {
+              sh "${env.MVN_CMD} -DdevelopmentVersion=${params.SnapshotVersion} -DreleaseVersion=${params.ReleaseVersion} -Dtag=${params.ReleaseVersion} -Dresume=false -DignoreSnapshots=true -Dusername=$githubUser -Dpassword=$githubPass release:prepare release:perform"
+            }
           }
         }
       }
