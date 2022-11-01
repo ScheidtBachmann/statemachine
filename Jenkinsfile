@@ -35,7 +35,7 @@ pipeline {
       description: "Version for the next snapshot",  trim: true)
     credentials(name: 'GitPushCredentials', defaultValue: '', 
       description: 'User credentials to use for pushing the updated data to git and setting the release tag',
-      credentialType: 'com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl', required: false),
+      credentialType: 'com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl', required: false)
   }
 
   environment {
