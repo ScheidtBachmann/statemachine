@@ -141,8 +141,9 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
     protected def void createCode() {
         source.append('''
           @SuppressWarnings("all")
+          @de.scheidtbachmann.statemachine.runtime.Generated(message = "de.scheidtbachmann.statemachine.compiler")
           public class « rootState.uniqueName »« IF superClass !== null » extends « superClass »« ENDIF » {
-
+              
             « generatePeripheralObjects() »
             « generateDebuggingHelper() »
             « generateInputEvents() »

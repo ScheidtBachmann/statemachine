@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit;
  * in OSGi context.
  */
 @Component(name = "statemachine.utilities.StateMachineExecutionFactoryService", immediate = true,
-    service = { ScheduledExecutorService.class })
+    service = { StateMachineExecutionFactory.class })
 public class StateMachineExecutionFactoryService implements StateMachineExecutionFactory {
 
     private final List<WeakReference<Thread>> executorThreadReferences =
