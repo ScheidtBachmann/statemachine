@@ -202,6 +202,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
     private def generateInputEvents() {
         return '''
             « IF eventDeclarations.size > 0 »
+              @de.scheidtbachmann.statemachine.runtime.Generated(message = "de.scheidtbachmann.statemachine.compiler")
               public enum InputEvent {
                 « FOR decl : eventDeclarations SEPARATOR ',' »
                   «FOR event : decl.valuedObjects SEPARATOR ', ' »«event.name»« ENDFOR »
@@ -218,6 +219,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
               /**
                * The interface containing all model variables (inputs, outputs)
                */
+              @de.scheidtbachmann.statemachine.runtime.Generated(message = "de.scheidtbachmann.statemachine.compiler")
               public class Iface {
                 « rootState.createDeclarations »
                 
@@ -257,6 +259,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
              * Enumeration for the thread states of the root level program.
              * The chosen scheduling regime (IUR) uses four states to maintain the statuses of threads.
              */
+            @de.scheidtbachmann.statemachine.runtime.Generated(message = "de.scheidtbachmann.statemachine.compiler")
             public enum ThreadStatus {
               TERMINATED, RUNNING, READY, PAUSING;
             }
@@ -264,6 +267,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             /**
              * Runtime data for the root level program
              */
+            @de.scheidtbachmann.statemachine.runtime.Generated(message = "de.scheidtbachmann.statemachine.compiler")
             public static class TickData« IF isStringContainerEnabled » implements StateMachineRootContext« ENDIF » {
               ThreadStatus threadStatus;
 
@@ -289,6 +293,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
               /**
                * Enumeration for all states of the « r.name » region
                */
+              @de.scheidtbachmann.statemachine.runtime.Generated(message = "de.scheidtbachmann.statemachine.compiler")
               public enum « r.uniqueName »States {
                 « FOR s : r.states SEPARATOR ', ' »
                   « s.uniqueEnumName »("« getSourceState(s) »")«IF s.isHierarchical », 
@@ -310,6 +315,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
               /**
                * The runtime thread data of region « r.name »
                */
+              @de.scheidtbachmann.statemachine.runtime.Generated(message = "de.scheidtbachmann.statemachine.compiler")
               public static class « r.uniqueContextMemberName » {
                 ThreadStatus threadStatus;
                 « r.uniqueName »States activeState;
@@ -933,6 +939,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             // Go through all different usages and serialize a method head for each
             context.append('''
               @SuppressWarnings({"unused","javadoc"})
+              @de.scheidtbachmann.statemachine.runtime.Generated(message = "de.scheidtbachmann.statemachine.compiler")
               public interface « rootState.uniqueName»«StatebasedLeanJavaCodeGenerator.CONTEXT_SUFFIX » {
                 « FOR usage : referenceUsages.entries.sortBy[key.extern.head.code] »
                   « generateMethod(usage.key, usage.value) »
