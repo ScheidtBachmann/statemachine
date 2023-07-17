@@ -2,14 +2,14 @@ pipeline {
   // Run this build in the defined docker build environment
   agent {
     docker {
-      image 'sub-jdk11-mvn36-vnc-swt:2022-01'
+      image 'sub-jdk11-mvn36-vnc-swt:2023-07'
       registryUrl 'https://ki-vl-artifactory.ki.lan:5001'
     }
   }
 
   // Configure the build options (overwrites config in jenkins upon build)
   options {
-    buildDiscarder(logRotator(numToKeepStr: '6'))
+    buildDiscarder(logRotator(numToKeepStr: '2'))
     disableConcurrentBuilds()
     timestamps()
     disableResume()
@@ -47,7 +47,7 @@ pipeline {
     stage('Build') {
       steps {
         dir('de.scheidtbachmann.statemachine.parent') {
-          configFileProvider([configFile(fileId: '881491aa-33ec-4807-bd2f-5bae17666022', targetLocation: 'settings.xml', variable: 'MAVENSETTINGS')]) {
+          configFileProvider([configFile(fileId: 'maven-settings-proxy', targetLocation: 'settings.xml', variable: 'MAVENSETTINGS')]) {
             sh "${env.MVN_CMD} clean install"
           }
         }
@@ -64,7 +64,7 @@ pipeline {
       }
       steps {
         dir('de.scheidtbachmann.statemachine.parent') {
-          configFileProvider([configFile(fileId: '881491aa-33ec-4807-bd2f-5bae17666022', targetLocation: 'settings.xml', variable: 'MAVENSETTINGS')]) {
+          configFileProvider([configFile(fileId: 'maven-settings-proxy', targetLocation: 'settings.xml', variable: 'MAVENSETTINGS')]) {
             sh "${env.MVN_CMD} deploy"
           }
         }
@@ -81,7 +81,7 @@ pipeline {
       }
       steps {
         dir('de.scheidtbachmann.statemachine.parent') {
-          configFileProvider([configFile(fileId: '881491aa-33ec-4807-bd2f-5bae17666022', targetLocation: 'settings.xml', variable: 'MAVENSETTINGS')]) {
+          configFileProvider([configFile(fileId: 'maven-settings-proxy', targetLocation: 'settings.xml', variable: 'MAVENSETTINGS')]) {
             withCredentials([usernamePassword(credentialsId: "${GitPushCredentials}", passwordVariable: 'githubPass', usernameVariable: 'githubUser')]) {
               sh "${env.MVN_CMD} -DdevelopmentVersion=${params.SnapshotVersion} -DreleaseVersion=${params.ReleaseVersion} -Dtag=${params.ReleaseVersion} -Dresume=false -DignoreSnapshots=true -Dusername=$githubUser -Dpassword=$githubPass release:prepare release:perform"
             }
@@ -98,7 +98,7 @@ pipeline {
         }
       }
       steps {
-        withCredentials([string(credentialsId: 'b7e6a5cf-7aee-4b4e-a953-f27cacec98d4', variable: 'WHITESOURCEAPIKEY')]) {
+        withCredentials([string(credentialsId: 'mend-apikey-sst', variable: 'WHITESOURCEAPIKEY')]) {
           sh 'java -jar /opt/whitesource/wss-unified-agent.jar -c whitesource.config -apiKey $WHITESOURCEAPIKEY -productToken b0c4d351804c401aba307e46446282ea5e01036ce46b4e089092d8d8da7d6769 -d de.scheidtbachmann.statemachine.parent'
         } 
       }
