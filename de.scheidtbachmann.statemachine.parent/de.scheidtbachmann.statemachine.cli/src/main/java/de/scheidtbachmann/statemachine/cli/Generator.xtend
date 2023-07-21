@@ -650,33 +650,4 @@ class Generator implements Runnable {
             System.out.write(altSysout.toByteArray)
         }
     }
-
-    /**
-     * Possible strategies registered in compilation system. Mainly used for listing all strategies in the help text.
-     */
-    static class StrategyCandidates implements Iterable<String> {
-        // Request all known compilation systems from KiCool and store in a nice sorted list
-        val sortedIds = KiCoolRegistration.systemModels.map[id].sort
-
-        // Use the iterator to detect the end and append the "bring your own strategy" help text
-        override iterator() {
-            val sorted = sortedIds.iterator
-            sorted.map [
-                '%n  ' + if(sorted.hasNext) it else it + ', %n  or a path to a custom <.kico> file'
-            ]
-        }
-    }
-
-    /**
-     * Possible file endings to use for the image export.
-     */
-    static class FormatCandidates implements Iterable<String> {
-
-        /** The different formats. We support rasterized images as well as vector images. */
-        val candidates = #['bmp', 'jpeg', 'png', 'svg']
-
-        override iterator() {
-            candidates.iterator
-        }
-    }
 }

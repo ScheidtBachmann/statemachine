@@ -4,5 +4,6 @@
 
 <suppressions>
     <!-- Don't check stuff in the *-gen folder -->
-	<suppress files="[\\/][a-zA-Z0-9]*-gen[\\/]" checks="."/>
+    <suppress files="[\\/][a-zA-Z0-9]*-gen[\\/]" checks="."/>
+    <suppress files="[\\/]OSGI-INF[\\/]" checks="."/>
 </suppressions>

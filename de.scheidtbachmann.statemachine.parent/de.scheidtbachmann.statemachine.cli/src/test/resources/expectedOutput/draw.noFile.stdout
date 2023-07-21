@@ -1,0 +1,13 @@
+Draw the state chart specified in given input file.
+Usage: scc draw [--stdin] [-f <format>] [-o <path>] [<sourceFile>]
+
+Parameters:
+      [<sourceFile>]      The input state chart file.
+
+Options:
+      --stdin             Forces the artist to read input from stdIn.
+  -f, --format <format>   The format of the images.
+                          Candidates: bmp, jpeg, png, svg.
+                          Default: png.
+  -o, --output <path>     The destination folder of the drawn diagram pages.
+                          Default is: diagrams.

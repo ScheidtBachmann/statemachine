@@ -14,6 +14,18 @@
             <artifactId>de.scheidtbachmann.statemachine.plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>de.scheidtbachmann.statemachine</groupId>
+            <artifactId>de.scheidtbachmann.statemachine.runtime</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.scheidtbachmann.statemachine</groupId>
+            <artifactId>de.scheidtbachmann.statemachine.testing</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -24,104 +36,13 @@
                 <version>${project.version}</version>
                 <executions>
                     <execution>
-                        <id>statemachines-individual</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>SMGen</goal>
-                        </goals>
-
-                        <configuration>
-                            <stateMachines>
-                                <stateMachine>
-                                    <fileName>${project.basedir}/src/main/resources/01-Basic.sctx</fileName>
-                                    <outputFolder>${project.build.directory}/generated-sources/statemachines/</outputFolder>
-                                    <strategy>de.cau.cs.kieler.sccharts.netlist.java</strategy>
-                                </stateMachine>
-                                <stateMachine>
-                                    <fileName>${project.basedir}/src/main/resources/02-Package.sctx</fileName>
-                                    <outputFolder>${project.build.directory}/generated-sources/statemachines/</outputFolder>
-                                    <strategy>de.scheidtbachmann.statemachine.codegen.statebased.lean.java.template</strategy>
-                                </stateMachine>
-                                <stateMachine>
-                                    <fileName>${project.basedir}/src/main/resources/03-Selective.sctx</fileName>
-                                    <selectedModel>FirstSelectiveChart</selectedModel>
-                                    <outputFolder>${project.build.directory}/generated-sources/statemachines/</outputFolder>
-                                    <strategy>de.scheidtbachmann.statemachine.codegen.statebased.lean.java.template.selective</strategy>
-                                </stateMachine>
-                                <stateMachine>
-                                    <fileName>${project.basedir}/src/main/resources/03-Selective.sctx</fileName>
-                                    <selectedModel>SecondSelectiveChart</selectedModel>
-                                    <outputFolder>${project.build.directory}/generated-sources/statemachines/</outputFolder>
-                                    <strategy>de.scheidtbachmann.statemachine.codegen.statebased.lean.java.template.selective</strategy>
-                                </stateMachine>
-                                <stateMachine>
-                                    <fileName>${project.basedir}/src/main/resources/04-DelayedOptions.sctx</fileName>
-                                    <selectedModel>DelayedChart1</selectedModel>
-                                    <outputFolder>${project.build.directory}/generated-sources/statemachines/</outputFolder>
-                                    <strategy>de.scheidtbachmann.statemachine.codegen.statebased.lean.java.template.selective</strategy>
-                                </stateMachine>
-                                <stateMachine>
-                                    <fileName>${project.basedir}/src/main/resources/04-DelayedOptions.sctx</fileName>
-                                    <selectedModel>DelayedChart2</selectedModel>
-                                    <outputFolder>${project.build.directory}/generated-sources/statemachines/</outputFolder>
-                                    <strategy>de.scheidtbachmann.statemachine.codegen.statebased.lean.java.template.selective</strategy>
-                                </stateMachine>
-                                <stateMachine>
-                                    <fileName>${project.basedir}/src/main/resources/04-DelayedOptions.sctx</fileName>
-                                    <selectedModel>DelayedChart3</selectedModel>
-                                    <outputFolder>${project.build.directory}/generated-sources/statemachines/</outputFolder>
-                                    <strategy>de.scheidtbachmann.statemachine.codegen.statebased.lean.java.template.selective</strategy>
-                                </stateMachine>
-                                <stateMachine>
-                                    <fileName>${project.basedir}/src/main/resources/04-DelayedOptions.sctx</fileName>
-                                    <selectedModel>DelayedChart4</selectedModel>
-                                    <outputFolder>${project.build.directory}/generated-sources/statemachines/</outputFolder>
-                                    <strategy>de.scheidtbachmann.statemachine.codegen.statebased.lean.java.template.selective</strategy>
-                                </stateMachine>
-                                <stateMachine>
-                                    <fileName>${project.basedir}/src/main/resources/04-DelayedOptions.sctx</fileName>
-                                    <selectedModel>DelayedChart5</selectedModel>
-                                    <outputFolder>${project.build.directory}/generated-sources/statemachines/</outputFolder>
-                                    <strategy>de.scheidtbachmann.statemachine.codegen.statebased.lean.java.template.selective</strategy>
-                                </stateMachine>
-                                <stateMachine>
-                                    <fileName>${project.basedir}/src/main/resources/04-DelayedOptions.sctx</fileName>
-                                    <selectedModel>DelayedChart6</selectedModel>
-                                    <outputFolder>${project.build.directory}/generated-sources/statemachines/</outputFolder>
-                                    <strategy>de.scheidtbachmann.statemachine.codegen.statebased.lean.java.template.selective</strategy>
-                                </stateMachine>
-                                <stateMachine>
-                                    <fileName>${project.basedir}/src/main/resources/04-DelayedOptions.sctx</fileName>
-                                    <selectedModel>DelayedChart7</selectedModel>
-                                    <outputFolder>${project.build.directory}/generated-sources/statemachines/</outputFolder>
-                                    <strategy>de.scheidtbachmann.statemachine.codegen.statebased.lean.java.template.selective</strategy>
-                                </stateMachine>
-                                <stateMachine>
-                                    <fileName>${project.basedir}/src/main/resources/05-Logging.sctx</fileName>
-                                    <outputFolder>${project.build.directory}/generated-sources/statemachines/</outputFolder>
-                                    <strategy>de.scheidtbachmann.statemachine.codegen.statebased.lean.java.template</strategy>
-                                </stateMachine>
-                                <stateMachine>
-                                    <fileName>${project.basedir}/src/main/resources/06-Executor.sctx</fileName>
-                                    <outputFolder>${project.build.directory}/generated-sources/statemachines/</outputFolder>
-                                    <strategy>de.scheidtbachmann.statemachine.codegen.statebased.lean.java.template</strategy>
-                                </stateMachine>                                
-                                <stateMachine>
-                                    <fileName>${project.basedir}/src/main/resources/07-Features.sctx</fileName>
-                                    <outputFolder>${project.build.directory}/generated-sources/statemachines/</outputFolder>
-                                    <strategy>de.scheidtbachmann.statemachine.codegen.statebased.lean.java.template</strategy>
-                                </stateMachine>                                
-                            </stateMachines>
-                        </configuration>
-                    </execution>
-                    <execution>
                         <id>statemachines-all</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>SMGenAll</goal>
                         </goals>
                         <configuration>
-                            <outputFolder>${project.build.directory}/other-sources</outputFolder>
+                            <outputFolder>${project.build.directory}/generated-sources/statemachines</outputFolder>
                             <strategy>de.scheidtbachmann.statemachine.codegen.statebased.lean.java.template</strategy>
                         </configuration>
                     </execution>

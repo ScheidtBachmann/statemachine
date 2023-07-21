@@ -1,0 +1,6 @@
+Validation discovered the following errors:
+Line 1, column 21 (syntax error): missing RULE_ID at '}'
+Line 1, column 15 : Every region must have an initial state.
+
+Validation discovered the following warnings:
+Line 1, column 15: The state is not reachable.

@@ -1,0 +1,9 @@
+Scheidt & Bachmann StateMachine Compiler
+Usage: scc [-hV] [COMMAND]
+  -h, --help      Show this help message and exit.
+  -V, --version   Print version information and exit.
+Commands:
+  draw      Draw the state chart specified in given input file.
+  generate  Generate executable code corresponding to the given input file.
+  validate  Check the given input file for syntactic and semantic errors and
+              problems.

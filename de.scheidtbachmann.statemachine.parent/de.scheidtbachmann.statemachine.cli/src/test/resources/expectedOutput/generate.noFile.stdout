@@ -1,0 +1,123 @@
+Generate executable code corresponding to the given input file.
+Usage: scc generate [--stdin] [--stdout] [-o <path>] [-s <strategy>] [--select
+                    <model>] [<sourceFile>]
+
+Parameters:
+      [<sourceFile>]     The input state chart file.
+
+Options:
+      --stdin            Forces the generator to read input from stdIn.
+  -o, --output <path>    The destination folder of the generated artifacts.
+                         Default is: gen.
+      --stdout           Forces the generator to write generated content to
+                           stdOut.
+  -s, --strategy <strategy>
+                         The strategy to apply.
+                         Options:
+                           de.cau.cs.kieler.c.sccharts.dataflow,
+                           de.cau.cs.kieler.kicool.identity,
+                           de.cau.cs.kieler.kicool.identity.dynamic,
+                           de.cau.cs.kieler.sccharts.causalView,
+                           de.cau.cs.kieler.sccharts.core,
+                           de.cau.cs.kieler.sccharts.core.core,
+                           de.cau.cs.kieler.sccharts.csv,
+                           de.cau.cs.kieler.sccharts.dataflow,
+                           de.cau.cs.kieler.sccharts.dataflow.lustre,
+                           de.cau.cs.kieler.sccharts.expansion.only,
+                           de.cau.cs.kieler.sccharts.extended,
+                           de.cau.cs.kieler.sccharts.extended.core,
+                           de.cau.cs.kieler.sccharts.interactiveScheduling,
+                           de.cau.cs.kieler.sccharts.netlist,
+                           de.cau.cs.kieler.sccharts.netlist.arduino.deploy,
+                           de.cau.cs.kieler.sccharts.netlist.dataflow,
+                           de.cau.cs.kieler.sccharts.netlist.guardOpt,
+                           de.cau.cs.kieler.sccharts.netlist.java,
+                           de.cau.cs.kieler.sccharts.netlist.nxj.deploy,
+                           de.cau.cs.kieler.sccharts.netlist.nxj.deploy.
+                           rconsole,
+                           de.cau.cs.kieler.sccharts.netlist.promela,
+                           de.cau.cs.kieler.sccharts.netlist.references,
+                           de.cau.cs.kieler.sccharts.netlist.sccp,
+                           de.cau.cs.kieler.sccharts.netlist.simple,
+                           de.cau.cs.kieler.sccharts.netlist.simulink,
+                           de.cau.cs.kieler.sccharts.netlist.smv,
+                           de.cau.cs.kieler.sccharts.netlist.vhdl,
+                           de.cau.cs.kieler.sccharts.priority,
+                           de.cau.cs.kieler.sccharts.priority.java,
+                           de.cau.cs.kieler.sccharts.priority.java.legacy,
+                           de.cau.cs.kieler.sccharts.priority.legacy,
+                           de.cau.cs.kieler.sccharts.scssa,
+                           de.cau.cs.kieler.sccharts.simulation.netlist.c,
+                           de.cau.cs.kieler.sccharts.simulation.netlist.java,
+                           de.cau.cs.kieler.sccharts.simulation.priority.c,
+                           de.cau.cs.kieler.sccharts.simulation.priority.c.
+                           legacy,
+                           de.cau.cs.kieler.sccharts.simulation.priority.java,
+                           de.cau.cs.kieler.sccharts.simulation.priority.java.
+                           legacy,
+                           de.cau.cs.kieler.sccharts.simulation.statebased.c,
+                           de.cau.cs.kieler.sccharts.simulation.statebased.lean.
+                           c,
+                           de.cau.cs.kieler.sccharts.simulation.statebased.lean.
+                           cs.c,
+                           de.cau.cs.kieler.sccharts.simulation.statebased.lean.
+                           java,
+                           de.cau.cs.kieler.sccharts.simulation.tts.netlist.c,
+                           de.cau.cs.kieler.sccharts.simulation.tts.netlist.
+                           java,
+                           de.cau.cs.kieler.sccharts.simulation.tts.priority.c,
+                           de.cau.cs.kieler.sccharts.simulation.tts.priority.c.
+                           legacy,
+                           de.cau.cs.kieler.sccharts.simulation.tts.priority.
+                           java,
+                           de.cau.cs.kieler.sccharts.simulation.tts.priority.
+                           java.legacy,
+                           de.cau.cs.kieler.sccharts.simulation.tts.statebased.
+                           c,
+                           de.cau.cs.kieler.sccharts.simulation.tts.statebased.
+                           lean.c,
+                           de.cau.cs.kieler.sccharts.simulation.tts.statebased.
+                           lean.cs.c,
+                           de.cau.cs.kieler.sccharts.simulation.tts.statebased.
+                           lean.java,
+                           de.cau.cs.kieler.sccharts.statebased,
+                           de.cau.cs.kieler.sccharts.statebased.lean,
+                           de.cau.cs.kieler.sccharts.statebased.lean.arduino.
+                           deploy,
+                           de.cau.cs.kieler.sccharts.statebased.lean.c.
+                           template,
+                           de.cau.cs.kieler.sccharts.statebased.lean.cs.c.
+                           template,
+                           de.cau.cs.kieler.sccharts.statebased.lean.java.
+                           template,
+                           de.cau.cs.kieler.sccharts.statebased.woComments,
+                           de.cau.cs.kieler.sccharts.verification.nusmv,
+                           de.cau.cs.kieler.sccharts.verification.nuxmv,
+                           de.cau.cs.kieler.sccharts.verification.spin,
+                           de.cau.cs.kieler.scg.netlist,
+                           de.cau.cs.kieler.scg.priority,
+                           de.cau.cs.kieler.scl.netlist.c,
+                           de.cau.cs.kieler.scl.netlist.java,
+                           de.cau.cs.kieler.scl.priority.c,
+                           de.cau.cs.kieler.scl.priority.java,
+                           de.cau.cs.kieler.scl.scc,
+                           de.cau.cs.kieler.scl.simulation.netlist.c,
+                           de.cau.cs.kieler.scl.simulation.netlist.java,
+                           de.cau.cs.kieler.scl.simulation.priority.c,
+                           de.cau.cs.kieler.scl.simulation.priority.java,
+                           de.cau.cs.kieler.scl.ssa.scssa,
+                           de.cau.cs.kieler.scl.ssa.scssa.sccp,
+                           de.cau.cs.kieler.scl.ssa.scssa.simple,
+                           de.cau.cs.kieler.scl.ssa.seq,
+                           de.cau.cs.kieler.slic.schedule,
+                           de.scheidtbachmann.statemachine.codegen.statebased.
+                           lean.cpp.template,
+                           de.scheidtbachmann.statemachine.codegen.statebased.
+                           lean.java.template,
+                           de.scheidtbachmann.statemachine.codegen.statebased.
+                           lean.java.template.selective,
+                           or a path to a custom <.kico> file.
+                         Default:
+                           de.cau.cs.kieler.sccharts.statebased.
+      --select <model>   The parts of the model that should be taken from the
+                           input file

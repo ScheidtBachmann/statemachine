@@ -1,0 +1,8 @@
+Check the given input file for syntactic and semantic errors and problems.
+Usage: scc validate [--stdin] [sourceFile]
+
+Parameters:
+      [sourceFile]   The input state chart file.
+
+Options:
+      --stdin        Forces the validator to read input from stdIn.
