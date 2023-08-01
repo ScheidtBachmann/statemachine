@@ -141,6 +141,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
     protected def void createCode() {
         source.append('''
           @SuppressWarnings("all")
+          @de.scheidtbachmann.statemachine.runtime.StateMachineForContext(« rootState.uniqueName »«StatebasedLeanJavaCodeGenerator.CONTEXT_SUFFIX ».class)
           @de.scheidtbachmann.statemachine.runtime.Generated(message = "de.scheidtbachmann.statemachine.compiler")
           public class « rootState.uniqueName »« IF superClass !== null » extends « superClass »« ENDIF » {
               
@@ -939,6 +940,7 @@ class StatebasedLeanJavaTemplate extends AbstractStatebasedLeanTemplate {
             // Go through all different usages and serialize a method head for each
             context.append('''
               @SuppressWarnings({"unused","javadoc"})
+              @de.scheidtbachmann.statemachine.runtime.ContextForStateMachine(« rootState.uniqueName ».class)
               @de.scheidtbachmann.statemachine.runtime.Generated(message = "de.scheidtbachmann.statemachine.compiler")
               public interface « rootState.uniqueName»«StatebasedLeanJavaCodeGenerator.CONTEXT_SUFFIX » {
                 « FOR usage : referenceUsages.entries.sortBy[key.extern.head.code] »
