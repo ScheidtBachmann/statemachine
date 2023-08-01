@@ -83,7 +83,7 @@ pipeline {
         dir('de.scheidtbachmann.statemachine.parent') {
           configFileProvider([configFile(fileId: 'maven-settings-proxy', targetLocation: 'settings.xml', variable: 'MAVENSETTINGS')]) {
             withCredentials([usernamePassword(credentialsId: "${GitPushCredentials}", passwordVariable: 'githubPass', usernameVariable: 'githubUser')]) {
-              sh "${env.MVN_CMD} -DdevelopmentVersion=${params.SnapshotVersion} -DreleaseVersion=${params.ReleaseVersion} -Dtag=${params.ReleaseVersion} -Dresume=false -DignoreSnapshots=true -Dusername=$githubUser -Dpassword=$githubPass release:prepare release:perform"
+              sh '${env.MVN_CMD} -DdevelopmentVersion=${params.SnapshotVersion} -DreleaseVersion=${params.ReleaseVersion} -Dtag=${params.ReleaseVersion} -Dresume=false -DignoreSnapshots=true -Dusername=$githubUser -Dpassword=$githubPass release:prepare release:perform'
             }
           }
         }
