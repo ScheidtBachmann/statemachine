@@ -217,7 +217,7 @@
 					for example. -->
 				<groupId>org.eclipse.platform</groupId>
 				<artifactId>org.eclipse.jface</artifactId>
-				<version>3.13.0</version>
+				<version>3.31.0</version>
 			</dependency>
 			<dependency>
 				<!-- is required by KLighD, defines 'org.eclipse.ui.IWorkbenchPart', 
