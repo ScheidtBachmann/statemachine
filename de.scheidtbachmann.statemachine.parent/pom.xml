@@ -224,7 +224,7 @@
 					for example. -->
 				<groupId>org.eclipse.platform</groupId>
 				<artifactId>org.eclipse.ui.workbench</artifactId>
-				<version>3.110.0</version>
+				<version>3.130.0</version>
 				<exclusions>
 					<exclusion>
 						<groupId>org.eclipse.platform</groupId>
